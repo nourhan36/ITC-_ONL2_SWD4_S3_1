@@ -20,7 +20,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
-
+                // A surface container using the 'background' color from the theme
+print("x")
             }
         }
     }
