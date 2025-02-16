@@ -27,4 +27,3 @@ class MainActivity : ComponentActivity() {
 }
 
 //deleted class Test1
-
