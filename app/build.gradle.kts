@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.itc__onl2_swd4_s3_1"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.itc__onl2_swd4_s3_1"
