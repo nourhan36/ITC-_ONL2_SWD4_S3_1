@@ -6,5 +6,8 @@ data class Dhikr(
     val count: String,
     val description: String,
     val reference: String,
-    val content: String
-)
+    val content: String,
+    val translation: String
+) {
+
+}
