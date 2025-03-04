@@ -35,6 +35,15 @@
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" >
 
         </activity>
+
+
+        <activity
+            android:name=".ui.prayertimes.MainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" >
+
+        </activity>
+
         <activity
             android:name=".ui.homePage.HomeActivity"
             android:exported="true"
