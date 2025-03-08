@@ -3,4 +3,15 @@
     <string name="title_activity_dhikr">DhikrActivity</string>
     <string name="title_activity_dhirk_counter">DhirkCounterActivity</string>
     <string name="title_activity_dhikr_list">DhikrListActivity</string>
+    <string name="current_streak">CURRENT STREAK</string>
+    <string name="highest_streak">HIGHEST STREAK</string>
+    <string name="your_progress">Your Progress</string>
+    <string name="completion_message_congrats">Congratulations! You completed it!</string>
+    <string name="completion_message_almost_there">You are almost there!</string>
+    <string name="completion_message_great_job">Great job! Keep going!</string>
+    <string name="completion_message_keep_pushing">Keep pushing forward!</string>
+    <string name="week">week</string>
+    <string name="weeks">weeks</string>
+    <string name="streak_image_description">Streak</string>
+    <string name="progress_percentage">%</string>
 </resources>
