@@ -18,12 +18,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.ui.homePage.HomeScreen
+import com.example.itc__onl2_swd4_s3_1.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.net.URL
@@ -89,11 +93,11 @@ fun PrayerApp(context: Context) {
                         text = "Praying Times",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White // لون النص
+                        color = Color.White
                     )
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color(0xFF6200EE) // لون الخلفية
+                    containerColor = Color(0xFF6200EE)
                 )
             )
         }
@@ -252,4 +256,11 @@ fun calculateRemainingTime(prayerTimes: List<Pair<String, String>>): String {
     val fajrTime = LocalTime.parse(prayerTimes[0].second, formatter)
     val duration = java.time.Duration.between(now, fajrTime.plusHours(24))
     return "Fajr in ${duration.toHours()}h ${duration.toMinutes() % 60}m"
+}
+
+@Preview()
+@Composable
+fun PreviewPrayerApp() {
+    val context = LocalContext.current
+    PrayerApp(context)
 }
