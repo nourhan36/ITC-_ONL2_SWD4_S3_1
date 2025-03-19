@@ -9,10 +9,16 @@ lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.0"
 composeBom = "2024.04.01"
 navigationCompose = "2.8.7"
+jetpack_compose_country_code_picker_emoji = "2.2.7"
+material = "1.7.6"
+navigationComposeVersion = "2.7.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-navigation-compose-v276 = { module = "androidx.navigation:navigation-compose", version.ref = "navigationComposeVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
+jetpack_compose_country_code_picker_emoji = { module = "com.github.jump-sdk:jetpack_compose_country_code_picker_emoji", version.ref = "jetpack_compose_country_code_picker_emoji" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }

@@ -14,4 +14,6 @@
     <string name="weeks">weeks</string>
     <string name="streak_image_description">Streak</string>
     <string name="progress_percentage">%</string>
+    <string name="title_activity_login">Login</string>
+    <string name="title_activity_sign_up">SignUp</string>
 </resources>
