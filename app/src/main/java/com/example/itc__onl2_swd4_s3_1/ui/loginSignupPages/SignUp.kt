@@ -188,4 +188,5 @@ fun SignUpHeader(isKeyboardVisible: Boolean, onNavigateBack: () -> Unit) {
             color = Color.Gray
         )
     }
+    //
 }
