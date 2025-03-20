@@ -102,7 +102,7 @@ fun CircularProgressBar(progress: Float, modifier: Modifier = Modifier) {
                     style = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round)
                 )
                 drawArc(
-                    brush = progressGradient, // Updated to use themed colors
+                    brush = progressGradient,
                     startAngle = Constants.START_ANGLE,
                     sweepAngle = Constants.FULL_CIRCLE_DEGREES * progress,
                     useCenter = false,
@@ -226,7 +226,7 @@ fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
                             ) {
                                 Text(
                                     text = day.toString(),
-                                    color = if (day == today) Color.Red else MaterialTheme.colorScheme.onSurface, // Use theme color
+                                    color = if (day == today) Color.Red else MaterialTheme.colorScheme.onSurface,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -267,10 +267,10 @@ fun StreakItem(weeks: Int, description: String, modifier: Modifier = Modifier) {
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, )
 @Composable
 fun ProgressPreview() {
-    ITC_ONL2_SWD4_S3_1Theme {
+    ITC_ONL2_SWD4_S3_1Theme(dynamicColor = false) {
         CombinedScreen(
             weeks = 2,
             highestWeeks = 5,
