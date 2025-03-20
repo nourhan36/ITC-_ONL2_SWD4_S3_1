@@ -9,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,8 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -28,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,34 +39,34 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.homePage.HomeActivity
-import com.example.itc__onl2_swd4_s3_1.ui.loginSignupPages.ui.theme.ITC_ONL2_SWD4_S3_1Theme
+
+//import com.example.itc__onl2_swd4_s3_1.ui.loginSignupPages.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 
 class Login : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ITC_ONL2_SWD4_S3_1Theme {
-                LoginScreen(
-                    onItemClick = {
-                        val intent = Intent(this, SignUp    ::class.java)
-                        startActivity(intent)
-                        finish()
-                    },
-                    onSignInClick = {
-                        val intent = Intent(this, HomeActivity::class.java)
-                        startActivity(intent)
-                    }
-                )
+
+            LoginScreen(
+                onItemClick = {
+                    val intent = Intent(this, SignUp    ::class.java)
+                    startActivity(intent)
+                    finish()
+                },
+                onSignInClick = {
+                    val intent = Intent(this, HomeActivity::class.java)
+                    startActivity(intent)
                 }
-            }
+            )
         }
+
     }
+}
 
 
 @Composable
@@ -230,52 +226,6 @@ fun AdditionalOptions(onItemClick: () -> Unit) {
 
     Spacer(modifier = Modifier.height(16.dp))
 
-    Text(
-        text = "or login with",
-        fontSize = 14.sp,
-        color = Color.Gray
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    SocialLoginButtons()
 }
 
-@Composable
-fun SocialLoginButtons() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        IconButton(onClick = { /* Handle X Login */ }) {
-            Icon(
-                painter = painterResource(id = R.drawable.x),
-                contentDescription = "X Login",
-                modifier = Modifier.size(48.dp),
-                tint = Color.Unspecified
-            )
-        }
 
-        Spacer(modifier = Modifier.width(24.dp))
-
-        IconButton(onClick = { /* Handle Facebook Login */ }) {
-            Icon(
-                painter = painterResource(id = R.drawable.facebook),
-                contentDescription = "Facebook Login",
-                modifier = Modifier.size(48.dp),
-                tint = Color.Unspecified
-            )
-        }
-
-        Spacer(modifier = Modifier.width(24.dp))
-
-        IconButton(onClick = { /* Handle Google Login */ }) {
-            Icon(
-                painter = painterResource(id = R.drawable.google),
-                contentDescription = "Google Login",
-                modifier = Modifier.size(48.dp),
-                tint = Color.Unspecified
-            )
-        }
-    }
-}
