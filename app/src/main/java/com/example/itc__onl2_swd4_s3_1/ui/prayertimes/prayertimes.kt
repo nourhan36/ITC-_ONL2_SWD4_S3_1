@@ -1,4 +1,4 @@
-//prayer times page
+//prayer times test commot page
 package com.example.itc__onl2_swd4_s3_1.ui.prayertimes
 
 import android.app.NotificationChannel
