@@ -1,3 +1,4 @@
+//prayer times test commott page
 package com.example.itc__onl2_swd4_s3_1.ui.prayertimes
 
 import android.app.NotificationChannel
@@ -33,6 +34,11 @@ import org.json.JSONObject
 import java.net.URL
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Text
+
+import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -97,10 +103,11 @@ fun PrayerApp(context: Context) {
                     )
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color(0xFF6200EE)
+                    containerColor = Color(0xFF3C7297)
                 )
             )
-        }
+        },
+        containerColor = Color(0xFFE7DFD0)
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             CitySelector(selectedCity) { selectedCity = it }
@@ -112,14 +119,16 @@ fun PrayerApp(context: Context) {
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                       color =  Color(0xFF3C7297)
+                    )
                 }
             } else {
                 Text(
                     text = "Next Prayer In: $remainingTime",
                     fontSize = 18.sp,
                     modifier = Modifier.padding(16.dp),
-                    color = Color(0xFF03DAC5),
+                    color = Color(0xFF3C7297),
                     fontWeight = FontWeight.Bold
                 )
 
@@ -143,7 +152,7 @@ fun CitySelector(selectedCity: String, onCitySelected: (String) -> Unit) {
     Box(modifier = Modifier.padding(16.dp)) {
         Button(
             onClick = { expanded = true },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C7297))
         ) {
             Text(text = selectedCity, color = Color.White)
         }
@@ -151,7 +160,8 @@ fun CitySelector(selectedCity: String, onCitySelected: (String) -> Unit) {
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.heightIn(max = 400.dp)
+            modifier = Modifier.heightIn(max = 400.dp),
+
         ) {
             cities.forEach { city ->
                 DropdownMenuItem(
@@ -174,7 +184,11 @@ fun PrayerRow(name: String, time: String, context: Context) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+
     ) {
         Row(
             modifier = Modifier
@@ -190,8 +204,13 @@ fun PrayerRow(name: String, time: String, context: Context) {
                     isNotificationEnabled = it
                     if (it) sendNotification(context, name, time)
                 },
-                colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFF03DAC5))
-            )
+
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color(0xFF3C7297),
+                    checkedTrackColor = Color(0xFF3C7297).copy(alpha = 0.5f),
+                    uncheckedThumbColor = Color(0xFF9E9E9E),
+                    uncheckedTrackColor = Color(0xFFE0E0E0)
+                )            )
         }
     }
 }
