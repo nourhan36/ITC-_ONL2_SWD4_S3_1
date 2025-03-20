@@ -48,14 +48,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.homePage.HomeActivity
-import com.example.itc__onl2_swd4_s3_1.ui.loginSignupPages.ui.theme.ITC_ONL2_SWD4_S3_1Theme
+//import com.example.itc__onl2_swd4_s3_1.ui.loginSignupPages.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 
 class Login : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ITC_ONL2_SWD4_S3_1Theme {
+
                 LoginScreen(
                     onItemClick = {
                         val intent = Intent(this, SignUp    ::class.java)
@@ -68,7 +68,7 @@ class Login : ComponentActivity() {
                     }
                 )
                 }
-            }
+
         }
     }
 
