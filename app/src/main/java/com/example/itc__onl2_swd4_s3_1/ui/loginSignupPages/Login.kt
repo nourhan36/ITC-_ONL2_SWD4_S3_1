@@ -44,13 +44,15 @@ import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.homePage.HomeActivity
 
-//import com.example.itc__onl2_swd4_s3_1.ui.loginSignupPages.ui.theme.ITC_ONL2_SWD4_S3_1Theme
+
+
 
 class Login : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+
 
             LoginScreen(
                 onItemClick = {
@@ -63,6 +65,7 @@ class Login : ComponentActivity() {
                     startActivity(intent)
                 }
             )
+
         }
 
     }

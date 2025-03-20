@@ -40,12 +40,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
 
+
 class SignUp : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
 
+ login/signup
             SignUpScreen(
                 onNavigateBack = {
                     val intent = Intent(this, Login::class.java)
@@ -60,6 +62,7 @@ class SignUp : ComponentActivity() {
         }
     }
 }
+
 
 @Composable
 fun SignUpScreen(
