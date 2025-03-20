@@ -14,4 +14,26 @@
     <string name="weeks">weeks</string>
     <string name="streak_image_description">Streak</string>
     <string name="progress_percentage">%</string>
+    <string name="duration">Duration</string>
+    <string name="minutes">minutes</string>
+    <string name="hours">hours</string>
+    <string name="repeat_cycle">Repeat Cycle</string>
+    <string name="set_reminder_so_you_dont_forget_to_do_it">Set reminder so you don\'t forget to do it</string>
+    <string name="create_reminder">Create Reminder</string>
+    <string name="when_would_you_like_to_start_it">When would you like to start it?</string>
+    <string-array name="start_time_options">
+        <item>Today</item>
+        <item>Tomorrow</item>
+        <item>Custom</item>
+    </string-array>
+    <string name="how_often_do_you_want_to_do_it">How often do you want to do it?</string>
+    <string-array name="repeat_options">
+        <item>Every Day</item>
+        <item>Weekly</item>
+        <item>Custom</item>
+    </string-array>
+    <string-array name="time_units">
+        <item>minutes</item>
+        <item>hours</item>
+    </string-array>
 </resources>
