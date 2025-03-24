@@ -1,21 +1,35 @@
-package com.example.itc__onl2_swd4_s3_1.ui.SalahTrackerScreen
+package com.example.itc__onl2_swd4_s3_1.ui.ManageSalah
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,7 +38,6 @@ import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
 
 class SalahTrackerScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +48,7 @@ class SalahTrackerScreen : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SalahTracker() {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
@@ -43,42 +57,61 @@ fun SalahTracker() {
     val prayers = listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
     val selectedPrayers = selectedPrayersMap[selectedDate] ?: emptySet()
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-
-        Text("Salah Tracker",
-            modifier = Modifier.fillMaxWidth(),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-            )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // TopAppBar
+        TopAppBar(
+            title = {
+                Text(
+                    "Salah Tracker",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            }
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
+
+        // Date & Salah Question
         Text("Which Salah Did you offer Today?", fontSize = 16.sp)
         Text(todayFormatted, fontSize = 14.sp, color = Color.Gray)
 
-
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Salah Checkboxes
         prayers.forEach { prayer ->
-            SalahCheckBox(prayer, selectedPrayers) { checked, name ->
+            SalahCheckBox(
+                prayer = prayer,
+                selectedPrayers = selectedPrayers
+            ) { checked, name ->
                 selectedPrayersMap = selectedPrayersMap.toMutableMap().apply {
-                    put(selectedDate, if (checked) selectedPrayers + name else selectedPrayers - name)
+                    val updatedPrayers = getOrDefault(selectedDate, emptySet()).toMutableSet()
+                    if (checked) updatedPrayers.add(name) else updatedPrayers.remove(name)
+                    put(selectedDate, updatedPrayers.toSet())
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Calendar Grid
         CalendarGrid(
             selectedDate = selectedDate,
-            onDateSelected = { newDate ->
-                selectedDate = newDate
-            }
+            onDateSelected = { newDate -> selectedDate = newDate }
         )
     }
 }
 
-
 @Composable
-fun SalahCheckBox(prayer: String, selectedPrayers: Set<String>, onCheckedChange: (Boolean, String) -> Unit) {
+fun SalahCheckBox(
+    prayer: String,
+    selectedPrayers: Set<String>,
+    onCheckedChange: (Boolean, String) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -101,9 +134,7 @@ fun CalendarGrid(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
     val startOfMonth = selectedDate.withDayOfMonth(1)
     val daysInMonth = startOfMonth.lengthOfMonth()
     val days = (1..daysInMonth).map { startOfMonth.withDayOfMonth(it) }
-    var pickedDate by remember { mutableStateOf(selectedDate) }
     val dateDialogState = rememberMaterialDialogState()
-
 
     Column(modifier = Modifier.fillMaxWidth()) {
         // Date Picker Button
@@ -114,30 +145,26 @@ fun CalendarGrid(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Button(onClick = {  dateDialogState.show()}) {
+            Button(onClick = { dateDialogState.show() }) {
                 Text(text = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")))
             }
         }
+
         // Date Picker Dialog
         MaterialDialog(
             dialogState = dateDialogState,
             buttons = {
-                positiveButton(text = "Ok") {
-                    onDateSelected(pickedDate) // Update the selected date when "Ok" is clicked
-                }
+                positiveButton(text = "Ok") {}
                 negativeButton(text = "Cancel")
             }
         ) {
             datepicker(
-                initialDate = selectedDate, // Use the selectedDate as the initial date
-                title = "Pick a date",
-                allowedDateValidator = { it.dayOfMonth % 2 == 1 }
-            ) { pickedDate = it }
+                initialDate = selectedDate,
+                title = "Pick a date"
+            ) { pickedDate -> onDateSelected(pickedDate) }
         }
-    }
 
-
-    // Calendar Grid
+        // Calendar Grid
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
             modifier = Modifier.fillMaxWidth()
@@ -164,7 +191,9 @@ fun CalendarGrid(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
                 }
             }
         }
+    }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun SalahTrackerScreenPreview() {

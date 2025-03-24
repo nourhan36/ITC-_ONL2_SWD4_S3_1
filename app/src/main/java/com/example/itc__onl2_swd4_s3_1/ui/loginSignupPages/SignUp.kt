@@ -47,7 +47,7 @@ class SignUp : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
 
- login/signup
+
             SignUpScreen(
                 onNavigateBack = {
                     val intent = Intent(this, Login::class.java)
