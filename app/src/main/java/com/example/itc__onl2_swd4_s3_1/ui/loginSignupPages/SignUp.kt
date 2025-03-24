@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,7 +24,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,11 +36,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
-import com.example.itc__onl2_swd4_s3_1.ui.homePage.HomeActivity
+
 
 class SignUp : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,20 +47,21 @@ class SignUp : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
 
-                SignUpScreen(
-                    onNavigateBack = {
-                        val intent = Intent(this, Login::class.java)
-                        startActivity(intent)
-                        finish()
-                    },
-                    onSignUpClick = {
-                        val intent = Intent(this, HomeActivity::class.java)
-                        startActivity(intent)
-                    }
-                )
-            }
+            SignUpScreen(
+                onNavigateBack = {
+                    val intent = Intent(this, Login::class.java)
+                    startActivity(intent)
+                    finish()
+                },
+                onSignUpClick = {
+                    val intent = Intent(this, Login::class.java)
+                    startActivity(intent)
+                }
+            )
         }
     }
+}
+
 
 @Composable
 fun SignUpScreen(
@@ -151,7 +151,11 @@ fun SignUpScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (!isKeyboardVisible) {
-            AdditionalOptions(onItemClick = onNavigateBack)
+            Text(
+                text = "Already have an account? Login",
+                color = Color.Gray,
+                modifier = Modifier.clickable { onNavigateBack() }
+            )
         }
     }
 }
@@ -167,7 +171,7 @@ fun SignUpHeader(isKeyboardVisible: Boolean, onNavigateBack: () -> Unit) {
     ) {
         IconButton(onClick = onNavigateBack) {
             Icon(
-         painter = painterResource(id = R.drawable.backarrow),
+                painter = painterResource(id = R.drawable.backarrow),
                 contentDescription = "Back"
             )
         }
@@ -181,11 +185,7 @@ fun SignUpHeader(isKeyboardVisible: Boolean, onNavigateBack: () -> Unit) {
 
     if (!isKeyboardVisible) {
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Create your account",
-            fontSize = 16.sp,
-            color = Color.Gray
-        )
+
     }
     //
 }
