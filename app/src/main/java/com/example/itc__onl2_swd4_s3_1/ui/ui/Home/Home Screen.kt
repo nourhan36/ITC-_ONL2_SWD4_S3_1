@@ -1,14 +1,17 @@
-package com.example.itc__onl2_swd4_s3_1.ui.ui.Home
-
-
+package com.example.itc__onl2_swd4_s3_1.ui.Home
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -16,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +30,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.ui.Home.NavItem
+import com.example.itc__onl2_swd4_s3_1.ui.Home.getCurrentDate
+import kotlinx.coroutines.launch
+
+
+class HomeScreen : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            navBar()
+        }
+    }
+}
 
 
 @Composable
@@ -40,47 +57,153 @@ fun navBar(modifier: Modifier = Modifier) {
     var selectedIndex by remember {
         mutableIntStateOf(0)
     }
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        floatingActionButton = {
-            LargeFloatingActionButton(
-                onClick = {  /* add habit screen here*/ },
-                shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondary,
-            ) {
-                Icon(Icons.Default.Add , contentDescription = "add")
-            }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
 
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    var isDarkTheme by remember { mutableStateOf(false) }
 
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                DrawerHeader()
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { /* handle click */ }
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.qiblah), // replace with your image
+                            contentDescription = "Qiblah",
+                            modifier = Modifier.size(30.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(text = "Qiblah", fontSize = 18.sp)
+                    }
 
-        bottomBar = {
-            NavigationBar {
-                navItemList.forEachIndexed{index, navItem ->
-                    NavigationBarItem(
-                        selected = selectedIndex == index,
-                        onClick = {
-                            selectedIndex = index
-                        },
-                        icon = {
-                            Icon( navItem.icon , "icon")
-                        },
-                        label = {
-                            Text(
-                                text = navItem.label
-                            )
-                        }
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.lightdark), // replace with your image
+                            contentDescription = "light/dark mode",
+                            modifier = Modifier.size(35.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text("Dark Mode",  fontSize = 18.sp)
+                        Spacer(modifier = Modifier.width(150.dp))
+
+                        Switch(
+                            checked = isDarkTheme,
+                            onCheckedChange = { isDarkTheme = it }
+                        )
+                    }
+
+                    Text("Language", modifier = Modifier.padding(16.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { /* go to sign in page */ }
+                            .padding(vertical = 12.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logout), // replace with your image
+                            contentDescription = "logout",
+                            modifier = Modifier.size(30.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(text = "Logout", fontSize = 18.sp)
+                    }                    // Add more items as needed
                 }
             }
         }
-    )
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            floatingActionButton = {
+                LargeFloatingActionButton(
+                    onClick = {  /* add habit screen here*/ },
+                    shape = CircleShape,
+                    containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondary,
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "add")
+                }
+            },
+            floatingActionButtonPosition = FabPosition.Center,
+
+
+            bottomBar = {
+                NavigationBar {
+                    navItemList.forEachIndexed { index, navItem ->
+                        NavigationBarItem(
+                            selected = selectedIndex == index,
+                            onClick = {
+                                when(selectedIndex){
+                                    0 -> {selectedIndex = index
+                                            //go to home screen
+                                    }
+                                    1 -> {
+                                        selectedIndex = index
+                                        //go to salah screen
+                                    }
+                                    2 -> {
+                                        selectedIndex = index
+                                        //go to dhikr screen
+                                    }
+                                    3 -> {
+                                        selectedIndex = index
+                                        //go to streak screen
+                                    }
+                                    4 -> {  selectedIndex = index
+                                    //go to salah screen
+                                        scope.launch {
+                                            drawerState.open()
+                                        }
+                                        }
+                                }
+//                                if (selectedIndex == 4) {
+//                                    selectedIndex = index
+//                                    scope.launch {
+//                                        drawerState.open()
+//                                    }
+//                                }
+//                                else{
+//                                    selectedIndex = index
+//                                }
+                            },
+                            icon = {
+                                Icon(navItem.icon, "icon")
+                            },
+                            label = {
+                                Text(
+                                    text = navItem.label
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+        )
+
 //comment trial
 
-    { innerPadding ->
-        Content(modifier = Modifier.padding(innerPadding))
+        { innerPadding ->
+            Content(modifier = Modifier.padding(innerPadding))
+        }
     }
 }
 
@@ -88,7 +211,7 @@ fun navBar(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun previewMain() {
-        navBar()
+    navBar()
 }
 
 @Composable
@@ -186,5 +309,37 @@ fun Content(modifier: Modifier = Modifier) {
 
     }
 
+}
 
+@Composable
+fun DrawerHeader() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primary)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Example: User profile image (optional)
+        Icon(
+            imageVector = Icons.Default.AccountCircle,
+            contentDescription = "Profile",
+            tint = Color.White,
+            modifier = Modifier.size(64.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Welcome,",
+            color = Color.White,
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Text(
+            text = "user name",
+            color = Color.White.copy(alpha = 0.7f),
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
 }
