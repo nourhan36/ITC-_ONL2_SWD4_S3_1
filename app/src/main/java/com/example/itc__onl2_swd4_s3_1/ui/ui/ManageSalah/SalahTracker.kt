@@ -8,10 +8,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -19,8 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,75 +31,82 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+
 class SalahTrackerScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            SalahTracker()
+            ITC_ONL2_SWD4_S3_1Theme {
+                SalahTracker()
+            }
         }
     }
 }
 
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SalahTracker() {
+    val colorScheme = MaterialTheme.colorScheme
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    val todayFormatted = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
-    var selectedPrayersMap by remember { mutableStateOf(mutableMapOf<LocalDate, Set<String>>()) }
+    val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
     val prayers = listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
+    var selectedPrayersMap by remember { mutableStateOf(mutableMapOf<LocalDate, Set<String>>()) }
     val selectedPrayers = selectedPrayersMap[selectedDate] ?: emptySet()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .background(colorScheme.background)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // TopAppBar
-        TopAppBar(
-            title = {
-                Text(
-                    "Salah Tracker",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-            }
+        SalahTrackerHeader()
+
+        Text(
+            text = "Which Salah did you offer today?",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = colorScheme.onBackground
+        )
+        Text(
+            text = selectedDate.format(dateFormatter),
+            fontSize = 14.sp,
+            color = colorScheme.onBackground.copy(alpha = 0.6f)
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Date & Salah Question
-        Text("Which Salah Did you offer Today?", fontSize = 16.sp)
-        Text(todayFormatted, fontSize = 14.sp, color = Color.Gray)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Salah Checkboxes
         prayers.forEach { prayer ->
             SalahCheckBox(
                 prayer = prayer,
-                selectedPrayers = selectedPrayers
+                selectedPrayers = selectedPrayers,
+                containerColor = colorScheme.surface,
+                textColor = colorScheme.onSurface
             ) { checked, name ->
                 selectedPrayersMap = selectedPrayersMap.toMutableMap().apply {
-                    val updatedPrayers = getOrDefault(selectedDate, emptySet()).toMutableSet()
-                    if (checked) updatedPrayers.add(name) else updatedPrayers.remove(name)
-                    put(selectedDate, updatedPrayers.toSet())
+                    val updated = getOrDefault(selectedDate, emptySet()).toMutableSet()
+                    if (checked) updated.add(name) else updated.remove(name)
+                    put(selectedDate, updated)
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Calendar Grid
         CalendarGrid(
             selectedDate = selectedDate,
-            onDateSelected = { newDate -> selectedDate = newDate }
+            onDateSelected = { selectedDate = it },
+            selectedColor = colorScheme.secondary,
+            defaultColor = colorScheme.surface,
+            textColor = colorScheme.onSurface,
+            selectedTextColor = colorScheme.onSecondary
         )
     }
 }
@@ -110,18 +115,24 @@ fun SalahTracker() {
 fun SalahCheckBox(
     prayer: String,
     selectedPrayers: Set<String>,
+    containerColor: Color,
+    textColor: Color,
     onCheckedChange: (Boolean, String) -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
+            .background(containerColor, shape = RoundedCornerShape(12.dp))
             .clickable { onCheckedChange(!selectedPrayers.contains(prayer), prayer) }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(prayer, fontSize = 18.sp, modifier = Modifier.weight(1f))
+        Text(
+            text = prayer,
+            fontSize = 18.sp,
+            modifier = Modifier.weight(1f),
+            color = textColor
+        )
         Checkbox(
             checked = selectedPrayers.contains(prayer),
             onCheckedChange = { onCheckedChange(it, prayer) }
@@ -130,41 +141,63 @@ fun SalahCheckBox(
 }
 
 @Composable
-fun CalendarGrid(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
-    val startOfMonth = selectedDate.withDayOfMonth(1)
-    val daysInMonth = startOfMonth.lengthOfMonth()
-    val days = (1..daysInMonth).map { startOfMonth.withDayOfMonth(it) }
-    val dateDialogState = rememberMaterialDialogState()
+fun SalahTrackerHeader() {
+    val colorScheme = MaterialTheme.colorScheme
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colorScheme.primary, RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Salah Tracker",
+            color = colorScheme.onPrimary,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+    }
+}
+
+@Composable
+fun CalendarGrid(
+    selectedDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit,
+    selectedColor: Color,
+    defaultColor: Color,
+    textColor: Color,
+    selectedTextColor: Color
+) {
+    val daysInMonth = selectedDate.withDayOfMonth(1).lengthOfMonth()
+    val days = (1..daysInMonth).map { selectedDate.withDayOfMonth(it) }
+    val dialogState = rememberMaterialDialogState()
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Date Picker Button
+
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth() ,
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Button(onClick = { dateDialogState.show() }) {
+            Button(onClick = { dialogState.show()}, modifier = Modifier.padding()) {
                 Text(text = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")))
             }
         }
 
-        // Date Picker Dialog
         MaterialDialog(
-            dialogState = dateDialogState,
+            dialogState = dialogState,
             buttons = {
-                positiveButton(text = "Ok") {}
+                positiveButton(text = "OK")
                 negativeButton(text = "Cancel")
             }
         ) {
-            datepicker(
-                initialDate = selectedDate,
-                title = "Pick a date"
-            ) { pickedDate -> onDateSelected(pickedDate) }
+            datepicker(initialDate = selectedDate, title = "Pick a date") {
+                onDateSelected(it)
+            }
         }
 
-        // Calendar Grid
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
             modifier = Modifier.fillMaxWidth()
@@ -176,7 +209,7 @@ fun CalendarGrid(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
                     modifier = Modifier
                         .padding(4.dp)
                         .background(
-                            if (isSelected) Color.Blue else Color.LightGray,
+                            color = if (isSelected) selectedColor else defaultColor,
                             shape = RoundedCornerShape(8.dp)
                         )
                         .clickable { onDateSelected(date) }
@@ -185,7 +218,7 @@ fun CalendarGrid(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
                 ) {
                     Text(
                         text = date.dayOfMonth.toString(),
-                        fontSize = 16.sp,
+                        color = if (isSelected) selectedTextColor else textColor,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -196,6 +229,8 @@ fun CalendarGrid(selectedDate: LocalDate, onDateSelected: (LocalDate) -> Unit) {
 
 @Preview(showBackground = true)
 @Composable
-fun SalahTrackerScreenPreview() {
-    SalahTracker()
+fun SalahTrackerPreview() {
+    ITC_ONL2_SWD4_S3_1Theme(dynamicColor = false) {
+        SalahTracker()
+    }
 }
