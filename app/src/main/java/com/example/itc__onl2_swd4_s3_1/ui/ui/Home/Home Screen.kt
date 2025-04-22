@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,8 +32,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
-import com.example.itc__onl2_swd4_s3_1.ui.Home.NavItem
-import com.example.itc__onl2_swd4_s3_1.ui.Home.getCurrentDate
+import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
+import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.getCurrentDate
 import kotlinx.coroutines.launch
 
 
@@ -61,6 +63,8 @@ fun navBar(modifier: Modifier = Modifier) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var isDarkTheme by remember { mutableStateOf(false) }
+    var selectedLanguage by remember { mutableStateOf("English") }
+
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -110,7 +114,14 @@ fun navBar(modifier: Modifier = Modifier) {
                         )
                     }
 
-                    Text("Language", modifier = Modifier.padding(16.dp))
+                    //Text("Language", modifier = Modifier.padding(16.dp))
+                    LanguageSelector(
+                        selectedLanguage = selectedLanguage,
+                        onLanguageSelected = {
+                            selectedLanguage = it
+                            // Optional: Save it to preferences or handle localization
+                        }
+                    )
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -122,7 +133,7 @@ fun navBar(modifier: Modifier = Modifier) {
                         Image(
                             painter = painterResource(id = R.drawable.logout), // replace with your image
                             contentDescription = "logout",
-                            modifier = Modifier.size(30.dp)
+                            modifier = Modifier.size(35.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(text = "Logout", fontSize = 18.sp)
@@ -152,7 +163,7 @@ fun navBar(modifier: Modifier = Modifier) {
                         NavigationBarItem(
                             selected = selectedIndex == index,
                             onClick = {
-                                when(selectedIndex){
+                                when(index){
                                     0 -> {selectedIndex = index
                                             //go to home screen
                                     }
@@ -168,11 +179,13 @@ fun navBar(modifier: Modifier = Modifier) {
                                         selectedIndex = index
                                         //go to streak screen
                                     }
-                                    4 -> {  selectedIndex = index
-                                    //go to salah screen
+                                    4 -> {
                                         scope.launch {
                                             drawerState.open()
                                         }
+                                        selectedIndex = index
+                                    //go to salah screen
+
                                         }
                                 }
 //                                if (selectedIndex == 4) {
@@ -343,3 +356,60 @@ fun DrawerHeader() {
         )
     }
 }
+
+
+@Composable
+fun LanguageSelector(
+    selectedLanguage: String,
+    onLanguageSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = true }
+            .padding( vertical = 12.dp ,)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.language),
+            contentDescription = "language icon",
+            modifier = Modifier.size(35.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            text = selectedLanguage,
+            fontSize = 18.sp,
+        )
+
+        Icon(
+            imageVector = Icons.Default.ArrowDropDown,
+            contentDescription = "Dropdown Icon",
+            modifier = Modifier.size(24.dp)
+        )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("English") },
+                onClick = {
+                    onLanguageSelected("English")
+                    expanded = false
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("العربية") },
+                onClick = {
+                    onLanguageSelected("العربية")
+                    expanded = false
+                }
+            )
+        }
+    }
+}
+
