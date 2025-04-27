@@ -3,7 +3,6 @@ package com.example.itc__onl2_swd4_s3_1.ui.ui.loginSignupPages
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -63,7 +62,9 @@ fun LoginPage(
     LaunchedEffect(authState.value) {
         when(authState.value){
             is AuthState.Authenticated ->
-                navController.navigate("home")
+                navController.navigate("home") {
+                    popUpTo("login") { inclusive = true }
+                }
             is AuthState.Error ->
                 Toast.makeText(context,
                 (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
