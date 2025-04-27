@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.navBar
 
 @Composable
 fun MyAppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel) {
@@ -18,7 +19,7 @@ fun MyAppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel) 
             SignupPage (modifier,navController,authViewModel)
         }
         composable("home") {
-            HomePage(modifier, navController, authViewModel) // Change MockAuthViewModel to AuthViewModel
+            navBar(modifier)
         }
     })
 }
