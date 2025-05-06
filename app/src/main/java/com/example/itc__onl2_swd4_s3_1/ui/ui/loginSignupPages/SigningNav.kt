@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.navBar
+import com.example.itc__onl2_swd4_s3_1.ui.Home.navBar
 
 @Composable
 fun MyAppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel) {

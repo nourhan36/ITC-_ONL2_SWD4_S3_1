@@ -3,7 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
-    id ("kotlin-kapt")
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -36,9 +37,13 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+        freeCompilerArgs = listOf("-Xjvm-default=compatibility")
     }
     buildFeatures {
         compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.1"
     }
 }
 
@@ -57,7 +62,9 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.play.services.mlkit.text.recognition.common)
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore.ktx)
     implementation(libs.androidx.room.common.jvm)
+    implementation(libs.androidx.espresso.core)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -72,7 +79,59 @@ dependencies {
     val room_version = "2.7.0"
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
-    kapt("androidx.room:room-compiler:$room_version")
+    implementation (libs.firebase.firestore.ktx)
+    ksp("androidx.room:room-compiler:$room_version")
+    implementation(libs.firebase.firestore)
+    testImplementation("androidx.room:room-testing:$room_version")
+    androidTestImplementation("androidx.room:room-testing:$room_version")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
 
+    //===============================
+
+    // coil
+    implementation(libs.coil.compose)
+    // navigation
+    implementation(libs.androidx.navigation.compose)
+
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.lifecycle.viewmodel.ktx)
+
+    implementation(libs.hilt)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+
+    implementation(libs.coroutines)
+    implementation(libs.retrofit)
+    implementation(libs.okhttp3)
+    implementation(libs.gson)
+    implementation(libs.gson.converter)
+
+
+    implementation(libs.datastore)
+    implementation(libs.lottie.compose)
+
+    implementation(libs.gson.converter) // Or the latest version
+    implementation(libs.retrofit) // Make sure you have the retrofit dependency
+    implementation(libs.okhttp.v4110) // Make sure you have the okhttp dependency
+
+    implementation (libs.retrofit)
+    implementation (libs.gson.converter)
+
+}
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask> {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 
 }
