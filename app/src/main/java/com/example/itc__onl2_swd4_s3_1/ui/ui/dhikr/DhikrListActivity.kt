@@ -34,7 +34,11 @@ import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.Constants
-
+import androidx.work.WorkManager
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.ExistingPeriodicWorkPolicy
+import java.util.concurrent.TimeUnit
+import java.util.Calendar
 class DhikrListActivity : ComponentActivity() {
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
     private val dhikrListState = mutableStateListOf<Dhikr>()
@@ -46,7 +50,7 @@ class DhikrListActivity : ComponentActivity() {
 
         // Initialize SharedPreferences for persisting checkbox states
         sharedPreferences = getSharedPreferences("DhikrPrefs", Context.MODE_PRIVATE)
-
+        scheduleResetWorker()
         // Initialize dhikr list
         val dhikrList = getDhikrList().filter { it.category == "تسابيح" }
 
@@ -92,6 +96,31 @@ class DhikrListActivity : ComponentActivity() {
         }
     }
 
+
+
+    private fun scheduleResetWorker() {
+        val currentTime = Calendar.getInstance()
+        val targetTime = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            if (before(currentTime)) {
+                add(Calendar.DAY_OF_MONTH, 1)
+            }
+        }
+
+        val initialDelay = targetTime.timeInMillis - currentTime.timeInMillis
+
+        val workRequest = PeriodicWorkRequestBuilder<ResetDhikrWorker>(1, TimeUnit.DAYS)
+            .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "ResetDhikrWorker",
+            ExistingPeriodicWorkPolicy.REPLACE,
+            workRequest
+        )
+    }
     private fun updateDhikrCompletionStatus(dhikrText: String, completed: Boolean) {
         val index = dhikrListState.indexOfFirst { it.content == dhikrText }
         if (index != -1) {
