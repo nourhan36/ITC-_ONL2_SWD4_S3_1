@@ -38,23 +38,28 @@ class DhikrCounterActivity : ComponentActivity() {
     companion object {
         const val DHIKR_COMPLETED_REQUEST = 101
         const val DHIKR_COMPLETED_TEXT = "dhikr_completed_text"
+        const val DHIKR_COMPLETED = "dhikr_completed"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val dhikrText = intent.getStringExtra(Constants.DHIKR_TEXT) ?: "سبحان الله"
-        val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: 33
+   val dhikrText = intent.getStringExtra(Constants.DHIKR_TEXT) ?: getDhikrList().firstOrNull()?.content ?: "سبحان الله"
+   val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: getDhikrList().firstOrNull()?.count?.toIntOrNull() ?: 33
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
                 DhikrCounter(dhikrText, dhikrCount, onDhikrCompleted = { completedDhikrText ->
-                    val resultIntent = Intent().apply {
+                    // Instead of finishing, navigate to DhikrListActivity
+                    val intent = Intent(this, DhikrListActivity::class.java).apply {
                         putExtra(DHIKR_COMPLETED_TEXT, completedDhikrText)
+                        putExtra(DHIKR_COMPLETED, true)
+                        // Add flag to clear the back stack
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                     }
-                    setResult(RESULT_OK, resultIntent)
-                    finish()
+                    startActivity(intent)
+                    finish() // Still finish this activity to prevent going back to it
                 })
             }
         }

@@ -3,7 +3,9 @@
 package com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,26 +35,42 @@ import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.Constants
 
-
-
 class DhikrListActivity : ComponentActivity() {
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
     private val dhikrListState = mutableStateListOf<Dhikr>()
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        dhikrListState.addAll(getDhikrList().filter { it.category == "تسابيح" })
+        // Initialize SharedPreferences for persisting checkbox states
+        sharedPreferences = getSharedPreferences("DhikrPrefs", Context.MODE_PRIVATE)
+
+        // Initialize dhikr list
+        val dhikrList = getDhikrList().filter { it.category == "تسابيح" }
+
+        // Load saved completion states
+        dhikrList.forEach { dhikr ->
+            val isCompleted = sharedPreferences.getBoolean("dhikr_${dhikr.content}", false)
+            dhikr.isCompleted.value = isCompleted
+        }
+
+        dhikrListState.addAll(dhikrList)
+
+        // Check if we're coming from DhikrCounterActivity with a completed dhikr
+        val completedDhikrText = intent.getStringExtra(DhikrCounterActivity.DHIKR_COMPLETED_TEXT)
+        val isCompleted = intent.getBooleanExtra(DhikrCounterActivity.DHIKR_COMPLETED, false)
+
+        if (completedDhikrText != null && isCompleted) {
+            updateDhikrCompletionStatus(completedDhikrText, true)
+        }
 
         resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                val completedDhikrText = result.data?.getStringExtra(DhikrCounterActivity.DHIKR_COMPLETED_TEXT)
-                completedDhikrText?.let { text ->
-                    val index = dhikrListState.indexOfFirst { it.content == text }
-                    if (index != -1) {
-                        dhikrListState[index] = dhikrListState[index].copy(isCompleted = mutableStateOf(true))
-                    }
+                val resultDhikrText = result.data?.getStringExtra(DhikrCounterActivity.DHIKR_COMPLETED_TEXT)
+                resultDhikrText?.let { text ->
+                    updateDhikrCompletionStatus(text, true)
                 }
             }
         }
@@ -71,6 +89,16 @@ class DhikrListActivity : ComponentActivity() {
                     onBack = { finish() }
                 )
             }
+        }
+    }
+
+    private fun updateDhikrCompletionStatus(dhikrText: String, completed: Boolean) {
+        val index = dhikrListState.indexOfFirst { it.content == dhikrText }
+        if (index != -1) {
+            dhikrListState[index].isCompleted.value = completed
+
+            // Save to SharedPreferences
+            sharedPreferences.edit().putBoolean("dhikr_${dhikrText}", completed).apply()
         }
     }
 }
