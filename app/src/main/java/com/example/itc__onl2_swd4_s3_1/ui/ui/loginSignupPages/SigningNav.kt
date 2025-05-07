@@ -20,7 +20,7 @@ fun MyAppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel) 
             SignupPage (modifier,navController,authViewModel)
         }
         composable("home") {
-navBar(onFabClick = {},modifier)
+navBar(onFabClick = {}, onNavItemClick = {},modifier)
         }
     })
 }

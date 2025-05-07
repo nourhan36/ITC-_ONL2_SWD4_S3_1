@@ -1,4 +1,5 @@
 package com.example.itc__onl2_swd4_s3_1.ui.Home
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,31 +9,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,45 +26,60 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.getCurrentDate
+import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahTrackerScreen
+import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.homePage.HomeActivity
 import kotlinx.coroutines.launch
-
 
 class HomeScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            navBar(onFabClick = {
-                // Open HomeActivity
-                val intent = Intent(this, HomeActivity::class.java)
-                startActivity(intent)
-            })
+            navBar(
+                onFabClick = { openHomeActivity() },
+                onNavItemClick = { index -> handleNavClick(index) }
+            )
+        }
+    }
+
+    private fun openHomeActivity() {
+        val intent = Intent(this, HomeActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun handleNavClick(index: Int) {
+        when (index) {
+            0 -> openHomeActivity()
+            1-> startActivity(Intent(this, SalahTrackerScreen::class.java))
+            2 -> startActivity(Intent(this, DhikrCounterActivity::class.java))
+
         }
     }
 }
 
-
 @Composable
-fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
+fun navBar(
+    onFabClick: () -> Unit,
+    onNavItemClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val navItemList = listOf(
-        NavItem("Home", painterResource(R.drawable.home) ),
-        NavItem("Salah" , painterResource(R.drawable.salah_icon)),
+        NavItem("Home", painterResource(R.drawable.home)),
+        NavItem("Salah", painterResource(R.drawable.salah_icon)),
         NavItem("Dhikr", painterResource(R.drawable.zikr)),
         NavItem("Streak", painterResource(R.drawable.progress)),
-        NavItem("More", painterResource(R.drawable.menu) )
+        NavItem("More", painterResource(R.drawable.menu))
     )
-    var selectedIndex by remember {
-        mutableIntStateOf(0)
-    }
 
+    var selectedIndex by remember { mutableIntStateOf(0) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var isDarkTheme by remember { mutableStateOf(false) }
     var selectedLanguage by remember { mutableStateOf("English") }
-
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -96,11 +96,11 @@ fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { /* handle click */ }
+                            .clickable { }
                             .padding(vertical = 12.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.qiblah), // replace with your image
+                            painter = painterResource(id = R.drawable.qiblah),
                             contentDescription = "Qiblah",
                             modifier = Modifier.size(30.dp)
                         )
@@ -115,44 +115,39 @@ fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
                             .padding(vertical = 12.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.lightdark), // replace with your image
+                            painter = painterResource(id = R.drawable.lightdark),
                             contentDescription = "light/dark mode",
                             modifier = Modifier.size(35.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Dark Mode",  fontSize = 18.sp)
+                        Text("Dark Mode", fontSize = 18.sp)
                         Spacer(modifier = Modifier.width(150.dp))
-
                         Switch(
                             checked = isDarkTheme,
                             onCheckedChange = { isDarkTheme = it }
                         )
                     }
 
-                    //Text("Language", modifier = Modifier.padding(16.dp))
                     LanguageSelector(
                         selectedLanguage = selectedLanguage,
-                        onLanguageSelected = {
-                            selectedLanguage = it
-                            // Optional: Save it to preferences or handle localization
-                        }
+                        onLanguageSelected = { selectedLanguage = it }
                     )
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { /* go to sign in page */ }
+                            .clickable { }
                             .padding(vertical = 12.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.logout), // replace with your image
+                            painter = painterResource(id = R.drawable.logout),
                             contentDescription = "logout",
                             modifier = Modifier.size(35.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(text = "Logout", fontSize = 18.sp)
-                    }                    // Add more items as needed
+                    }
                 }
             }
         }
@@ -170,8 +165,6 @@ fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
                 }
             },
             floatingActionButtonPosition = FabPosition.Center,
-
-
             bottomBar = {
                 NavigationBar {
                     navItemList.forEachIndexed { index, navItem ->
@@ -179,60 +172,26 @@ fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
                             selected = selectedIndex == index,
                             onClick = {
                                 selectedIndex = index
-                                when(index){
-                                    0 -> {
-                                        // Handle Home click if needed
-                                    }
-                                    1 -> {
-                                        // Handle Salah click if needed
-                                    }
-                                    2 -> {
-                                        // Handle Dhikr click if needed
-                                    }
-                                    3 -> {
-                                        // Handle Streak click if needed
-                                    }
-                                    4 -> {
-                                        scope.launch {
-                                            drawerState.open()
-                                        }
-                                    }
+                                if (index == 4) {
+                                    scope.launch { drawerState.open() }
+                                } else {
+                                    onNavItemClick(index)
                                 }
                             },
-                            icon = {
-                                Icon(navItem.icon, "icon")
-                            },
-                            label = {
-                                Text(
-                                    text = navItem.label
-                                )
-                            }
+                            icon = { Icon(navItem.icon, "icon") },
+                            label = { Text(text = navItem.label) }
                         )
                     }
                 }
             }
-        )
-
-        { innerPadding ->
+        ) { innerPadding ->
             Content(modifier = Modifier.padding(innerPadding))
         }
     }
 }
 
-
-
-
-
-
-@Preview
-@Composable
-private fun previewMain() {
-    navBar(onFabClick = {})
-}
-
 @Composable
 fun Content(modifier: Modifier = Modifier) {
-
     Image(
         painter = painterResource(id = R.drawable.ramadan_img),
         contentDescription = "Ramadan Kareem"
@@ -247,84 +206,43 @@ fun Content(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurface,
             fontSize = 30.sp
         )
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween
-        )
-        {
+        Row(horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
-                modifier = Modifier
-                    .padding(horizontal = 15.dp),
+                modifier = Modifier.padding(horizontal = 15.dp),
                 text = getCurrentDate(),
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center
             )
             Column {
-                Text(
-                    text = "Cairo",
-                    fontSize = 20.sp,
-                )
-                Text(
-                    text = "Egypt",
-                    fontSize = 20.sp,
-                )
+                Text(text = "Cairo", fontSize = 20.sp)
+                Text(text = "Egypt", fontSize = 20.sp)
             }
-
-
         }
-        Spacer(Modifier.padding(top=150.dp))
+        Spacer(Modifier.padding(top = 150.dp))
         Row(
-            modifier=Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
             var selectedIndex2 by remember { mutableStateOf(-1) }
-            Text(
-                modifier=Modifier.clickable {
-                    selectedIndex2 = 0
-                    /*go to all habits screen*/ }
-                    .border(
-                        border = if (selectedIndex2 == 0) BorderStroke(2.dp, Color.Blue) else BorderStroke(0.dp, Color.Transparent),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .padding(8.dp),
-                fontSize = 25.sp,
-                text = "ALL",
-                color = if (selectedIndex2 == 0) Color.Red else Color.Black,
-            )
-            Text(
-                modifier=Modifier.clickable {
-                    selectedIndex2 = 1
-                    /*go to all habits screen*/ }
-                    .border(
-                        border = if (selectedIndex2 == 1) BorderStroke(2.dp, Color.Blue) else BorderStroke(0.dp, Color.Transparent),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .padding(8.dp),
-                fontSize = 25.sp,
-                text = "Complete",
-                color = if (selectedIndex2 == 1) Color.Red else Color.Black,
 
+            listOf("ALL", "Complete", "Incomplete").forEachIndexed { idx, label ->
+                Text(
+                    modifier = Modifier
+                        .clickable { selectedIndex2 = idx }
+                        .border(
+                            border = if (selectedIndex2 == idx) BorderStroke(2.dp, Color.Blue) else BorderStroke(0.dp, Color.Transparent),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .padding(8.dp),
+                    fontSize = 25.sp,
+                    text = label,
+                    color = if (selectedIndex2 == idx) Color.Red else Color.Black
                 )
-            Text(
-                modifier=Modifier.clickable {
-                    selectedIndex2 = 2
-                    /*go to all habits screen*/ }
-                    .border(
-                        border = if (selectedIndex2 == 2) BorderStroke(2.dp, Color.Blue) else BorderStroke(0.dp, Color.Transparent),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .padding(8.dp),
-                fontSize = 25.sp,
-                text = "Incomplete",
-                color = if (selectedIndex2 == 2) Color.Red else Color.Black,
-
-                )
+            }
         }
-
-
     }
-
 }
 
 @Composable
@@ -336,22 +254,18 @@ fun DrawerHeader() {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Example: User profile image (optional)
         Icon(
             imageVector = Icons.Default.AccountCircle,
             contentDescription = "Profile",
             tint = Color.White,
             modifier = Modifier.size(64.dp)
         )
-
         Spacer(modifier = Modifier.height(8.dp))
-
         Text(
             text = "Welcome,",
             color = Color.White,
             style = MaterialTheme.typography.titleMedium
         )
-
         Text(
             text = "user name",
             color = Color.White.copy(alpha = 0.7f),
@@ -360,7 +274,6 @@ fun DrawerHeader() {
     }
 }
 
-
 @Composable
 fun LanguageSelector(
     selectedLanguage: String,
@@ -368,13 +281,12 @@ fun LanguageSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .clickable { expanded = true }
-            .padding( vertical = 12.dp ,)
+            .padding(vertical = 12.dp)
     ) {
         Image(
             painter = painterResource(id = R.drawable.language),
@@ -382,12 +294,7 @@ fun LanguageSelector(
             modifier = Modifier.size(35.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))
-
-        Text(
-            text = selectedLanguage,
-            fontSize = 18.sp,
-        )
-
+        Text(text = selectedLanguage, fontSize = 18.sp)
         Icon(
             imageVector = Icons.Default.ArrowDropDown,
             contentDescription = "Dropdown Icon",
@@ -398,20 +305,20 @@ fun LanguageSelector(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            DropdownMenuItem(
-                text = { Text("English") },
-                onClick = {
-                    onLanguageSelected("English")
-                    expanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("العربية") },
-                onClick = {
-                    onLanguageSelected("العربية")
-                    expanded = false
-                }
-            )
+            DropdownMenuItem(text = { Text("English") }, onClick = {
+                onLanguageSelected("English")
+                expanded = false
+            })
+            DropdownMenuItem(text = { Text("العربية") }, onClick = {
+                onLanguageSelected("العربية")
+                expanded = false
+            })
         }
     }
+}
+
+@Preview
+@Composable
+fun previewMain() {
+    navBar(onFabClick = {}, onNavItemClick = {})
 }
