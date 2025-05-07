@@ -1,4 +1,5 @@
 package com.example.itc__onl2_swd4_s3_1.ui.Home
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,7 +14,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -21,7 +25,6 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -41,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.getCurrentDate
+import com.example.itc__onl2_swd4_s3_1.ui.ui.homePage.HomeActivity
 import kotlinx.coroutines.launch
 
 
@@ -48,14 +52,18 @@ class HomeScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            navBar()
+            navBar(onFabClick = {
+                // Open HomeActivity
+                val intent = Intent(this, HomeActivity::class.java)
+                startActivity(intent)
+            })
         }
     }
 }
 
 
 @Composable
-fun navBar(modifier: Modifier = Modifier) {
+fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
     val navItemList = listOf(
         NavItem("Home", painterResource(R.drawable.home) ),
         NavItem("Salah" , painterResource(R.drawable.salah_icon)),
@@ -153,7 +161,7 @@ fun navBar(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxSize(),
             floatingActionButton = {
                 LargeFloatingActionButton(
-                    onClick = {  /* add habit screen here*/ },
+                    onClick = onFabClick,
                     shape = CircleShape,
                     containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondary,
@@ -170,40 +178,26 @@ fun navBar(modifier: Modifier = Modifier) {
                         NavigationBarItem(
                             selected = selectedIndex == index,
                             onClick = {
+                                selectedIndex = index
                                 when(index){
-                                    0 -> {selectedIndex = index
-                                            //go to home screen
+                                    0 -> {
+                                        // Handle Home click if needed
                                     }
                                     1 -> {
-                                        selectedIndex = index
-                                        //go to salah screen
+                                        // Handle Salah click if needed
                                     }
                                     2 -> {
-                                        selectedIndex = index
-                                        //go to dhikr screen
+                                        // Handle Dhikr click if needed
                                     }
                                     3 -> {
-                                        selectedIndex = index
-                                        //go to streak screen
+                                        // Handle Streak click if needed
                                     }
                                     4 -> {
                                         scope.launch {
                                             drawerState.open()
                                         }
-                                        selectedIndex = index
-                                    //go to salah screen
-
-                                        }
+                                    }
                                 }
-//                                if (selectedIndex == 4) {
-//                                    selectedIndex = index
-//                                    scope.launch {
-//                                        drawerState.open()
-//                                    }
-//                                }
-//                                else{
-//                                    selectedIndex = index
-//                                }
                             },
                             icon = {
                                 Icon(navItem.icon, "icon")
@@ -219,8 +213,6 @@ fun navBar(modifier: Modifier = Modifier) {
             }
         )
 
-//comment trial
-
         { innerPadding ->
             Content(modifier = Modifier.padding(innerPadding))
         }
@@ -228,10 +220,14 @@ fun navBar(modifier: Modifier = Modifier) {
 }
 
 
+
+
+
+
 @Preview
 @Composable
 private fun previewMain() {
-    navBar()
+    navBar(onFabClick = {})
 }
 
 @Composable
@@ -419,4 +415,3 @@ fun LanguageSelector(
         }
     }
 }
-

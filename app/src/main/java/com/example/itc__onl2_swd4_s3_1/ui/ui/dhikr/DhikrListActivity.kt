@@ -2,11 +2,14 @@
 
 package com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,18 +33,40 @@ import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.Constants
 
+
+
 class DhikrListActivity : ComponentActivity() {
+    private lateinit var resultLauncher: ActivityResultLauncher<Intent>
+    private val dhikrListState = mutableStateListOf<Dhikr>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        dhikrListState.addAll(getDhikrList().filter { it.category == "تسابيح" })
+
+        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val completedDhikrText = result.data?.getStringExtra(DhikrCounterActivity.DHIKR_COMPLETED_TEXT)
+                completedDhikrText?.let { text ->
+                    val index = dhikrListState.indexOfFirst { it.content == text }
+                    if (index != -1) {
+                        dhikrListState[index] = dhikrListState[index].copy(isCompleted = mutableStateOf(true))
+                    }
+                }
+            }
+        }
+
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
                 DhikrScreen(
+                    dhikrList = dhikrListState,
                     onDhikrClick = { selectedDhikr ->
-                        startActivity(Intent(this, DhikrCounterActivity::class.java).apply {
+                        val intent = Intent(this, DhikrCounterActivity::class.java).apply {
                             putExtra(Constants.DHIKR_TEXT, selectedDhikr.content)
                             putExtra(Constants.DHIKR_COUNT, selectedDhikr.count)
-                        })
+                        }
+                        resultLauncher.launch(intent)
                     },
                     onBack = { finish() }
                 )
@@ -51,9 +76,7 @@ class DhikrListActivity : ComponentActivity() {
 }
 
 @Composable
-fun DhikrScreen(onDhikrClick: (Dhikr) -> Unit, onBack: () -> Unit) {
-    val dhikrList = getDhikrList().filter { it.category == "تسابيح" }
-
+fun DhikrScreen(dhikrList: List<Dhikr>, onDhikrClick: (Dhikr) -> Unit, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF8F8F8))) {
         TopAppBar(
             title = {
@@ -63,17 +86,17 @@ fun DhikrScreen(onDhikrClick: (Dhikr) -> Unit, onBack: () -> Unit) {
                     textAlign = TextAlign.Center
                 )
             },
-navigationIcon = {
-    IconButton(onClick = onBack) {
-        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-    }
-}
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
         LazyColumn {
-            items(dhikrList) { dhikr ->
+            items(dhikrList, key = { it.content }) { dhikr ->
                 DhikrItem(dhikr, onDhikrClick)
             }
         }
@@ -84,7 +107,10 @@ navigationIcon = {
 fun DhikrItem(dhikr: Dhikr, onDhikrClick: (Dhikr) -> Unit) {
     Card(
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth().padding(16.dp).clickable { onDhikrClick(dhikr) }
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .clickable { onDhikrClick(dhikr) }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             DhikrHeader(dhikr)
@@ -126,21 +152,33 @@ fun DhikrHeader(dhikr: Dhikr) {
 @Composable
 fun DhikrDetails(dhikr: Dhikr) {
     Spacer(modifier = Modifier.height(4.dp))
-    Text(text = dhikr.translation, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-    Text(text = dhikr.description, fontSize = 14.sp, color = Color.Gray)
-    Spacer(modifier = Modifier.height(4.dp))
-    Text(text = "${dhikr.count} Times", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = dhikr.description, fontSize = 14.sp, color = Color.Gray)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = "${dhikr.count} Times", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        }
+        Checkbox(
+            checked = dhikr.isCompleted.value,
+            onCheckedChange = null, // Disable manual checking
+            modifier = Modifier.padding(start = 8.dp),
+            enabled = false // Visually indicate it's disabled
+        )
+    }
 }
 
 fun getDhikrList(): List<Dhikr> = listOf(
-    Dhikr("تسابيح", "33", "Virtue of saying this dhikr", "", "سُبْحَانَ اللهِ وَبِحَمْدِهِ", "x"),
-    Dhikr("تسابيح", "33", "Forgiveness of sins", "", "لَا إِلَهَ إِلَّا اللَّهُ", "<")
+    Dhikr("تسابيح", "33", "Virtue of saying this dhikr", "سُبْحَانَ اللهِ وَبِحَمْدِهِ"),
+    Dhikr("تسابيح", "33", "Forgiveness of sins", "لَا إِلَهَ إِلَّا اللَّهُ")
 )
 
 @Preview
 @Composable
 fun DhikrListPreview() {
     ITC_ONL2_SWD4_S3_1Theme {
-     DhikrScreen(onDhikrClick = {}, onBack = {})
+        DhikrScreen(dhikrList = remember { mutableStateListOf(Dhikr("تسابيح", "33", "...", "...", mutableStateOf(false))) }, onDhikrClick = {}, onBack = {})
     }
 }
