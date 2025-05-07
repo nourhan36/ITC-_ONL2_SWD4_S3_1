@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,11 +49,11 @@ fun SignupPage(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    var firstName by rememberSaveable  { mutableStateOf("") }
+    var lastName by rememberSaveable  { mutableStateOf("") }
+    var email by rememberSaveable  { mutableStateOf("") }
+    var password by rememberSaveable  { mutableStateOf("") }
+    var confirmPassword by rememberSaveable  { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
@@ -147,7 +148,7 @@ fun SignupPage(
         Button(
             onClick = {
                 if (password == confirmPassword) {
-                    authViewModel.signup(email, password)
+                    authViewModel.signup(firstName, lastName, email, password)
                 } else {
                     Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 }
