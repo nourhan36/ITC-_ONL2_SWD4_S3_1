@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,8 +52,8 @@ fun LoginPage(
     authViewModel: AuthViewModel
 ) {
 
-    var email by remember {mutableStateOf("")}
-    var password by remember {mutableStateOf("")}
+    var email by rememberSaveable  {mutableStateOf("")}
+    var password by rememberSaveable  {mutableStateOf("")}
     var passwordVisible by remember { mutableStateOf(false) }
     val authState = authViewModel.authState.observeAsState()
     val context = LocalContext.current
