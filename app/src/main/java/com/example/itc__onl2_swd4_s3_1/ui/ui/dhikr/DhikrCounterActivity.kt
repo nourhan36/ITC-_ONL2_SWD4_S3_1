@@ -34,23 +34,40 @@ import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.Constants
 import kotlinx.coroutines.launch
 
 class DhikrCounterActivity : ComponentActivity() {
+
+    companion object {
+        const val DHIKR_COMPLETED_REQUEST = 101
+        const val DHIKR_COMPLETED_TEXT = "dhikr_completed_text"
+        const val DHIKR_COMPLETED = "dhikr_completed"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val dhikrText = intent.getStringExtra(Constants.DHIKR_TEXT) ?: "سبحان الله"
-        val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: 33
+   val dhikrText = intent.getStringExtra(Constants.DHIKR_TEXT) ?: getDhikrList().firstOrNull()?.content ?: "سبحان الله"
+   val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: getDhikrList().firstOrNull()?.count?.toIntOrNull() ?: 33
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
-                DhikrCounter(dhikrText, dhikrCount)
+                DhikrCounter(dhikrText, dhikrCount, onDhikrCompleted = { completedDhikrText ->
+                    // Instead of finishing, navigate to DhikrListActivity
+                    val intent = Intent(this, DhikrListActivity::class.java).apply {
+                        putExtra(DHIKR_COMPLETED_TEXT, completedDhikrText)
+                        putExtra(DHIKR_COMPLETED, true)
+                        // Add flag to clear the back stack
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    }
+                    startActivity(intent)
+                    finish() // Still finish this activity to prevent going back to it
+                })
             }
         }
     }
 }
 
 @Composable
-fun DhikrCounter(dhikrText: String, total: Int) {
+fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Unit) {
     var count by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
 
@@ -76,7 +93,14 @@ fun DhikrCounter(dhikrText: String, total: Int) {
         DhikrCard(dhikrText, total, context)
         Spacer(modifier = Modifier.weight(1f))
 
-        AnimatedCounterButton { if (count < total) count++ }
+        AnimatedCounterButton {
+            if (count < total) {
+                count++
+                if (count == total) {
+                    onDhikrCompleted(dhikrText)
+                }
+            }
+        }
         Text(text = "Tap to count your daily Dhikr", fontSize = 16.sp, color = Color.Gray)
     }
 }
@@ -84,13 +108,18 @@ fun DhikrCounter(dhikrText: String, total: Int) {
 @Composable
 fun DhikrCard(dhikrText: String, total: Int, context: android.content.Context) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(16.dp).clickable {
-            context.startActivity(Intent(context, DhikrListActivity::class.java))
-        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .clickable {
+                context.startActivity(Intent(context, DhikrListActivity::class.java))
+            },
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -132,10 +161,14 @@ fun AnimatedCounterButton(onCountIncrease: () -> Unit) {
 
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.size(130.dp).clip(CircleShape).background(Color(0xFF2E7D32)).clickable {
-                onCountIncrease()
-                triggerAnimation()
-            }
+            modifier = Modifier
+                .size(130.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF2E7D32))
+                .clickable {
+                    onCountIncrease()
+                    triggerAnimation()
+                }
         ) {
             Text(text = "Count", color = Color.White, fontSize = 24.sp)
         }
@@ -146,6 +179,6 @@ fun AnimatedCounterButton(onCountIncrease: () -> Unit) {
 @Composable
 fun DhikrCounterPreview() {
     ITC_ONL2_SWD4_S3_1Theme {
-        DhikrCounter("سبحان الله", 33)
+        DhikrCounter("سبحان الله", 33, onDhikrCompleted = {})
     }
 }

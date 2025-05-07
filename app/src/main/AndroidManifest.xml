@@ -21,6 +21,18 @@
 <!--                <category android:name="android.intent.category.LAUNCHER" />-->
 <!--            </intent-filter>-->
 <!--        </activity>-->
+        <activity
+            android:name=".ui.ui.dhikr.DhikrListActivity"
+            android:exported="true"
+            android:label="@string/title_activity_dhikr_list"
+            android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
+        <activity android:name=".ui.ui.dhikr.DhikrCounterActivity"
+            android:exported="false"/>
+
+        <activity
+            android:name=".ui.ui.homePage.HomeActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 
                 <activity android:name=".ui.Home.HomeScreen"
                     android:exported="true"
@@ -36,19 +48,8 @@
 
 
 
-        <activity
-            android:name=".ui.dhikr.DhikrListActivity"
-            android:exported="false"
-            android:label="@string/title_activity_dhikr_list"
-            android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 
 
-        <activity
-            android:name=".ui.homePage.HomeActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1">
-        </activity>
     </application>
 
 </manifest>
