@@ -20,21 +20,27 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.itc__onl2_swd4_s3_1.ui.data.entity.SalahEntity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -56,12 +62,24 @@ class SalahTrackerScreen : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SalahTracker() {
+    val context = LocalContext.current
+    val db = remember { SalahDatabase.getDatabase(context) }
+    val dao = db.salahDao()
+    val scope = rememberCoroutineScope()
+
     val colorScheme = MaterialTheme.colorScheme
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    val selectedDateStr = selectedDate.toString()
     val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
+
     val prayers = listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
-    var selectedPrayersMap by remember { mutableStateOf(mutableMapOf<LocalDate, Set<String>>()) }
-    val selectedPrayers = selectedPrayersMap[selectedDate] ?: emptySet()
+    var selectedPrayers by remember { mutableStateOf(setOf<String>()) }
+
+    // Load saved salahs for the selected date
+    LaunchedEffect(selectedDateStr) {
+        val entry = dao.getPrayersForDate(selectedDateStr)
+        selectedPrayers = entry?.prayers?.split(",")?.toSet() ?: emptySet()
+    }
 
     Column(
         modifier = Modifier
@@ -92,10 +110,19 @@ fun SalahTracker() {
                 containerColor = colorScheme.surface,
                 textColor = colorScheme.onSurface
             ) { checked, name ->
-                selectedPrayersMap = selectedPrayersMap.toMutableMap().apply {
-                    val updated = getOrDefault(selectedDate, emptySet()).toMutableSet()
-                    if (checked) updated.add(name) else updated.remove(name)
-                    put(selectedDate, updated)
+                val updated = selectedPrayers.toMutableSet().apply {
+                    if (checked) add(name) else remove(name)
+                }
+                selectedPrayers = updated
+
+                // Save update to Room
+                scope.launch(Dispatchers.IO) {
+                    dao.insertOrUpdate(
+                        SalahEntity(
+                            date = selectedDateStr,
+                            prayers = updated.joinToString(",")
+                        )
+                    )
                 }
             }
         }
@@ -143,7 +170,6 @@ fun SalahCheckBox(
 @Composable
 fun SalahTrackerHeader() {
     val colorScheme = MaterialTheme.colorScheme
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -156,7 +182,6 @@ fun SalahTrackerHeader() {
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
-
     }
 }
 
@@ -176,12 +201,11 @@ fun CalendarGrid(
     Column(modifier = Modifier.fillMaxWidth()) {
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth() ,
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Button(onClick = { dialogState.show()}, modifier = Modifier.padding()) {
+            Button(onClick = { dialogState.show() }) {
                 Text(text = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")))
             }
         }
@@ -198,10 +222,7 @@ fun CalendarGrid(
             }
         }
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(7),
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        LazyVerticalGrid(columns = GridCells.Fixed(7), modifier = Modifier.fillMaxWidth()) {
             items(days.size) { index ->
                 val date = days[index]
                 val isSelected = date == selectedDate
@@ -227,8 +248,8 @@ fun CalendarGrid(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
+@Preview(showBackground = true)
 fun SalahTrackerPreview() {
     ITC_ONL2_SWD4_S3_1Theme(dynamicColor = false) {
         SalahTracker()

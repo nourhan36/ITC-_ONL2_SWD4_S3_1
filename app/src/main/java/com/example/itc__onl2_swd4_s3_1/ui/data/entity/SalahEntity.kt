@@ -2,11 +2,9 @@ package com.example.itc__onl2_swd4_s3_1.ui.data.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.time.LocalDate
 
 @Entity(tableName = "salah_records")
 data class SalahEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val date: LocalDate,
-    val prayers: String
+    @PrimaryKey val date: String, // e.g. "2025-05-07"
+    val prayers: String           // e.g. "Fajr,Dhuhr,Asr"
 )

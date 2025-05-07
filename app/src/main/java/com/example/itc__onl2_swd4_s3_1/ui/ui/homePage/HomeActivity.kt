@@ -38,30 +38,40 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
-import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahTrackerScreen
-import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
-import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
+        import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahTrackerScreen
+
+        import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
+        import com.example.itc__onl2_swd4_s3_1.ui.ui.prayertimes.MainActivity
+
+        import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 
 class HomeActivity : ComponentActivity() {
-            override fun onCreate(savedInstanceState: Bundle?) {
-                super.onCreate(savedInstanceState)
-                enableEdgeToEdge()
-                setContent {
-                    ITC_ONL2_SWD4_S3_1Theme {
-                        Surface(color = MaterialTheme.colorScheme.background) {
-                            HomeScreen { habitTitle ->
-                                if (habitTitle == "Dhikr") {
-                                    startActivity(Intent(this, DhikrCounterActivity::class.java))
-                                }
-                                else if (habitTitle == "Salah") {
-                                    startActivity(Intent(this, SalahTrackerScreen::class.java))
-                            }
-                            }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            ITC_ONL2_SWD4_S3_1Theme {
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    HomeScreen { habitTitle ->
+                        if (habitTitle == "Dhikr") {
+                            startActivity(Intent(this, DhikrCounterActivity::class.java))
+                        } else if (habitTitle == "Salah") {
+                            startActivity(Intent(this, SalahTrackerScreen::class.java))
+                        } else if (habitTitle == "Quran") {
+                            // Handle Quran activity
+                        } else if (habitTitle == "Fasting") {
+                            // Handle Fasting activity
+                        } else if (habitTitle == "Dhul Hijah") {
+                            // Handle Dhul Hijah activity
+                        } else if (habitTitle == "Prayers") {
+                            startActivity(Intent(this, MainActivity::class.java))
                         }
                     }
                 }
             }
         }
+    }
+}
 
         @Preview
         @Composable
@@ -93,7 +103,7 @@ class HomeActivity : ComponentActivity() {
                 Habit("Dhikr", R.drawable.dhikr),
                 Habit("Dhul Hijah", R.drawable.kaaba),
                 Habit("Fasting", R.drawable.fasting),
-                Habit("Dua", R.drawable.duaa)
+                Habit("Prayers", R.drawable.duaa)
             )
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
