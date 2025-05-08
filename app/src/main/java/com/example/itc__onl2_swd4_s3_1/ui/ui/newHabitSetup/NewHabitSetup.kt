@@ -1,5 +1,6 @@
 package com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -56,15 +57,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.ui.Home.HomeScreen
+import com.example.itc__onl2_swd4_s3_1.ui.data.entity.HabitEntity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 
 class NewHabitSetup : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val title = intent.getStringExtra("title") ?: ""
+        val context = this // استخدام context هنا
+
         setContent {
             ITC_ONL2_SWD4_S3_1Theme(dynamicColor = false) {
-                NewHabitSetupScreen(title)
+                NewHabitSetupScreen(
+                    title = title,
+                    viewModel = HabitViewModel(application = application),
+                    onHabitSaved = {
+                        val intent = Intent(context, HomeScreen::class.java)
+                        context.startActivity(intent)
+                    }
+                )
             }
         }
     }
@@ -73,7 +85,12 @@ class NewHabitSetup : ComponentActivity() {
 
 
 @Composable
-fun NewHabitSetupScreen(title: String) {
+fun NewHabitSetupScreen(title: String, viewModel: HabitViewModel, onHabitSaved: () -> Unit) {
+    var titleText by remember { mutableStateOf("") }
+    var durationValue by remember { mutableStateOf("") }
+    var selectedUnit by remember { mutableStateOf("minutes") }
+    var repeatType by remember { mutableStateOf("Every Day") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -88,19 +105,38 @@ fun NewHabitSetupScreen(title: String) {
         ) {
             Title(title)
             Line()
-            HabitTitleInput()
-            DurationSelector()
+            HabitTitleInput(value = titleText, onValueChange = { titleText = it })
+            DurationSelector(
+                durationValue = durationValue,
+                selectedUnit = selectedUnit,
+                onDurationChange = { durationValue = it },
+                onUnitChange = { selectedUnit = it }
+            )
             StartTimeSelector()
             RepeatingSelector()
             RepeatingDurationSelector(
-                "Every Day",
+                selectedOption = repeatType,
                 onIncrease = {},
                 onDecrease = {}
             )
             ReminderText()
         }
         Button(
-            onClick = { /* Handle save action */ },
+            onClick = {
+                if (titleText.isNotBlank() && durationValue.isNotBlank()) {
+                    viewModel.insertHabit(
+                        HabitEntity(
+                            name = titleText,
+                            startTime = "08:00 AM",
+                            repeatType = repeatType,
+                            duration = durationValue.toInt(),
+                            reminderTime = "07:50 AM",
+                            isCompleted = false
+                        )
+                    )
+                    onHabitSaved()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 30.dp)
@@ -109,6 +145,7 @@ fun NewHabitSetupScreen(title: String) {
         }
     }
 }
+
 
 @Composable
 fun Title(title: String) {
@@ -139,9 +176,7 @@ fun Line() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HabitTitleInput() {
-    var titleText by remember { mutableStateOf("") }
-
+fun HabitTitleInput(value: String, onValueChange: (String) -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
@@ -154,10 +189,8 @@ fun HabitTitleInput() {
         )
         Spacer(modifier = Modifier.width(32.dp))
         TextField(
-            value = titleText,
-            onValueChange = {
-                if (it.length <= 20) titleText = it
-            },
+            value = value,
+            onValueChange = { if (it.length <= 20) onValueChange(it) },
             placeholder = { Text("Enter title") },
             modifier = Modifier
                 .weight(1f)
@@ -179,17 +212,20 @@ fun HabitTitleInput() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DurationSelector() {
-    var timeValue by remember { mutableStateOf("") }
+fun DurationSelector(
+    durationValue: String,
+    selectedUnit: String,
+    onDurationChange: (String) -> Unit,
+    onUnitChange: (String) -> Unit
+) {
     val timeUnits = listOf("minutes", "hours")
-    var selectedUnit by remember { mutableStateOf(timeUnits[0]) }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = stringResource(id = R.string.duration),
+            text = "Duration",
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 8.dp)
@@ -209,14 +245,10 @@ fun DurationSelector() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
-                value = timeValue,
-                onValueChange = {
-                    if (it.all { char -> char.isDigit() } && it.length <= 2) timeValue = it
-                },
+                value = durationValue,
+                onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 2) onDurationChange(it) },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier
-                    .width(50.dp)
-                    .background(Color.Transparent),
+                modifier = Modifier.width(50.dp),
                 colors = TextFieldDefaults.textFieldColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     focusedIndicatorColor = Color.Transparent,
@@ -225,27 +257,17 @@ fun DurationSelector() {
                 textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface)
             )
 
-            Spacer(
-                modifier = Modifier
-                    .width(2.dp)
-                    .height(32.dp)
-                    .background(MaterialTheme.colorScheme.onSurface)
+            Spacer(modifier = Modifier.width(2.dp))
+
+            TimeUnitDropdown(
+                items = timeUnits,
+                selectedItem = selectedUnit,
+                onItemSelected = onUnitChange
             )
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable { }
-                    .padding(horizontal = 8.dp)
-            ) {
-                TimeUnitDropdown(
-                    items = timeUnits,
-                    selectedItem = selectedUnit,
-                    onItemSelected = { selectedUnit = it }
-                )
-            }
         }
     }
 }
+
 
 @Composable
 fun StartTimeSelector() {
@@ -416,7 +438,8 @@ fun ReminderText() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun PreviewDurationSelector() {
+    val application = androidx.compose.ui.platform.LocalContext.current.applicationContext as android.app.Application
     ITC_ONL2_SWD4_S3_1Theme(dynamicColor = false) {
-        NewHabitSetupScreen("")
+        NewHabitSetupScreen("", viewModel = HabitViewModel(application = application), onHabitSaved = { /* Add your logic here */ })
     }
 }
