@@ -26,7 +26,7 @@
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 
-        <activity android:name=".ui.ui.prayertimes.MainActivity"
+        <activity android:name=".ui.ui.prayertimes.PrayerTime"
             android:exported="false"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
         <activity
@@ -38,7 +38,7 @@
             android:exported="false"/>
 
         <activity
-            android:name=".ui.ui.homePage.HomeActivity"
+            android:name=".ui.ui.habitSelector.HabitSelector"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 
@@ -50,6 +50,11 @@
                         <category android:name="android.intent.category.LAUNCHER" />
                     </intent-filter>
                 </activity>
+
+        <activity android:name=".ui.ui.ProgressPage.ProgressTrackerPage"
+            android:exported="true"
+            android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
+
 
 
 

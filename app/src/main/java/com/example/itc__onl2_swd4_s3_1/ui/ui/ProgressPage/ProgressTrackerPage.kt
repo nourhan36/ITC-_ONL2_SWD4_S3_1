@@ -51,7 +51,14 @@ class ProgressTrackerPage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
+            ITC_ONL2_SWD4_S3_1Theme {
+                CombinedScreen(
+                    weeks = 2,
+                    highestWeeks = 5,
+                    progress = 0.75f,
+                    completedDays = listOf(2, 5, 10, 15, 20)
+                )
+            }
         }
     }
 }

@@ -13,12 +13,12 @@ interface HabitDao {
     @Update
     suspend fun updateHabit(habit: HabitEntity)
 
-    @Delete
-    suspend fun deleteHabit(habit: HabitEntity)
-
     @Query("SELECT * FROM habits")
     fun getAllHabits(): Flow<List<HabitEntity>>
 
-    @Query("SELECT * FROM habits WHERE id = :habitId")
-    suspend fun getHabitById(habitId: Int): HabitEntity?
+    @Query("SELECT * FROM habits WHERE isCompleted = 1")
+    fun getCompletedHabits(): Flow<List<HabitEntity>>
+
+    @Query("SELECT * FROM habits WHERE isCompleted = 0")
+    fun getIncompleteHabits(): Flow<List<HabitEntity>>
 }

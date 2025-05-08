@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-        package com.example.itc__onl2_swd4_s3_1.ui.ui.homePage
+        package com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector
 
         import android.content.Intent
 import android.os.Bundle
@@ -38,23 +38,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
-        import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahTrackerScreen
 
-        import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
         import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.NewHabitSetup
-        import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.NewHabitSetupScreen
-        import com.example.itc__onl2_swd4_s3_1.ui.ui.prayertimes.MainActivity
 
         import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 
-class HomeActivity : ComponentActivity() {
+class HabitSelector : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
                 Surface(color = MaterialTheme.colorScheme.background) {
-HomeScreen { habitTitle ->
+HabitsScreen { habitTitle ->
                          val intent = when (habitTitle) {
                              "Dhikr", "Salah", "Quran", "Fasting", "Dhul Hijah", "Prayers" -> {
                                  Intent(this, NewHabitSetup::class.java).apply {
@@ -74,14 +70,15 @@ HomeScreen { habitTitle ->
 
         @Preview
         @Composable
-        fun HomeScreenPreview() {
+        fun HabitsScreenPreview() {
             ITC_ONL2_SWD4_S3_1Theme {
-                HomeScreen(onClick = {})
+                HabitsScreen(onClick = {})
             }
         }
 
+        @OptIn(ExperimentalMaterial3Api::class)
         @Composable
-        fun HomeScreen(onClick: (String) -> Unit) {
+        fun HabitsScreen(onClick: (String) -> Unit) {
             Scaffold(
                 topBar = {
                     CenterAlignedTopAppBar(

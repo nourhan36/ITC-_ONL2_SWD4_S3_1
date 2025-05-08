@@ -23,6 +23,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -69,10 +70,6 @@ class NewHabitSetup : ComponentActivity() {
     }
 }
 
-// Remember statements
-// onValueChange (150)
-// choosing minutes => values<=60 / hours => values<=24
-
 
 
 @Composable
@@ -82,18 +79,34 @@ fun NewHabitSetupScreen(title: String) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.Start
     ) {
-        Title(title)
-        Line()
-        DurationSelector()
-        StartTimeSelector()
-        RepeatingSelector()
-        RepeatingDurationSelector("Every Day",
-            onIncrease = {},
-            onDecrease = {})
-        ReminderText()
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Title(title)
+            Line()
+            HabitTitleInput()
+            DurationSelector()
+            StartTimeSelector()
+            RepeatingSelector()
+            RepeatingDurationSelector(
+                "Every Day",
+                onIncrease = {},
+                onDecrease = {}
+            )
+            ReminderText()
+        }
+        Button(
+            onClick = { /* Handle save action */ },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 30.dp)
+        ) {
+            Text(text = "Save")
+        }
     }
 }
 
@@ -120,6 +133,46 @@ fun Line() {
             end = Offset(x = size.width, y = 0f),
             color = lineColor,
             strokeWidth = 2F
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HabitTitleInput() {
+    var titleText by remember { mutableStateOf("") }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Title",
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 8.dp)
+        )
+        Spacer(modifier = Modifier.width(32.dp))
+        TextField(
+            value = titleText,
+            onValueChange = {
+                if (it.length <= 20) titleText = it
+            },
+            placeholder = { Text("Enter title") },
+            modifier = Modifier
+                .weight(1f)
+                .padding(8.dp)
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    RoundedCornerShape(8.dp)
+                ),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface)
         )
     }
 }

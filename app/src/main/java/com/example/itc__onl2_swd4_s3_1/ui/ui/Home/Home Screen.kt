@@ -1,5 +1,9 @@
 package com.example.itc__onl2_swd4_s3_1.ui.Home
 
+
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,14 +31,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.getCurrentDate
 import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahContainerActivity
-import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahTrackerScreen
+import com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage
 import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
-import com.example.itc__onl2_swd4_s3_1.ui.ui.homePage.HomeActivity
+import com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector.HabitSelector
+import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
 import kotlinx.coroutines.launch
 
 class HomeScreen : ComponentActivity() {
@@ -48,7 +54,7 @@ class HomeScreen : ComponentActivity() {
     }
 
     private fun openHomeActivity() {
-        val intent = Intent(this, HomeActivity::class.java)
+        val intent = Intent(this, HabitSelector::class.java)
         startActivity(intent)
     }
 
@@ -57,6 +63,7 @@ class HomeScreen : ComponentActivity() {
             0 -> openHomeActivity()
            1-> startActivity(Intent(this, SalahContainerActivity::class.java))
             2 -> startActivity(Intent(this, DhikrCounterActivity::class.java))
+            3-> startActivity(Intent(this, ProgressTrackerPage::class.java))
 
         }
     }
@@ -68,6 +75,7 @@ fun navBar(
     onNavItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val viewModel: HabitViewModel = viewModel()
     val navItemList = listOf(
         NavItem("Home", painterResource(R.drawable.home)),
         NavItem("Salah", painterResource(R.drawable.salah_icon)),
@@ -186,65 +194,110 @@ fun navBar(
                 }
             }
         ) { innerPadding ->
-            Content(modifier = Modifier.padding(innerPadding))
+            Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))
         }
     }
 }
 
 @Composable
-fun Content(modifier: Modifier = Modifier) {
-    Image(
-        painter = painterResource(id = R.drawable.ramadan_img),
-        contentDescription = "Ramadan Kareem"
-    )
-    Column {
-        Text(
+fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
+    val selectedFilter = viewModel.selectedFilter
+    val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
+
+    Column(modifier = modifier.fillMaxSize()) {
+
+        // ✅ Box للصورة والنص بدون أي padding خارجي يسبب فراغ
+        Box(
             modifier = Modifier
-                .padding(horizontal = 15.dp)
-                .padding(top = 22.dp)
-                .fillMaxWidth(),
-            text = "Ramadan Habit Tracker",
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 30.sp
-        )
-        Row(horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                modifier = Modifier.padding(horizontal = 15.dp),
-                text = getCurrentDate(),
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 20.sp,
-                textAlign = TextAlign.Center
+                .fillMaxWidth()
+                .height(230.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ramadan_img),
+                contentDescription = "Ramadan Kareem",
+                modifier = Modifier.fillMaxSize()
             )
-            Column {
-                Text(text = "Cairo", fontSize = 20.sp)
-                Text(text = "Egypt", fontSize = 20.sp)
+
+            // ✅ نص في الأعلى بدون أي خلفيات بيضاء
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = "Ramadan Habit Tracker",
+                    color = Color.Black,
+                    fontSize = 24.sp
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = getCurrentDate(),
+                        color = Color.Black,
+                        fontSize = 16.sp
+                    )
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(text = "Cairo", fontSize = 16.sp, color = Color.Black)
+                        Text(text = "Egypt", fontSize = 16.sp, color = Color.Black)
+                    }
+                }
             }
         }
-        Spacer(Modifier.padding(top = 150.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            var selectedIndex2 by remember { mutableStateOf(-1) }
 
-            listOf("ALL", "Complete", "Incomplete").forEachIndexed { idx, label ->
-                Text(
+        // ✅ تأكد أن هذه العناصر خارج Box لتبدأ بعد الصورة مباشرة
+        Surface(
+            color = MaterialTheme.colorScheme.background, // خلفية متناسقة
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column {
+                Row(
                     modifier = Modifier
-                        .clickable { selectedIndex2 = idx }
-                        .border(
-                            border = if (selectedIndex2 == idx) BorderStroke(2.dp, Color.Blue) else BorderStroke(0.dp, Color.Transparent),
-                            shape = RoundedCornerShape(20.dp)
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    listOf("All", "Complete", "Incomplete").forEach { label ->
+                        Text(
+                            text = label,
+                            modifier = Modifier
+                                .clickable { viewModel.setFilter(label) }
+                                .border(
+                                    border = if (selectedFilter == label)
+                                        BorderStroke(2.dp, Color.Blue)
+                                    else BorderStroke(0.dp, Color.Transparent),
+                                    shape = RoundedCornerShape(20.dp)
+                                )
+                                .padding(8.dp),
+                            fontSize = 20.sp,
+                            color = if (selectedFilter == label) Color.Red else Color.Black,
+                            textAlign = TextAlign.Center
                         )
-                        .padding(8.dp),
-                    fontSize = 25.sp,
-                    text = label,
-                    color = if (selectedIndex2 == idx) Color.Red else Color.Black
-                )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LazyColumn(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    items(habits) { habit ->
+                        HabitCard(habit = habit, onCheck = {
+                            viewModel.toggleHabitCompletion(habit)
+                        })
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
             }
         }
     }
 }
+
+
+
 
 @Composable
 fun DrawerHeader() {
