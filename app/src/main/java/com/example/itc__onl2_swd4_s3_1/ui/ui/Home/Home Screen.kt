@@ -30,6 +30,7 @@ import androidx.core.content.ContextCompat.startActivity
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.getCurrentDate
+import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahContainerActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahTrackerScreen
 import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.homePage.HomeActivity
@@ -54,7 +55,7 @@ class HomeScreen : ComponentActivity() {
     private fun handleNavClick(index: Int) {
         when (index) {
             0 -> openHomeActivity()
-            1-> startActivity(Intent(this, SalahTrackerScreen::class.java))
+           1-> startActivity(Intent(this, SalahContainerActivity::class.java))
             2 -> startActivity(Intent(this, DhikrCounterActivity::class.java))
 
         }

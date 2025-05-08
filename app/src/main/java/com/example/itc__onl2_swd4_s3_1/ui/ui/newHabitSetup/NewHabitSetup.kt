@@ -60,9 +60,10 @@ import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 class NewHabitSetup : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val title = intent.getStringExtra("title") ?: ""
         setContent {
             ITC_ONL2_SWD4_S3_1Theme(dynamicColor = false) {
-                NewHabitSetupScreen()
+                NewHabitSetupScreen(title)
             }
         }
     }
@@ -75,7 +76,7 @@ class NewHabitSetup : ComponentActivity() {
 
 
 @Composable
-fun NewHabitSetupScreen() {
+fun NewHabitSetupScreen(title: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -84,7 +85,7 @@ fun NewHabitSetupScreen() {
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        Title("Salah")
+        Title(title)
         Line()
         DurationSelector()
         StartTimeSelector()
@@ -363,6 +364,6 @@ fun ReminderText() {
 @Composable
 fun PreviewDurationSelector() {
     ITC_ONL2_SWD4_S3_1Theme(dynamicColor = false) {
-        NewHabitSetupScreen()
+        NewHabitSetupScreen("")
     }
 }

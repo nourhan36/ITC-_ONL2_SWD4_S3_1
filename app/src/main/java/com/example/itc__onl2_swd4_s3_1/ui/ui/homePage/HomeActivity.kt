@@ -41,6 +41,8 @@ import com.example.itc__onl2_swd4_s3_1.R
         import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahTrackerScreen
 
         import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
+        import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.NewHabitSetup
+        import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.NewHabitSetupScreen
         import com.example.itc__onl2_swd4_s3_1.ui.ui.prayertimes.MainActivity
 
         import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
@@ -52,26 +54,23 @@ class HomeActivity : ComponentActivity() {
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    HomeScreen { habitTitle ->
-                        if (habitTitle == "Dhikr") {
-                            startActivity(Intent(this, DhikrCounterActivity::class.java))
-                        } else if (habitTitle == "Salah") {
-                            startActivity(Intent(this, SalahTrackerScreen::class.java))
-                        } else if (habitTitle == "Quran") {
-                            // Handle Quran activity
-                        } else if (habitTitle == "Fasting") {
-                            // Handle Fasting activity
-                        } else if (habitTitle == "Dhul Hijah") {
-                            // Handle Dhul Hijah activity
-                        } else if (habitTitle == "Prayers") {
-                            startActivity(Intent(this, MainActivity::class.java))
-                        }
+HomeScreen { habitTitle ->
+                         val intent = when (habitTitle) {
+                             "Dhikr", "Salah", "Quran", "Fasting", "Dhul Hijah", "Prayers" -> {
+                                 Intent(this, NewHabitSetup::class.java).apply {
+                                     putExtra("title", habitTitle)
+                                 }
+                             }
+                             else -> null
+                         }
+                         intent?.let { startActivity(it) }
+                     }
                     }
                 }
             }
         }
     }
-}
+
 
         @Preview
         @Composable
