@@ -30,6 +30,11 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
             "Incomplete" -> incompleteHabits
             else -> allHabits
         }
+    fun deleteAllHabits() {
+        viewModelScope.launch {
+            dao.deleteAllHabits()
+        }
+    }
 
     fun toggleHabitCompletion(habit: HabitEntity) {
         viewModelScope.launch {

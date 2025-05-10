@@ -1,11 +1,14 @@
 package com.example.itc__onl2_swd4_s3_1.ui.Home
 
 
+import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -26,12 +29,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.getCurrentDate
@@ -40,15 +47,21 @@ import com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage
 import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector.HabitSelector
 import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
+import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.ResetHabitsWorker
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 class HomeScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        scheduleHabitReset(applicationContext)
         setContent {
             navBar(
                 onFabClick = { openHomeActivity() },
                 onNavItemClick = { index -> handleNavClick(index) }
+
             )
         }
     }
@@ -196,13 +209,60 @@ fun navBar(
         ) { innerPadding ->
             Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))
         }
+
     }
 }
 
+fun scheduleHabitReset(context: Context) {
+    val currentDate = Calendar.getInstance()
+    val dueDate = Calendar.getInstance()
+
+    // تعيين 12:00 ظهرًا
+    dueDate.set(Calendar.HOUR_OF_DAY, 0)
+    dueDate.set(Calendar.MINUTE, 0)
+    dueDate.set(Calendar.SECOND, 0)
+
+    if (dueDate.before(currentDate)) {
+        dueDate.add(Calendar.DAY_OF_MONTH, 1)
+    }
+
+    val timeDiff = dueDate.timeInMillis - currentDate.timeInMillis
+
+    val dailyWorkRequest = PeriodicWorkRequestBuilder<ResetHabitsWorker>(1, TimeUnit.DAYS)
+        .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
+        .build()
+
+    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+        "resetHabits",
+        ExistingPeriodicWorkPolicy.UPDATE,
+        dailyWorkRequest
+    )
+}
 @Composable
 fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     val selectedFilter = viewModel.selectedFilter
     val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
+
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    // 🔁 المراقبة التلقائية للساعة 12
+    LaunchedEffect(Unit) {
+        while (true) {
+            val now = Calendar.getInstance()
+            if (now.get(Calendar.HOUR_OF_DAY) == 0 && now.get(Calendar.MINUTE) == 0) {
+                viewModel.deleteAllHabits()
+                Toast.makeText(context, "Habits reset for the new day!", Toast.LENGTH_SHORT).show()
+                activity?.recreate()
+                delay(60 * 1000L)
+            } else {
+                delay(30 * 1000L)
+            }
+        }
+    }
+
+
+
 
     Column(modifier = modifier.fillMaxSize()) {
 

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr
 
@@ -37,6 +37,7 @@ import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.Constants
 import androidx.work.WorkManager
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.ExistingPeriodicWorkPolicy
+import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.ResetDhikrWorker
 import java.util.concurrent.TimeUnit
 import java.util.Calendar
 class DhikrListActivity : ComponentActivity() {
