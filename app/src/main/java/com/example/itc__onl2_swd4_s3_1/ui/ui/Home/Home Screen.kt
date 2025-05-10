@@ -1,6 +1,14 @@
 package com.example.itc__onl2_swd4_s3_1.ui.Home
+
+
+import android.app.Activity
+import android.content.Context
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -8,78 +16,92 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.getCurrentDate
-import com.example.itc__onl2_swd4_s3_1.ui.ui.homePage.HomeActivity
+import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahContainerActivity
+import com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage
+import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
+import com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector.HabitSelector
+import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
+import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.ResetHabitsWorker
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 class HomeScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        scheduleHabitReset(applicationContext)
         setContent {
-            navBar(onFabClick = {
-                // Open HomeActivity
-                val intent = Intent(this, HomeActivity::class.java)
-                startActivity(intent)
-            })
+            navBar(
+                onFabClick = { openHomeActivity() },
+                onNavItemClick = { index -> handleNavClick(index) }
+
+            )
+        }
+    }
+
+    private fun openHomeActivity() {
+        val intent = Intent(this, HabitSelector::class.java)
+        startActivity(intent)
+    }
+
+    private fun handleNavClick(index: Int) {
+        when (index) {
+            0 -> openHomeActivity()
+           1-> startActivity(Intent(this, SalahContainerActivity::class.java))
+            2 -> startActivity(Intent(this, DhikrCounterActivity::class.java))
+            3-> startActivity(Intent(this, ProgressTrackerPage::class.java))
+
         }
     }
 }
 
-
 @Composable
-fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
+fun navBar(
+    onFabClick: () -> Unit,
+    onNavItemClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val viewModel: HabitViewModel = viewModel()
     val navItemList = listOf(
-        NavItem("Home", painterResource(R.drawable.home) ),
-        NavItem("Salah" , painterResource(R.drawable.salah_icon)),
+        NavItem("Home", painterResource(R.drawable.home)),
+        NavItem("Salah", painterResource(R.drawable.salah_icon)),
         NavItem("Dhikr", painterResource(R.drawable.zikr)),
         NavItem("Streak", painterResource(R.drawable.progress)),
-        NavItem("More", painterResource(R.drawable.menu) )
+        NavItem("More", painterResource(R.drawable.menu))
     )
-    var selectedIndex by remember {
-        mutableIntStateOf(0)
-    }
 
+    var selectedIndex by remember { mutableIntStateOf(0) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var isDarkTheme by remember { mutableStateOf(false) }
     var selectedLanguage by remember { mutableStateOf("English") }
-
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -96,11 +118,11 @@ fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { /* handle click */ }
+                            .clickable { }
                             .padding(vertical = 12.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.qiblah), // replace with your image
+                            painter = painterResource(id = R.drawable.qiblah),
                             contentDescription = "Qiblah",
                             modifier = Modifier.size(30.dp)
                         )
@@ -115,44 +137,39 @@ fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
                             .padding(vertical = 12.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.lightdark), // replace with your image
+                            painter = painterResource(id = R.drawable.lightdark),
                             contentDescription = "light/dark mode",
                             modifier = Modifier.size(35.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Dark Mode",  fontSize = 18.sp)
+                        Text("Dark Mode", fontSize = 18.sp)
                         Spacer(modifier = Modifier.width(150.dp))
-
                         Switch(
                             checked = isDarkTheme,
                             onCheckedChange = { isDarkTheme = it }
                         )
                     }
 
-                    //Text("Language", modifier = Modifier.padding(16.dp))
                     LanguageSelector(
                         selectedLanguage = selectedLanguage,
-                        onLanguageSelected = {
-                            selectedLanguage = it
-                            // Optional: Save it to preferences or handle localization
-                        }
+                        onLanguageSelected = { selectedLanguage = it }
                     )
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { /* go to sign in page */ }
+                            .clickable { }
                             .padding(vertical = 12.dp)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.logout), // replace with your image
+                            painter = painterResource(id = R.drawable.logout),
                             contentDescription = "logout",
                             modifier = Modifier.size(35.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(text = "Logout", fontSize = 18.sp)
-                    }                    // Add more items as needed
+                    }
                 }
             }
         }
@@ -170,8 +187,6 @@ fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
                 }
             },
             floatingActionButtonPosition = FabPosition.Center,
-
-
             bottomBar = {
                 NavigationBar {
                     navItemList.forEachIndexed { index, navItem ->
@@ -179,153 +194,170 @@ fun navBar(onFabClick: () -> Unit, modifier: Modifier = Modifier) {
                             selected = selectedIndex == index,
                             onClick = {
                                 selectedIndex = index
-                                when(index){
-                                    0 -> {
-                                        // Handle Home click if needed
-                                    }
-                                    1 -> {
-                                        // Handle Salah click if needed
-                                    }
-                                    2 -> {
-                                        // Handle Dhikr click if needed
-                                    }
-                                    3 -> {
-                                        // Handle Streak click if needed
-                                    }
-                                    4 -> {
-                                        scope.launch {
-                                            drawerState.open()
-                                        }
-                                    }
+                                if (index == 4) {
+                                    scope.launch { drawerState.open() }
+                                } else {
+                                    onNavItemClick(index)
                                 }
                             },
-                            icon = {
-                                Icon(navItem.icon, "icon")
-                            },
-                            label = {
-                                Text(
-                                    text = navItem.label
-                                )
-                            }
+                            icon = { Icon(navItem.icon, "icon") },
+                            label = { Text(text = navItem.label) }
                         )
                     }
                 }
             }
-        )
-
-        { innerPadding ->
-            Content(modifier = Modifier.padding(innerPadding))
+        ) { innerPadding ->
+            Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))
         }
+
     }
 }
 
+fun scheduleHabitReset(context: Context) {
+    val currentDate = Calendar.getInstance()
+    val dueDate = Calendar.getInstance()
 
+    // تعيين 12:00 ظهرًا
+    dueDate.set(Calendar.HOUR_OF_DAY, 0)
+    dueDate.set(Calendar.MINUTE, 0)
+    dueDate.set(Calendar.SECOND, 0)
 
+    if (dueDate.before(currentDate)) {
+        dueDate.add(Calendar.DAY_OF_MONTH, 1)
+    }
 
+    val timeDiff = dueDate.timeInMillis - currentDate.timeInMillis
 
+    val dailyWorkRequest = PeriodicWorkRequestBuilder<ResetHabitsWorker>(1, TimeUnit.DAYS)
+        .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
+        .build()
 
-@Preview
-@Composable
-private fun previewMain() {
-    navBar(onFabClick = {})
-}
-
-@Composable
-fun Content(modifier: Modifier = Modifier) {
-
-    Image(
-        painter = painterResource(id = R.drawable.ramadan_img),
-        contentDescription = "Ramadan Kareem"
+    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+        "resetHabits",
+        ExistingPeriodicWorkPolicy.UPDATE,
+        dailyWorkRequest
     )
-    Column {
-        Text(
-            modifier = Modifier
-                .padding(horizontal = 15.dp)
-                .padding(top = 22.dp)
-                .fillMaxWidth(),
-            text = "Ramadan Habit Tracker",
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 30.sp
-        )
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween
-        )
-        {
-            Text(
-                modifier = Modifier
-                    .padding(horizontal = 15.dp),
-                text = getCurrentDate(),
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 20.sp,
-                textAlign = TextAlign.Center
-            )
-            Column {
-                Text(
-                    text = "Cairo",
-                    fontSize = 20.sp,
-                )
-                Text(
-                    text = "Egypt",
-                    fontSize = 20.sp,
-                )
+}
+@Composable
+fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
+    val selectedFilter = viewModel.selectedFilter
+    val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
+
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    // 🔁 المراقبة التلقائية للساعة 12
+    LaunchedEffect(Unit) {
+        while (true) {
+            val now = Calendar.getInstance()
+            if (now.get(Calendar.HOUR_OF_DAY) == 0 && now.get(Calendar.MINUTE) == 0) {
+                viewModel.deleteAllHabits()
+                Toast.makeText(context, "Habits reset for the new day!", Toast.LENGTH_SHORT).show()
+                activity?.recreate()
+                delay(60 * 1000L)
+            } else {
+                delay(30 * 1000L)
             }
-
-
         }
-        Spacer(Modifier.padding(top=150.dp))
-        Row(
-            modifier=Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            var selectedIndex2 by remember { mutableStateOf(-1) }
-            Text(
-                modifier=Modifier.clickable {
-                    selectedIndex2 = 0
-                    /*go to all habits screen*/ }
-                    .border(
-                        border = if (selectedIndex2 == 0) BorderStroke(2.dp, Color.Blue) else BorderStroke(0.dp, Color.Transparent),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .padding(8.dp),
-                fontSize = 25.sp,
-                text = "ALL",
-                color = if (selectedIndex2 == 0) Color.Red else Color.Black,
-            )
-            Text(
-                modifier=Modifier.clickable {
-                    selectedIndex2 = 1
-                    /*go to all habits screen*/ }
-                    .border(
-                        border = if (selectedIndex2 == 1) BorderStroke(2.dp, Color.Blue) else BorderStroke(0.dp, Color.Transparent),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .padding(8.dp),
-                fontSize = 25.sp,
-                text = "Complete",
-                color = if (selectedIndex2 == 1) Color.Red else Color.Black,
-
-                )
-            Text(
-                modifier=Modifier.clickable {
-                    selectedIndex2 = 2
-                    /*go to all habits screen*/ }
-                    .border(
-                        border = if (selectedIndex2 == 2) BorderStroke(2.dp, Color.Blue) else BorderStroke(0.dp, Color.Transparent),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .padding(8.dp),
-                fontSize = 25.sp,
-                text = "Incomplete",
-                color = if (selectedIndex2 == 2) Color.Red else Color.Black,
-
-                )
-        }
-
-
     }
 
+
+
+
+    Column(modifier = modifier.fillMaxSize()) {
+
+        // ✅ Box للصورة والنص بدون أي padding خارجي يسبب فراغ
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(230.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ramadan_img),
+                contentDescription = "Ramadan Kareem",
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // ✅ نص في الأعلى بدون أي خلفيات بيضاء
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = "Ramadan Habit Tracker",
+                    color = Color.Black,
+                    fontSize = 24.sp
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = getCurrentDate(),
+                        color = Color.Black,
+                        fontSize = 16.sp
+                    )
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(text = "Cairo", fontSize = 16.sp, color = Color.Black)
+                        Text(text = "Egypt", fontSize = 16.sp, color = Color.Black)
+                    }
+                }
+            }
+        }
+
+        // ✅ تأكد أن هذه العناصر خارج Box لتبدأ بعد الصورة مباشرة
+        Surface(
+            color = MaterialTheme.colorScheme.background, // خلفية متناسقة
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    listOf("All", "Complete", "Incomplete").forEach { label ->
+                        Text(
+                            text = label,
+                            modifier = Modifier
+                                .clickable { viewModel.setFilter(label) }
+                                .border(
+                                    border = if (selectedFilter == label)
+                                        BorderStroke(2.dp, Color.Blue)
+                                    else BorderStroke(0.dp, Color.Transparent),
+                                    shape = RoundedCornerShape(20.dp)
+                                )
+                                .padding(8.dp),
+                            fontSize = 20.sp,
+                            color = if (selectedFilter == label) Color.Red else Color.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LazyColumn(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    items(habits) { habit ->
+                        HabitCard(habit = habit, onCheck = {
+                            viewModel.toggleHabitCompletion(habit)
+                        })
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+            }
+        }
+    }
 }
+
+
+
 
 @Composable
 fun DrawerHeader() {
@@ -336,22 +368,18 @@ fun DrawerHeader() {
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Example: User profile image (optional)
         Icon(
             imageVector = Icons.Default.AccountCircle,
             contentDescription = "Profile",
             tint = Color.White,
             modifier = Modifier.size(64.dp)
         )
-
         Spacer(modifier = Modifier.height(8.dp))
-
         Text(
             text = "Welcome,",
             color = Color.White,
             style = MaterialTheme.typography.titleMedium
         )
-
         Text(
             text = "user name",
             color = Color.White.copy(alpha = 0.7f),
@@ -360,7 +388,6 @@ fun DrawerHeader() {
     }
 }
 
-
 @Composable
 fun LanguageSelector(
     selectedLanguage: String,
@@ -368,13 +395,12 @@ fun LanguageSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .clickable { expanded = true }
-            .padding( vertical = 12.dp ,)
+            .padding(vertical = 12.dp)
     ) {
         Image(
             painter = painterResource(id = R.drawable.language),
@@ -382,12 +408,7 @@ fun LanguageSelector(
             modifier = Modifier.size(35.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))
-
-        Text(
-            text = selectedLanguage,
-            fontSize = 18.sp,
-        )
-
+        Text(text = selectedLanguage, fontSize = 18.sp)
         Icon(
             imageVector = Icons.Default.ArrowDropDown,
             contentDescription = "Dropdown Icon",
@@ -398,20 +419,20 @@ fun LanguageSelector(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            DropdownMenuItem(
-                text = { Text("English") },
-                onClick = {
-                    onLanguageSelected("English")
-                    expanded = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("العربية") },
-                onClick = {
-                    onLanguageSelected("العربية")
-                    expanded = false
-                }
-            )
+            DropdownMenuItem(text = { Text("English") }, onClick = {
+                onLanguageSelected("English")
+                expanded = false
+            })
+            DropdownMenuItem(text = { Text("العربية") }, onClick = {
+                onLanguageSelected("العربية")
+                expanded = false
+            })
         }
     }
+}
+
+@Preview
+@Composable
+fun previewMain() {
+    navBar(onFabClick = {}, onNavItemClick = {})
 }

@@ -10,5 +10,7 @@ data class HabitEntity(
     val startTime: String,
     val repeatType: String,
     val duration: Int,
-    val reminderTime: String
+    val reminderTime: String,
+    val isCompleted: Boolean = false // ✅ مضاف جديدًا
 )
+

@@ -36,7 +36,6 @@ import kotlinx.coroutines.launch
 class DhikrCounterActivity : ComponentActivity() {
 
     companion object {
-        const val DHIKR_COMPLETED_REQUEST = 101
         const val DHIKR_COMPLETED_TEXT = "dhikr_completed_text"
         const val DHIKR_COMPLETED = "dhikr_completed"
     }
@@ -45,8 +44,8 @@ class DhikrCounterActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-   val dhikrText = intent.getStringExtra(Constants.DHIKR_TEXT) ?: getDhikrList().firstOrNull()?.content ?: "سبحان الله"
-   val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: getDhikrList().firstOrNull()?.count?.toIntOrNull() ?: 33
+val dhikrText = intent.getStringExtra(Constants.DHIKR_TEXT) ?: getDhikrList().firstOrNull()?.content ?: "سبحان الله"
+        val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: getDhikrList().firstOrNull()?.count?.toIntOrNull() ?: 33
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {

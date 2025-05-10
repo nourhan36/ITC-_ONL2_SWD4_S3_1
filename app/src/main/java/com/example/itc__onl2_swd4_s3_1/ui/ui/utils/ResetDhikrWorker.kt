@@ -1,4 +1,4 @@
-package com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr
+package com.example.itc__onl2_swd4_s3_1.ui.ui.utils
 
 import android.content.Context
 import android.content.SharedPreferences
