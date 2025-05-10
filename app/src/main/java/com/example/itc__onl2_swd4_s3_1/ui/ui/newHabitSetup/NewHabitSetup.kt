@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup
 
 import android.content.Intent
@@ -24,101 +26,98 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.Home.HomeScreen
 import com.example.itc__onl2_swd4_s3_1.ui.data.entity.HabitEntity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
+import androidx.compose.material3.MaterialTheme.colorScheme as colorScheme1
 
 class NewHabitSetup : ComponentActivity() {
+    enum class CustomDaySelectionType {
+        SINGLE, MULTIPLE
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val title = intent.getStringExtra("title") ?: ""
-        val context = this // استخدام context هنا
+        val context = this
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme(dynamicColor = false) {
+                var startCustomDays by remember { mutableStateOf<List<String>>(emptyList()) }
+                var repeatCustomDays by remember { mutableStateOf<List<String>>(emptyList()) }
+
                 NewHabitSetupScreen(
                     title = title,
                     viewModel = HabitViewModel(application = application),
                     onHabitSaved = {
                         val intent = Intent(context, HomeScreen::class.java)
                         context.startActivity(intent)
-                    }
+                    },
+                    onStartCustomDaySelected = { startCustomDays = it },
+                    onRepeatCustomDaysSelected = { repeatCustomDays = it }
                 )
             }
         }
     }
 }
 
-
-
 @Composable
-fun NewHabitSetupScreen(title: String, viewModel: HabitViewModel, onHabitSaved: () -> Unit) {
+fun NewHabitSetupScreen(
+    title: String,
+    viewModel: HabitViewModel,
+    onHabitSaved: () -> Unit,
+    onStartCustomDaySelected: (List<String>) -> Unit,
+    onRepeatCustomDaysSelected: (List<String>) -> Unit
+) {
     var titleText by remember { mutableStateOf("") }
     var durationValue by remember { mutableStateOf("") }
     var selectedUnit by remember { mutableStateOf("minutes") }
-    var repeatType by remember { mutableStateOf("Every Day") }
+    val repeatType by remember { mutableStateOf("Every Day") }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
+        modifier = Modifier.fillMaxSize().background(colorScheme1.background).padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.Start
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Title(title)
-            Line()
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.Start) {
+            Text(text = title, fontSize = 24.sp, color = colorScheme1.primary, modifier = Modifier.padding(bottom = 8.dp))
+
+Canvas(modifier = Modifier.fillMaxWidth().height(2.dp)) {
+
+}
             HabitTitleInput(value = titleText, onValueChange = { titleText = it })
-            DurationSelector(
-                durationValue = durationValue,
-                selectedUnit = selectedUnit,
-                onDurationChange = { durationValue = it },
-                onUnitChange = { selectedUnit = it }
-            )
-            StartTimeSelector()
-            RepeatingSelector()
-            RepeatingDurationSelector(
-                selectedOption = repeatType,
-                onIncrease = {},
-                onDecrease = {}
-            )
+            DurationSelector(durationValue, selectedUnit, onDurationChange = { durationValue = it }, onUnitChange = { selectedUnit = it })
+            StartTimeSelector(onCustomDaySelected = onStartCustomDaySelected)
+            RepeatingSelector(onCustomDaysSelected = onRepeatCustomDaysSelected)
             ReminderText()
         }
         Button(
@@ -137,183 +136,83 @@ fun NewHabitSetupScreen(title: String, viewModel: HabitViewModel, onHabitSaved: 
                     onHabitSaved()
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 30.dp)
+            modifier = Modifier.fillMaxWidth().padding(top = 30.dp)
         ) {
             Text(text = "Save")
         }
     }
 }
 
-
 @Composable
-fun Title(title: String) {
-    Text(
-        text = title,
-        fontSize = 24.sp,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(bottom = 8.dp)
+fun StartTimeSelector(onCustomDaySelected: (List<String>) -> Unit) {
+    val options = listOf("Today", "Tomorrow", "Custom")
+    var showDialog by remember { mutableStateOf(false) }
+
+    SegmentButtonsSelector(
+        question = "When would you like to start it?",
+        listOptions = options,
+        isMultiSelect = false,
+        onCustomSelect = { showDialog = true }
     )
+
+    if (showDialog) {
+        CustomDaysDialog(
+            selectionType = NewHabitSetup.CustomDaySelectionType.SINGLE,
+            onDismiss = { showDialog = false },
+            onDaysSelected = onCustomDaySelected
+        )
+    }
 }
 
 @Composable
-fun Line() {
-    val lineColor = MaterialTheme.colorScheme.secondary
-    Canvas(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(2.dp)
-    ) {
-        drawLine(
-            start = Offset(x = 0f, y = 0f),
-            end = Offset(x = size.width, y = 0f),
-            color = lineColor,
-            strokeWidth = 2F
+fun RepeatingSelector(onCustomDaysSelected: (List<String>) -> Unit) {
+    val options = listOf("Every Day", "Weekly", "Custom")
+    var showDialog by remember { mutableStateOf(false) }
+
+    SegmentButtonsSelector(
+        question = "How often do you want to do it?",
+        listOptions = options,
+        isMultiSelect = true,
+        onCustomSelect = { showDialog = true }
+    )
+
+    if (showDialog) {
+        CustomDaysDialog(
+            selectionType = NewHabitSetup.CustomDaySelectionType.MULTIPLE,
+            onDismiss = { showDialog = false },
+            onDaysSelected = onCustomDaysSelected
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HabitTitleInput(value: String, onValueChange: (String) -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = "Title",
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 8.dp)
-        )
-        Spacer(modifier = Modifier.width(32.dp))
-        TextField(
-            value = value,
-            onValueChange = { if (it.length <= 20) onValueChange(it) },
-            placeholder = { Text("Enter title") },
-            modifier = Modifier
-                .weight(1f)
-                .padding(8.dp)
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    RoundedCornerShape(8.dp)
-                ),
-            colors = TextFieldDefaults.textFieldColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
-            textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface)
-        )
-    }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DurationSelector(
-    durationValue: String,
-    selectedUnit: String,
-    onDurationChange: (String) -> Unit,
-    onUnitChange: (String) -> Unit
+fun SegmentButtonsSelector(
+    question: String,
+    listOptions: List<String>,
+    isMultiSelect: Boolean,
+    onCustomSelect: ((NewHabitSetup.CustomDaySelectionType) -> Unit)? = null
 ) {
-    val timeUnits = listOf("minutes", "hours")
+    var selectedIndex by remember { mutableIntStateOf(0) }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = "Duration",
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 8.dp)
-        )
-        Spacer(modifier = Modifier.width(32.dp))
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .padding(8.dp)
-                .border(
-                    1.dp,
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                    RoundedCornerShape(8.dp)
-                )
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = durationValue,
-                onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 2) onDurationChange(it) },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.width(50.dp),
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
-                textStyle = LocalTextStyle.current.copy(color = MaterialTheme.colorScheme.onSurface)
-            )
-
-            Spacer(modifier = Modifier.width(2.dp))
-
-            TimeUnitDropdown(
-                items = timeUnits,
-                selectedItem = selectedUnit,
-                onItemSelected = onUnitChange
-            )
-        }
-    }
-}
-
-
-@Composable
-fun StartTimeSelector() {
-    val options = stringArrayResource(id = R.array.start_time_options)
-    SegmentButtonsSelector(
-        question = stringResource(id = R.string.when_would_you_like_to_start_it),
-        listOptions = options.toList()
-    )
-}
-
-@Composable
-fun RepeatingSelector() {
-    val options = stringArrayResource(id = R.array.repeat_options)
-    SegmentButtonsSelector(
-        question = stringResource(id = R.string.how_often_do_you_want_to_do_it),
-        listOptions = options.toList()
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SegmentButtonsSelector(question: String, listOptions: List<String>) {
     Column {
-        Text(
-            text = question,
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 8.dp, top = 8.dp)
-        )
+        Text(text = question, color = colorScheme1.primary, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp, top = 8.dp))
         Row(modifier = Modifier.padding(start = 8.dp, top = 8.dp)) {
-            var selectedIndex by remember { mutableIntStateOf(0) }
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 listOptions.forEachIndexed { index, option ->
                     SegmentedButton(
                         selected = index == selectedIndex,
-                        onClick = { selectedIndex = index },
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = index,
-                            count = listOptions.size
-                        ),
+                        onClick = {
+                            selectedIndex = index
+                            if (option == "Custom") {
+                                onCustomSelect?.invoke(if (isMultiSelect) NewHabitSetup.CustomDaySelectionType.MULTIPLE else NewHabitSetup.CustomDaySelectionType.SINGLE)
+                            }
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index, listOptions.size),
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(
-                            text = option,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Text(option)
                     }
                 }
             }
@@ -322,33 +221,81 @@ fun SegmentButtonsSelector(question: String, listOptions: List<String>) {
 }
 
 @Composable
-fun RepeatingDurationSelector(selectedOption: String = "Every Day",
-                              onIncrease: () -> Unit,
-                              onDecrease: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        IconButton(onClick = onDecrease, enabled = false) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_decrease),
-                contentDescription = "Decrease",
-                tint = MaterialTheme.colorScheme.primary
-            )
+fun CustomDaysDialog(
+    selectionType: NewHabitSetup.CustomDaySelectionType,
+    onDismiss: () -> Unit,
+    onDaysSelected: (List<String>) -> Unit
+) {
+    val daysOfWeek = listOf("Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+    val selectedDays = remember { mutableStateListOf<String>() }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Select Day${if (selectionType == NewHabitSetup.CustomDaySelectionType.MULTIPLE) "s" else ""}") },
+        text = {
+            Column {
+                daysOfWeek.forEach { day ->
+                    val isSelected = selectedDays.contains(day)
+                    Row(
+                        Modifier.fillMaxWidth().clickable {
+                            if (selectionType == NewHabitSetup.CustomDaySelectionType.SINGLE) {
+                                selectedDays.clear()
+                                selectedDays.add(day)
+                            } else {
+                                if (isSelected) selectedDays.remove(day)
+                                else selectedDays.add(day)
+                            }
+                        }.padding(8.dp)
+                    ) {
+                        Checkbox(checked = isSelected, onCheckedChange = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(day)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onDaysSelected(selectedDays.toList())
+                onDismiss()
+            }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
         }
+    )
+}
 
-        Text(
-            text = selectedOption,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        IconButton(onClick = onIncrease, enabled = false) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_increase),
-                contentDescription = "Increase",
-                tint = MaterialTheme.colorScheme.primary
+@Composable
+fun DurationSelector(
+    durationValue: String,
+    selectedUnit: String,
+    onDurationChange: (String) -> Unit,
+    onUnitChange: (String) -> Unit
+) {
+    val timeUnits = listOf("minutes", "hours")
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Text(text = "Duration", color = colorScheme1.primary, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
+        Spacer(modifier = Modifier.width(32.dp))
+        Row(
+            modifier = Modifier.weight(1f).padding(8.dp).border(1.dp, colorScheme1.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp)).background(
+                colorScheme1.surface).padding(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextField(
+                value = durationValue,
+                onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 2) onDurationChange(it) },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier.width(50.dp),
+                colors = TextFieldDefaults.textFieldColors(containerColor = colorScheme1.surface, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
+                textStyle = LocalTextStyle.current.copy(color = colorScheme1.onSurface)
             )
+            Spacer(modifier = Modifier.width(2.dp))
+            TimeUnitDropdown(items = timeUnits, selectedItem = selectedUnit, onItemSelected = onUnitChange)
         }
     }
 }
@@ -360,86 +307,54 @@ fun TimeUnitDropdown(
     onItemSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-
     Box(modifier = Modifier.wrapContentSize()) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = true }
-                .padding(8.dp),
+            modifier = Modifier.fillMaxWidth().clickable { expanded = true }.padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = selectedItem,
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = "Dropdown Icon",
-                tint = MaterialTheme.colorScheme.onSurface
-            )
+            Text(text = selectedItem, color = colorScheme1.onSurface, style = MaterialTheme.typography.bodyMedium)
+            Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon", tint = colorScheme1.onSurface)
         }
-
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+            modifier = Modifier.background(colorScheme1.surface)
         ) {
             items.forEach { item ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = item,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    },
-                    onClick = {
-                        onItemSelected(item)
-                        expanded = false
-                    }
-                )
+                DropdownMenuItem(text = { Text(text = item, color = colorScheme1.onSurface, style = MaterialTheme.typography.bodyMedium) }, onClick = {
+                    onItemSelected(item)
+                    expanded = false
+                })
             }
         }
+    }
+}
+
+@Composable
+fun HabitTitleInput(value: String, onValueChange: (String) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Text(text = "Title", color = colorScheme1.primary, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
+        Spacer(modifier = Modifier.width(32.dp))
+        TextField(
+            value = value,
+            onValueChange = { if (it.length <= 20) onValueChange(it) },
+            placeholder = { Text("Enter title") },
+            modifier = Modifier.weight(1f).padding(8.dp).border(1.dp, colorScheme1.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
+            colors = TextFieldDefaults.textFieldColors(containerColor = colorScheme1.surface, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
+            textStyle = LocalTextStyle.current.copy(color = colorScheme1.onSurface)
+        )
     }
 }
 
 @Composable
 fun ReminderText() {
-    Column(modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(modifier = Modifier.padding(16.dp)) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Reminder Icon",
-                tint = MaterialTheme.colorScheme.primary
-            )
+            Icon(imageVector = Icons.Default.Notifications, contentDescription = "Reminder Icon", tint = colorScheme1.primary)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = stringResource(id = R.string.set_reminder_so_you_dont_forget_to_do_it),
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            Text(text = "Set reminder so you don't forget to do it", color = colorScheme1.primary, style = MaterialTheme.typography.bodyMedium)
         }
-        Text(
-            text = stringResource(id = R.string.create_reminder),
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.clickable {
-
-            }
-        )
-    }
-}
-
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PreviewDurationSelector() {
-    val application = androidx.compose.ui.platform.LocalContext.current.applicationContext as android.app.Application
-    ITC_ONL2_SWD4_S3_1Theme(dynamicColor = false) {
-        NewHabitSetupScreen("", viewModel = HabitViewModel(application = application), onHabitSaved = { /* Add your logic here */ })
+        Text(text = "Create Reminder", color = colorScheme1.primary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.clickable {})
     }
 }
