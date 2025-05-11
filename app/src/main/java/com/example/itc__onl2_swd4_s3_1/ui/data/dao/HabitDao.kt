@@ -24,4 +24,7 @@ interface HabitDao {
 
     @Query("SELECT * FROM habits WHERE isCompleted = 0")
     fun getIncompleteHabits(): Flow<List<HabitEntity>>
+    @Query("SELECT * FROM habits")
+
+    suspend fun getAllHabitsList(): List<HabitEntity>
 }

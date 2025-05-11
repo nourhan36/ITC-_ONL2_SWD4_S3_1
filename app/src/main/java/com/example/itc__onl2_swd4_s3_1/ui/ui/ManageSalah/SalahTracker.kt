@@ -92,7 +92,7 @@ fun SalahTracker() {
         SalahTrackerHeader()
 
         Text(
-            text = "Which Salah did you offer today?",
+            text = "Which Salah did you pray today?",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = colorScheme.onBackground

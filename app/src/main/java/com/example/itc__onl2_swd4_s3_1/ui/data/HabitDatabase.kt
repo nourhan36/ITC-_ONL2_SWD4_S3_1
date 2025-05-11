@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.itc__onl2_swd4_s3_1.ui.data.dao.HabitDao
 import com.example.itc__onl2_swd4_s3_1.ui.data.entity.HabitEntity
 
-@Database(entities = [HabitEntity::class], version = 1, exportSchema = false)
+@Database(entities = [HabitEntity::class], version = 2, exportSchema = false)
 abstract class HabitDatabase : RoomDatabase() {
     abstract fun habitDao(): HabitDao
 

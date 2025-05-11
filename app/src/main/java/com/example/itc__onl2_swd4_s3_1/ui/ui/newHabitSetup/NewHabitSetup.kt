@@ -10,45 +10,14 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -101,7 +70,8 @@ fun NewHabitSetupScreen(
     var titleText by remember { mutableStateOf("") }
     var durationValue by remember { mutableStateOf("") }
     var selectedUnit by remember { mutableStateOf("minutes") }
-    val repeatType by remember { mutableStateOf("Every Day") }
+    var selectedRepeatOption by remember { mutableStateOf("None") }
+    var showCustomDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize().background(colorScheme1.background).padding(16.dp),
@@ -110,16 +80,19 @@ fun NewHabitSetupScreen(
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.Start) {
             Text(text = title, fontSize = 24.sp, color = colorScheme1.primary, modifier = Modifier.padding(bottom = 8.dp))
-
-Canvas(modifier = Modifier.fillMaxWidth().height(2.dp)) {
-
-}
+            Canvas(modifier = Modifier.fillMaxWidth().height(2.dp)) {}
             HabitTitleInput(value = titleText, onValueChange = { titleText = it })
             DurationSelector(durationValue, selectedUnit, onDurationChange = { durationValue = it }, onUnitChange = { selectedUnit = it })
             StartTimeSelector(onCustomDaySelected = onStartCustomDaySelected)
-            RepeatingSelector(onCustomDaysSelected = onRepeatCustomDaysSelected)
+
+            RepeatTypeSelector(selectedRepeatOption) {
+                selectedRepeatOption = it
+                if (it == "Custom") showCustomDialog = true
+            }
+
             ReminderText()
         }
+
         Button(
             onClick = {
                 if (titleText.isNotBlank() && durationValue.isNotBlank()) {
@@ -127,7 +100,7 @@ Canvas(modifier = Modifier.fillMaxWidth().height(2.dp)) {
                         HabitEntity(
                             name = titleText,
                             startTime = "08:00 AM",
-                            repeatType = repeatType,
+                            repeatType = selectedRepeatOption,
                             duration = durationValue.toInt(),
                             reminderTime = "07:50 AM",
                             isCompleted = false
@@ -139,6 +112,17 @@ Canvas(modifier = Modifier.fillMaxWidth().height(2.dp)) {
             modifier = Modifier.fillMaxWidth().padding(top = 30.dp)
         ) {
             Text(text = "Save")
+        }
+
+        if (showCustomDialog) {
+            CustomDaysDialog(
+                NewHabitSetup.CustomDaySelectionType.MULTIPLE,
+                { showCustomDialog = false },
+                {
+                    onRepeatCustomDaysSelected(it)
+                    showCustomDialog = false
+                }
+            )
         }
     }
 }
@@ -164,29 +148,7 @@ fun StartTimeSelector(onCustomDaySelected: (List<String>) -> Unit) {
     }
 }
 
-@Composable
-fun RepeatingSelector(onCustomDaysSelected: (List<String>) -> Unit) {
-    val options = listOf("Every Day", "Weekly", "Custom")
-    var showDialog by remember { mutableStateOf(false) }
-
-    SegmentButtonsSelector(
-        question = "How often do you want to do it?",
-        listOptions = options,
-        isMultiSelect = true,
-        onCustomSelect = { showDialog = true }
-    )
-
-    if (showDialog) {
-        CustomDaysDialog(
-            selectionType = NewHabitSetup.CustomDaySelectionType.MULTIPLE,
-            onDismiss = { showDialog = false },
-            onDaysSelected = onCustomDaysSelected
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
-
 @Composable
 fun SegmentButtonsSelector(
     question: String,
@@ -195,7 +157,6 @@ fun SegmentButtonsSelector(
     onCustomSelect: ((NewHabitSetup.CustomDaySelectionType) -> Unit)? = null
 ) {
     var selectedIndex by remember { mutableIntStateOf(0) }
-
     Column {
         Text(text = question, color = colorScheme1.primary, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp, top = 8.dp))
         Row(modifier = Modifier.padding(start = 8.dp, top = 8.dp)) {
@@ -239,11 +200,9 @@ fun CustomDaysDialog(
                     Row(
                         Modifier.fillMaxWidth().clickable {
                             if (selectionType == NewHabitSetup.CustomDaySelectionType.SINGLE) {
-                                selectedDays.clear()
-                                selectedDays.add(day)
+                                selectedDays.clear(); selectedDays.add(day)
                             } else {
-                                if (isSelected) selectedDays.remove(day)
-                                else selectedDays.add(day)
+                                if (isSelected) selectedDays.remove(day) else selectedDays.add(day)
                             }
                         }.padding(8.dp)
                     ) {
@@ -282,8 +241,7 @@ fun DurationSelector(
         Text(text = "Duration", color = colorScheme1.primary, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
         Spacer(modifier = Modifier.width(32.dp))
         Row(
-            modifier = Modifier.weight(1f).padding(8.dp).border(1.dp, colorScheme1.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp)).background(
-                colorScheme1.surface).padding(6.dp),
+            modifier = Modifier.weight(1f).padding(8.dp).border(1.dp, colorScheme1.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp)).background(colorScheme1.surface).padding(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
@@ -301,11 +259,7 @@ fun DurationSelector(
 }
 
 @Composable
-fun TimeUnitDropdown(
-    items: List<String>,
-    selectedItem: String,
-    onItemSelected: (String) -> Unit
-) {
+fun TimeUnitDropdown(items: List<String>, selectedItem: String, onItemSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box(modifier = Modifier.wrapContentSize()) {
         Row(
@@ -316,11 +270,7 @@ fun TimeUnitDropdown(
             Text(text = selectedItem, color = colorScheme1.onSurface, style = MaterialTheme.typography.bodyMedium)
             Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon", tint = colorScheme1.onSurface)
         }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.background(colorScheme1.surface)
-        ) {
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.background(colorScheme1.surface)) {
             items.forEach { item ->
                 DropdownMenuItem(text = { Text(text = item, color = colorScheme1.onSurface, style = MaterialTheme.typography.bodyMedium) }, onClick = {
                     onItemSelected(item)
@@ -356,5 +306,27 @@ fun ReminderText() {
             Text(text = "Set reminder so you don't forget to do it", color = colorScheme1.primary, style = MaterialTheme.typography.bodyMedium)
         }
         Text(text = "Create Reminder", color = colorScheme1.primary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.clickable {})
+    }
+}
+
+@Composable
+fun RepeatTypeSelector(selectedOption: String, onOptionSelected: (String) -> Unit) {
+    val options = listOf("Every Day", "Weekly", "None", "Custom")
+    Column {
+        Text(text = "Repeat", color = colorScheme1.primary, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp, top = 8.dp))
+        Row(modifier = Modifier.padding(start = 8.dp, top = 8.dp)) {
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                options.forEachIndexed { index, option ->
+                    SegmentedButton(
+                        selected = option == selectedOption,
+                        onClick = { onOptionSelected(option) },
+                        shape = SegmentedButtonDefaults.itemShape(index, options.size),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(option)
+                    }
+                }
+            }
+        }
     }
 }

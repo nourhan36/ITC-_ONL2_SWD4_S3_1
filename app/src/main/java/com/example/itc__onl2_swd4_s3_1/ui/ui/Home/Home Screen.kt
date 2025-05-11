@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.items
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
@@ -17,7 +16,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,7 +46,6 @@ import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector.HabitSelector
 import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.ResetHabitsWorker
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
@@ -136,11 +133,11 @@ fun navBar(
                             .fillMaxWidth()
                             .padding(vertical = 12.dp)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.lightdark),
-                            contentDescription = "light/dark mode",
-                            modifier = Modifier.size(35.dp)
-                        )
+//                        Image(
+//                            painter = painterResource(id = R.drawable.lightdark),
+//                            contentDescription = "light/dark mode",
+//                            modifier = Modifier.size(35.dp)
+//                        )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text("Dark Mode", fontSize = 18.sp)
                         Spacer(modifier = Modifier.width(150.dp))
@@ -162,13 +159,13 @@ fun navBar(
                             .clickable { }
                             .padding(vertical = 12.dp)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logout),
-                            contentDescription = "logout",
-                            modifier = Modifier.size(35.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(text = "Logout", fontSize = 18.sp)
+//                        Image(
+//                            painter = painterResource(id = R.drawable.logout),
+//                            contentDescription = "logout",
+//                            modifier = Modifier.size(35.dp)
+//                        )
+//                        Spacer(modifier = Modifier.width(12.dp))
+//                        Text(text = "Logout", fontSize = 18.sp)
                     }
                 }
             }
@@ -247,19 +244,19 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     val activity = context as? Activity
 
     // 🔁 المراقبة التلقائية للساعة 12
-    LaunchedEffect(Unit) {
-        while (true) {
-            val now = Calendar.getInstance()
-            if (now.get(Calendar.HOUR_OF_DAY) == 0 && now.get(Calendar.MINUTE) == 0) {
-                viewModel.deleteAllHabits()
-                Toast.makeText(context, "Habits reset for the new day!", Toast.LENGTH_SHORT).show()
-                activity?.recreate()
-                delay(60 * 1000L)
-            } else {
-                delay(30 * 1000L)
-            }
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        while (true) {
+//            val now = Calendar.getInstance()
+//            if (now.get(Calendar.HOUR_OF_DAY) == 0 && now.get(Calendar.MINUTE) == 0) {
+//                viewModel.deleteAllHabits()
+//                Toast.makeText(context, "Habits reset for the new day!", Toast.LENGTH_SHORT).show()
+//                activity?.recreate()
+//                delay(60 * 1000L)
+//            } else {
+//                delay(30 * 1000L)
+//            }
+//        }
+//    }
 
 
 
@@ -272,11 +269,11 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .height(230.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ramadan_img),
-                contentDescription = "Ramadan Kareem",
-                modifier = Modifier.fillMaxSize()
-            )
+//            Image(
+//                painter = painterResource(id = R.drawable.ramadan_img),
+//                contentDescription = "Ramadan Kareem",
+//                modifier = Modifier.fillMaxSize()
+//            )
 
             // ✅ نص في الأعلى بدون أي خلفيات بيضاء
             Column(
@@ -433,6 +430,6 @@ fun LanguageSelector(
 
 @Preview
 @Composable
-fun previewMain() {
+fun PreviewMain() {
     navBar(onFabClick = {}, onNavItemClick = {})
 }
