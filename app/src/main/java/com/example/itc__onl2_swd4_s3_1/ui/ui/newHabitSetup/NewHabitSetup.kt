@@ -3,6 +3,7 @@
 package com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,12 +31,14 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -51,14 +55,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.ui.Home.HomeScreen
 import com.example.itc__onl2_swd4_s3_1.ui.data.entity.HabitEntity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
-import androidx.compose.material3.MaterialTheme.colorScheme as colorScheme1
 
 class NewHabitSetup : ComponentActivity() {
     enum class CustomDaySelectionType {
@@ -104,22 +109,53 @@ fun NewHabitSetupScreen(
     val repeatType by remember { mutableStateOf("Every Day") }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(colorScheme1.background).padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background) //
+            .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.Start
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.Start) {
-            Text(text = title, fontSize = 24.sp, color = colorScheme1.primary, modifier = Modifier.padding(bottom = 8.dp))
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(
+                text = title,
+                fontSize = 24.sp,
+                color = colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
 
-Canvas(modifier = Modifier.fillMaxWidth().height(2.dp)) {
+            val dividerColor = colorScheme.onSurface.copy(alpha = 0.2f) // لازم يكون برا الـ Canvas (داخل composable)
 
-}
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+            ) {
+                drawLine(
+                    color = dividerColor,
+                    start = Offset(0f, 0f),
+                    end = Offset(size.width, 0f),
+                    strokeWidth = 2f
+                )
+
+
+            }
+
             HabitTitleInput(value = titleText, onValueChange = { titleText = it })
-            DurationSelector(durationValue, selectedUnit, onDurationChange = { durationValue = it }, onUnitChange = { selectedUnit = it })
+            DurationSelector(
+                durationValue,
+                selectedUnit,
+                onDurationChange = { durationValue = it },
+                onUnitChange = { selectedUnit = it }
+            )
             StartTimeSelector(onCustomDaySelected = onStartCustomDaySelected)
             RepeatingSelector(onCustomDaysSelected = onRepeatCustomDaysSelected)
             ReminderText()
         }
+
         Button(
             onClick = {
                 if (titleText.isNotBlank() && durationValue.isNotBlank()) {
@@ -136,7 +172,9 @@ Canvas(modifier = Modifier.fillMaxWidth().height(2.dp)) {
                     onHabitSaved()
                 }
             },
-            modifier = Modifier.fillMaxWidth().padding(top = 30.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 30.dp)
         ) {
             Text(text = "Save")
         }
@@ -186,7 +224,6 @@ fun RepeatingSelector(onCustomDaysSelected: (List<String>) -> Unit) {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-
 @Composable
 fun SegmentButtonsSelector(
     question: String,
@@ -197,7 +234,12 @@ fun SegmentButtonsSelector(
     var selectedIndex by remember { mutableIntStateOf(0) }
 
     Column {
-        Text(text = question, color = colorScheme1.primary, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp, top = 8.dp))
+        Text(
+            text = question,
+            color = colorScheme.primary,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 8.dp, top = 8.dp)
+        )
         Row(modifier = Modifier.padding(start = 8.dp, top = 8.dp)) {
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 listOptions.forEachIndexed { index, option ->
@@ -206,11 +248,18 @@ fun SegmentButtonsSelector(
                         onClick = {
                             selectedIndex = index
                             if (option == "Custom") {
-                                onCustomSelect?.invoke(if (isMultiSelect) NewHabitSetup.CustomDaySelectionType.MULTIPLE else NewHabitSetup.CustomDaySelectionType.SINGLE)
+                                onCustomSelect?.invoke(
+                                    if (isMultiSelect) NewHabitSetup.CustomDaySelectionType.MULTIPLE
+                                    else NewHabitSetup.CustomDaySelectionType.SINGLE
+                                )
                             }
                         },
                         shape = SegmentedButtonDefaults.itemShape(index, listOptions.size),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = SegmentedButtonDefaults.colors(
+                            activeContainerColor = colorScheme.primaryContainer,
+                            activeContentColor = colorScheme.onPrimaryContainer
+                        )
                     ) {
                         Text(option)
                     }
@@ -237,17 +286,28 @@ fun CustomDaysDialog(
                 daysOfWeek.forEach { day ->
                     val isSelected = selectedDays.contains(day)
                     Row(
-                        Modifier.fillMaxWidth().clickable {
-                            if (selectionType == NewHabitSetup.CustomDaySelectionType.SINGLE) {
-                                selectedDays.clear()
-                                selectedDays.add(day)
-                            } else {
-                                if (isSelected) selectedDays.remove(day)
-                                else selectedDays.add(day)
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (selectionType == NewHabitSetup.CustomDaySelectionType.SINGLE) {
+                                    selectedDays.clear()
+                                    selectedDays.add(day)
+                                } else {
+                                    if (isSelected) selectedDays.remove(day)
+                                    else selectedDays.add(day)
+                                }
                             }
-                        }.padding(8.dp)
+                            .padding(8.dp)
                     ) {
-                        Checkbox(checked = isSelected, onCheckedChange = null)
+// In CustomDaysDialog
+                        Checkbox(
+                            checked = isSelected,
+                            onCheckedChange = null,
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = colorScheme.primary,
+                                checkmarkColor = colorScheme.onPrimary
+                            )
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(day)
                     }
@@ -278,12 +338,28 @@ fun DurationSelector(
     onUnitChange: (String) -> Unit
 ) {
     val timeUnits = listOf("minutes", "hours")
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Text(text = "Duration", color = colorScheme1.primary, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Duration",
+            color = colorScheme.primary,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 8.dp)
+        )
         Spacer(modifier = Modifier.width(32.dp))
         Row(
-            modifier = Modifier.weight(1f).padding(8.dp).border(1.dp, colorScheme1.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp)).background(
-                colorScheme1.surface).padding(6.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(8.dp)
+                .border(
+                    1.dp,
+                    colorScheme.onSurface.copy(alpha = 0.5f),
+                    RoundedCornerShape(8.dp)
+                )
+                .background(colorScheme.surface)
+                .padding(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
@@ -291,11 +367,19 @@ fun DurationSelector(
                 onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 2) onDurationChange(it) },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 modifier = Modifier.width(50.dp),
-                colors = TextFieldDefaults.textFieldColors(containerColor = colorScheme1.surface, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
-                textStyle = LocalTextStyle.current.copy(color = colorScheme1.onSurface)
+                colors = TextFieldDefaults.textFieldColors(
+                    containerColor = colorScheme.surface,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                textStyle = LocalTextStyle.current.copy(color = colorScheme.onSurface)
             )
             Spacer(modifier = Modifier.width(2.dp))
-            TimeUnitDropdown(items = timeUnits, selectedItem = selectedUnit, onItemSelected = onUnitChange)
+            TimeUnitDropdown(
+                items = timeUnits,
+                selectedItem = selectedUnit,
+                onItemSelected = onUnitChange
+            )
         }
     }
 }
@@ -309,23 +393,42 @@ fun TimeUnitDropdown(
     var expanded by remember { mutableStateOf(false) }
     Box(modifier = Modifier.wrapContentSize()) {
         Row(
-            modifier = Modifier.fillMaxWidth().clickable { expanded = true }.padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = true }
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = selectedItem, color = colorScheme1.onSurface, style = MaterialTheme.typography.bodyMedium)
-            Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon", tint = colorScheme1.onSurface)
+            Text(
+                text = selectedItem,
+                color = colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription = "Dropdown Icon",
+                tint = colorScheme.onSurface
+            )
         }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(colorScheme1.surface)
+            modifier = Modifier.background(colorScheme.surface)
         ) {
             items.forEach { item ->
-                DropdownMenuItem(text = { Text(text = item, color = colorScheme1.onSurface, style = MaterialTheme.typography.bodyMedium) }, onClick = {
-                    onItemSelected(item)
-                    expanded = false
-                })
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = item,
+                            color = colorScheme.onSurface
+                        )
+                    },
+                    onClick = {
+                        onItemSelected(item)
+                        expanded = false
+                    }
+                )
             }
         }
     }
@@ -333,28 +436,62 @@ fun TimeUnitDropdown(
 
 @Composable
 fun HabitTitleInput(value: String, onValueChange: (String) -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Text(text = "Title", color = colorScheme1.primary, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(start = 8.dp))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Title",
+            color = colorScheme.primary,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 8.dp)
+        )
         Spacer(modifier = Modifier.width(32.dp))
         TextField(
             value = value,
             onValueChange = { if (it.length <= 20) onValueChange(it) },
             placeholder = { Text("Enter title") },
-            modifier = Modifier.weight(1f).padding(8.dp).border(1.dp, colorScheme1.onSurface.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
-            colors = TextFieldDefaults.textFieldColors(containerColor = colorScheme1.surface, focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent),
-            textStyle = LocalTextStyle.current.copy(color = colorScheme1.onSurface)
+            modifier = Modifier
+                .weight(1f)
+                .padding(8.dp)
+                .border(
+                    1.dp,
+                    colorScheme.onSurface.copy(alpha = 0.5f),
+                    RoundedCornerShape(8.dp)
+                ),
+            colors = TextFieldDefaults.textFieldColors(
+                containerColor = colorScheme.surface,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            textStyle = LocalTextStyle.current.copy(color = colorScheme.onSurface)
         )
     }
 }
 
 @Composable
 fun ReminderText() {
-    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Row(modifier = Modifier.padding(16.dp)) {
-            Icon(imageVector = Icons.Default.Notifications, contentDescription = "Reminder Icon", tint = colorScheme1.primary)
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = "Reminder Icon",
+                tint = colorScheme.primary
+            )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Set reminder so you don't forget to do it", color = colorScheme1.primary, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "Set reminder so you don't forget to do it",
+                color = colorScheme.onSurface, // Updated from primary
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
-        Text(text = "Create Reminder", color = colorScheme1.primary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.clickable {})
+        Text(
+            text = "Create Reminder",
+            color = colorScheme.onSurface, // Updated from primary
+            modifier = Modifier.clickable { }
+        )
     }
 }

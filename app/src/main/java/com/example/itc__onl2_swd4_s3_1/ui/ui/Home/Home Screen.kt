@@ -47,6 +47,7 @@ import com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage
 import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector.HabitSelector
 import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
+import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.ResetHabitsWorker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -58,13 +59,15 @@ class HomeScreen : ComponentActivity() {
         super.onCreate(savedInstanceState)
         scheduleHabitReset(applicationContext)
         setContent {
-            navBar(
-                onFabClick = { openHomeActivity() },
-                onNavItemClick = { index -> handleNavClick(index) }
-
-            )
+            ITC_ONL2_SWD4_S3_1Theme {
+                navBar(
+                    onFabClick = { openHomeActivity() },
+                    onNavItemClick = { index -> handleNavClick(index) }
+                )
+            }
         }
     }
+
 
     private fun openHomeActivity() {
         val intent = Intent(this, HabitSelector::class.java)

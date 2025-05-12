@@ -35,6 +35,7 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
+import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 
 class PrayerTime : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -42,8 +43,11 @@ class PrayerTime : ComponentActivity() {
         super.onCreate(savedInstanceState)
         createNotificationChannel()
         setContent {
-            PrayerApp(this)
+            ITC_ONL2_SWD4_S3_1Theme {
+                PrayerApp(this)
+            }
         }
+
     }
 
     private fun createNotificationChannel() {
@@ -87,6 +91,8 @@ fun PrayerApp(context: Context) {
         }
     }
 
+    val colorScheme = MaterialTheme.colorScheme
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -95,18 +101,18 @@ fun PrayerApp(context: Context) {
                         text = "Praying Times",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = colorScheme.onPrimary
                     )
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color(0xFF3C7297)
+                    containerColor = colorScheme.primary
                 )
             )
         },
-        containerColor = Color(0xFFE7DFD0)
+        containerColor = colorScheme.background
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            CitySelector(selectedCity) { selectedCity = it }
+            CitySelector(selectedCity, colorScheme) { selectedCity = it }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -116,7 +122,7 @@ fun PrayerApp(context: Context) {
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
-                       color =  Color(0xFF3C7297)
+                        color = colorScheme.primary
                     )
                 }
             } else {
@@ -124,44 +130,52 @@ fun PrayerApp(context: Context) {
                     text = "Next Prayer In: $remainingTime",
                     fontSize = 18.sp,
                     modifier = Modifier.padding(16.dp),
-                    color = Color(0xFF3C7297),
+                    color = colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
 
                 LazyColumn {
                     items(prayerTimes) { (name, time) ->
-                        PrayerRow(name, time, context)
+                        PrayerRow(name, time, context, colorScheme)
                     }
                 }
             }
         }
     }
 }
-
 @Composable
-fun CitySelector(selectedCity: String, onCitySelected: (String) -> Unit) {
+fun CitySelector(
+    selectedCity: String,
+    colorScheme: ColorScheme,
+    onCitySelected: (String) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
     val cities = listOf(
-        "Alexandria", "Aswan", "Asyut", "Beheira", "Beni Suef", "Cairo", "Dakahlia", "Damietta", "Faiyum", "Gharbia", "Giza", "Ismailia", "Kafr El Sheikh", "Luxor", "Matruh", "Minya", "Monufia", "New Valley", "North Sinai", "Port Said", "Qalyubia", "Qena", "Red Sea", "Sharqia","Sohag", "South Sinai", "Suez"
+        "Alexandria", "Aswan", "Asyut", "Beheira", "Beni Suef", "Cairo", "Dakahlia",
+        "Damietta", "Faiyum", "Gharbia", "Giza", "Ismailia", "Kafr El Sheikh", "Luxor",
+        "Matruh", "Minya", "Monufia", "New Valley", "North Sinai", "Port Said",
+        "Qalyubia", "Qena", "Red Sea", "Sharqia","Sohag", "South Sinai", "Suez"
     )
 
     Box(modifier = Modifier.padding(16.dp)) {
         Button(
             onClick = { expanded = true },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C7297))
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colorScheme.primary,
+                contentColor = colorScheme.onPrimary
+            )
         ) {
-            Text(text = selectedCity, color = Color.White)
+            Text(text = selectedCity)
         }
 
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.heightIn(max = 400.dp),
-
+            modifier = Modifier.heightIn(max = 400.dp)
         ) {
             cities.forEach { city ->
                 DropdownMenuItem(
-                    text = { Text(city) },
+                    text = { Text(city, color = colorScheme.onSurface) },
                     onClick = {
                         onCitySelected(city)
                         expanded = false
@@ -173,7 +187,12 @@ fun CitySelector(selectedCity: String, onCitySelected: (String) -> Unit) {
 }
 
 @Composable
-fun PrayerRow(name: String, time: String, context: Context) {
+fun PrayerRow(
+    name: String,
+    time: String,
+    context: Context,
+    colorScheme: ColorScheme
+) {
     var isNotificationEnabled by remember { mutableStateOf(true) }
 
     Card(
@@ -182,9 +201,9 @@ fun PrayerRow(name: String, time: String, context: Context) {
             .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = colorScheme.surface,
+            contentColor = colorScheme.onSurface
         )
-
     ) {
         Row(
             modifier = Modifier
@@ -193,20 +212,25 @@ fun PrayerRow(name: String, time: String, context: Context) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "$name - $time", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "$name - $time",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.onSurface
+            )
             Switch(
                 checked = isNotificationEnabled,
                 onCheckedChange = {
                     isNotificationEnabled = it
                     if (it) sendNotification(context, name, time)
                 },
-
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color(0xFF3C7297),
-                    checkedTrackColor = Color(0xFF3C7297).copy(alpha = 0.5f),
-                    uncheckedThumbColor = Color(0xFF9E9E9E),
-                    uncheckedTrackColor = Color(0xFFE0E0E0)
-                )            )
+                    checkedThumbColor = colorScheme.primary,
+                    checkedTrackColor = colorScheme.primaryContainer,
+                    uncheckedThumbColor = colorScheme.outline,
+                    uncheckedTrackColor = colorScheme.surfaceVariant
+                )
+            )
         }
     }
 }

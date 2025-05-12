@@ -133,22 +133,34 @@ class DhikrListActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DhikrScreen(dhikrList: List<Dhikr>, onDhikrClick: (Dhikr) -> Unit, onBack: () -> Unit) {
-    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF8F8F8))) {
+    val colorScheme = MaterialTheme.colorScheme
+
+    Column(modifier = Modifier.fillMaxSize().background(colorScheme.background)) {
         TopAppBar(
             title = {
                 Text(
                     "Dhikr",
                     modifier = Modifier.fillMaxWidth().padding(end = 48.dp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = colorScheme.onBackground
                 )
             },
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = colorScheme.onBackground
+                    )
                 }
-            }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = colorScheme.primaryContainer,
+                titleContentColor = colorScheme.onPrimaryContainer
+            )
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -163,12 +175,18 @@ fun DhikrScreen(dhikrList: List<Dhikr>, onDhikrClick: (Dhikr) -> Unit, onBack: (
 
 @Composable
 fun DhikrItem(dhikr: Dhikr, onDhikrClick: (Dhikr) -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Card(
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .clickable { onDhikrClick(dhikr) }
+            .clickable { onDhikrClick(dhikr) },
+        colors = CardDefaults.cardColors(
+            containerColor = colorScheme.surfaceVariant,
+            contentColor = colorScheme.onSurfaceVariant
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             DhikrHeader(dhikr)
@@ -179,6 +197,8 @@ fun DhikrItem(dhikr: Dhikr, onDhikrClick: (Dhikr) -> Unit) {
 
 @Composable
 fun DhikrHeader(dhikr: Dhikr) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
@@ -187,14 +207,14 @@ fun DhikrHeader(dhikr: Dhikr) {
             Icon(
                 painter = painterResource(id = R.drawable.islamic_star),
                 contentDescription = "Dhikr Icon",
-                tint = Color(0xFF4CAF50),
+                tint = colorScheme.primary,
                 modifier = Modifier.size(48.dp)
             )
             Text(
                 text = dhikr.count,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = colorScheme.onPrimary
             )
         }
         Spacer(modifier = Modifier.weight(1f))
@@ -202,28 +222,44 @@ fun DhikrHeader(dhikr: Dhikr) {
             text = dhikr.content,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF388E3C)
+            color = colorScheme.primary
         )
     }
 }
 
 @Composable
 fun DhikrDetails(dhikr: Dhikr) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Spacer(modifier = Modifier.height(4.dp))
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = dhikr.description, fontSize = 14.sp, color = Color.Gray)
+            Text(
+                text = dhikr.description,
+                fontSize = 14.sp,
+                color = colorScheme.onSurfaceVariant
+            )
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "${dhikr.count} Times", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "${dhikr.count} Times",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.onSurface
+            )
         }
         Checkbox(
             checked = dhikr.isCompleted.value,
-            onCheckedChange = null, // Disable manual checking
+            onCheckedChange = null,
             modifier = Modifier.padding(start = 8.dp),
-            enabled = false // Visually indicate it's disabled
+            enabled = false,
+            colors = CheckboxDefaults.colors(
+                checkedColor = colorScheme.primary,
+                uncheckedColor = colorScheme.onSurfaceVariant,
+                checkmarkColor = colorScheme.onPrimary
+            )
         )
     }
 }

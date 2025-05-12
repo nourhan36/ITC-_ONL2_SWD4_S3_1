@@ -12,10 +12,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Color(0xFF9FC9E2),              // أفتح من الأزرق المستخدم في Light
+    onPrimary = Color(0xFF162E42),            // لون النص على الزر الأساسي
+
+    primaryContainer = Color(0xFF1B3A4B),      // حاوية الزر الأساسي
+    onPrimaryContainer = Color(0xFFDDEEFF),   // النص على الحاوية
+
+    secondary = Color(0xFF6BB3D4),            // أفتح برضو من الأزرق المستخدم
+    onSecondary = Color(0xFF0B1E2C),
+
+    secondaryContainer = Color(0xFF274A60),
+    onSecondaryContainer = Color(0xFFE3F6FF),
+
+    background = Color(0xFF121212),
+    onBackground = Color(0xFFE7DFCF),         // نفس الخلفية بتاعت Light
+
+    surface = Color(0xFF1E1E1E),
+    onSurface = Color(0xFFE7DFCF),
+
+    error = Color(0xFFF28B82),
+    onError = Color(0xFF000000)
 )
+
 
 private val LightColorScheme = lightColorScheme(
     primary = Color(0xFF162E42),

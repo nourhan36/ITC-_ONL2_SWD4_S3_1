@@ -22,7 +22,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,34 +43,33 @@ class DhikrCounterActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-val dhikrText = intent.getStringExtra(Constants.DHIKR_TEXT) ?: getDhikrList().firstOrNull()?.content ?: "سبحان الله"
+        val dhikrText = intent.getStringExtra(Constants.DHIKR_TEXT) ?: getDhikrList().firstOrNull()?.content ?: "سبحان الله"
         val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: getDhikrList().firstOrNull()?.count?.toIntOrNull() ?: 33
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
                 DhikrCounter(dhikrText, dhikrCount, onDhikrCompleted = { completedDhikrText ->
-                    // Instead of finishing, navigate to DhikrListActivity
                     val intent = Intent(this, DhikrListActivity::class.java).apply {
                         putExtra(DHIKR_COMPLETED_TEXT, completedDhikrText)
                         putExtra(DHIKR_COMPLETED, true)
-                        // Add flag to clear the back stack
                         flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                     }
                     startActivity(intent)
-                    finish() // Still finish this activity to prevent going back to it
+                    finish()
                 })
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Unit) {
     var count by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
 
     Column(
-        modifier = Modifier.fillMaxSize().background(Color(0xFFF9F9F9)),
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CenterAlignedTopAppBar(
@@ -85,7 +83,7 @@ fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Un
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(text = "$count/$total", fontSize = 48.sp, fontWeight = FontWeight.Bold)
-        Text(text = "Total: $count", fontSize = 24.sp, color = Color.Gray)
+        Text(text = "Total: $count", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -100,7 +98,11 @@ fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Un
                 }
             }
         }
-        Text(text = "Tap to count your daily Dhikr", fontSize = 16.sp, color = Color.Gray)
+        Text(
+            text = "Tap to count your daily Dhikr",
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -125,13 +127,13 @@ fun DhikrCard(dhikrText: String, total: Int, context: android.content.Context) {
                 text = dhikrText,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF2E7D32),
+                color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
             Text(
                 text = "$total Times : May Allah be Praised",
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -143,6 +145,7 @@ fun DhikrCard(dhikrText: String, total: Int, context: android.content.Context) {
 fun AnimatedCounterButton(onCountIncrease: () -> Unit) {
     val scope = rememberCoroutineScope()
     val animationProgress = remember { Animatable(0f) }
+    val animatedColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
 
     fun triggerAnimation() {
         scope.launch {
@@ -155,7 +158,7 @@ fun AnimatedCounterButton(onCountIncrease: () -> Unit) {
     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
         Canvas(modifier = Modifier.size(180.dp)) {
             val animatedRadius = (size.minDimension / 2) * animationProgress.value
-            drawCircle(color = Color(0xFF2E7D32).copy(alpha = 0.3f), radius = animatedRadius)
+            drawCircle(color = animatedColor, radius = animatedRadius)
         }
 
         Box(
@@ -163,13 +166,13 @@ fun AnimatedCounterButton(onCountIncrease: () -> Unit) {
             modifier = Modifier
                 .size(130.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF2E7D32))
+                .background(MaterialTheme.colorScheme.primary)
                 .clickable {
                     onCountIncrease()
                     triggerAnimation()
                 }
         ) {
-            Text(text = "Count", color = Color.White, fontSize = 24.sp)
+            Text(text = "Count", color = MaterialTheme.colorScheme.onPrimary, fontSize = 24.sp)
         }
     }
 }
