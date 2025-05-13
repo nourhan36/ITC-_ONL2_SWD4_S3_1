@@ -82,8 +82,8 @@ fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Un
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text(text = "$count/$total", fontSize = 48.sp, fontWeight = FontWeight.Bold)
-        Text(text = "Total: $count", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+Text(text = "$count/$total", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+Text(text = "Total: $count", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
 
         Spacer(modifier = Modifier.height(32.dp))
 

@@ -60,6 +60,7 @@ class HomeScreen : ComponentActivity() {
         scheduleHabitReset(applicationContext)
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
+
                 navBar(
                     onFabClick = { openHomeActivity() },
                     onNavItemClick = { index -> handleNavClick(index) }
@@ -264,12 +265,8 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
         }
     }
 
-
-
-
     Column(modifier = modifier.fillMaxSize()) {
 
-        // ✅ Box للصورة والنص بدون أي padding خارجي يسبب فراغ
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -281,7 +278,6 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxSize()
             )
 
-            // ✅ نص في الأعلى بدون أي خلفيات بيضاء
             Column(
                 modifier = Modifier
                     .align(Alignment.TopStart)
@@ -289,7 +285,7 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
             ) {
                 Text(
                     text = "Ramadan Habit Tracker",
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 24.sp
                 )
 
@@ -301,20 +297,19 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                 ) {
                     Text(
                         text = getCurrentDate(),
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 16.sp
                     )
                     Column(horizontalAlignment = Alignment.End) {
-                        Text(text = "Cairo", fontSize = 16.sp, color = Color.Black)
-                        Text(text = "Egypt", fontSize = 16.sp, color = Color.Black)
+                        Text(text = "Cairo", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
+                        Text(text = "Egypt", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
                     }
                 }
             }
         }
 
-        // ✅ تأكد أن هذه العناصر خارج Box لتبدأ بعد الصورة مباشرة
         Surface(
-            color = MaterialTheme.colorScheme.background, // خلفية متناسقة
+            color = MaterialTheme.colorScheme.background,
             modifier = Modifier.fillMaxWidth()
         ) {
             Column {
@@ -338,7 +333,7 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                                 )
                                 .padding(8.dp),
                             fontSize = 20.sp,
-                            color = if (selectedFilter == label) Color.Red else Color.Black,
+                            color = if (selectedFilter == label) Color.Red else MaterialTheme.colorScheme.onBackground,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -358,7 +353,6 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
         }
     }
 }
-
 
 
 

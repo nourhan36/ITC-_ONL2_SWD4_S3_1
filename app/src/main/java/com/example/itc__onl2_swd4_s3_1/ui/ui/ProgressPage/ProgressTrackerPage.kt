@@ -258,17 +258,18 @@ fun StreakItem(weeks: Int, description: String, modifier: Modifier = Modifier) {
             modifier = Modifier.size(32.dp)
         )
         Column(modifier = Modifier.padding(start = 4.dp)) {
-            Text(
-                text = "$weeks ${stringResource(id = if (weeks > 1) R.string.weeks else R.string.week)}",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Text(
-                text = description,
-                fontSize = 14.sp,
-                color = Color.Gray,
-                letterSpacing = 1.sp
-            )
+Text(
+    text = "$weeks ${stringResource(id = if (weeks > 1) R.string.weeks else R.string.week)}",
+    fontWeight = FontWeight.Bold,
+    fontSize = 18.sp,
+    color = MaterialTheme.colorScheme.onSurface
+)
+Text(
+    text = description,
+    fontSize = 14.sp,
+    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    letterSpacing = 1.sp
+)
         }
     }
 }
