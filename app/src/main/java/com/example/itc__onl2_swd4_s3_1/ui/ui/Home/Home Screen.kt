@@ -80,7 +80,7 @@ class HomeScreen : ComponentActivity() {
 
     private fun handleNavClick(index: Int) {
         when (index) {
-            0 -> openHomeActivity()
+            0 -> if (this !is HomeScreen) startActivity(Intent(this, HomeScreen::class.java))
             1 -> startActivity(Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahContainerActivity::class.java))
             2 -> startActivity(Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity::class.java))
             3 -> startActivity(Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage::class.java))
