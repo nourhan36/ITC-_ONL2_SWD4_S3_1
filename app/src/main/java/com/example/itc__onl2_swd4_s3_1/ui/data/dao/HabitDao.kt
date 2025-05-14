@@ -22,6 +22,8 @@ interface HabitDao {
     @Query("DELETE FROM habits")
     suspend fun deleteAllHabits()
 
+    @Query("DELETE FROM habits WHERE date < :today")
+    suspend fun deleteOldHabits(today: String)
     @Query("SELECT * FROM habits WHERE isCompleted = 0")
     fun getIncompleteHabits(): Flow<List<HabitEntity>>
     @Query("SELECT * FROM habits")

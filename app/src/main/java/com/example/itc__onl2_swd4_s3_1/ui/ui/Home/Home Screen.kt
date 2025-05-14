@@ -52,6 +52,8 @@ import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.ResetHabitsWorker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
@@ -271,20 +273,15 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
 
     val context = LocalContext.current
-    val activity = context as? Activity
+    var resetDone by remember { mutableStateOf(false) }
 
-    // 🔁 المراقبة التلقائية للساعة 12
     LaunchedEffect(Unit) {
-        while (true) {
-            val now = Calendar.getInstance()
-            if (now.get(Calendar.HOUR_OF_DAY) == 0 && now.get(Calendar.MINUTE) == 0) {
-                viewModel.deleteAllHabits()
-                Toast.makeText(context, "Habits reset for the new day!", Toast.LENGTH_SHORT).show()
-                activity?.recreate()
-                delay(60 * 1000L)
-            } else {
-                delay(30 * 1000L)
-            }
+        val now = Calendar.getInstance()
+        if (now.get(Calendar.HOUR_OF_DAY) == 0 && now.get(Calendar.MINUTE) == 0 && !resetDone) {
+            val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+            viewModel.deleteOldHabits(today)
+            Toast.makeText(context, "Habits reset for the new day!", Toast.LENGTH_SHORT).show()
+            resetDone = true // ✅ نمنع التكرار
         }
     }
 

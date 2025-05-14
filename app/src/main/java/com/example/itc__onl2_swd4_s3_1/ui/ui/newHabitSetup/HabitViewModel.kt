@@ -49,6 +49,11 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
             markDayCompletedIfAllHabitsDone()
         }
     }
+    fun deleteOldHabits(today: String) {
+        viewModelScope.launch {
+            dao.deleteOldHabits(today)
+        }
+    }
 
     fun insertHabit(habit: HabitEntity) {
         viewModelScope.launch {
