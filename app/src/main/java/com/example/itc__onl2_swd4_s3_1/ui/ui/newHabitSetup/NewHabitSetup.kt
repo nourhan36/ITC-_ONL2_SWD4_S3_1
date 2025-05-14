@@ -192,13 +192,12 @@ fun NewHabitSetupScreen(
 fun StartTimeSelector(onDateSelected: (String) -> Unit) {
     val options = listOf("Today", "Tomorrow", "Custom")
     var showDialog by remember { mutableStateOf(false) }
-    var selectedIndex by remember { mutableIntStateOf(0) }
+    var selectedIndex by remember { mutableIntStateOf(0) } // Manage state here
 
-    // Update date when selection changes
     LaunchedEffect(selectedIndex) {
         when (options[selectedIndex]) {
-            "Today" -> onDateSelected(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
-            "Tomorrow" -> onDateSelected(LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_DATE))
+            "Today" -> onDateSelected(LocalDate.now().toString())
+            "Tomorrow" -> onDateSelected(LocalDate.now().plusDays(1).toString())
             "Custom" -> showDialog = true
         }
     }
@@ -207,18 +206,22 @@ fun StartTimeSelector(onDateSelected: (String) -> Unit) {
         question = "When would you like to start it?",
         listOptions = options,
         isMultiSelect = false,
-        onSelectionChanged = { index -> selectedIndex = index }, // Track selection
+        selectedIndex = selectedIndex,
+        onSelectedIndexChange = { selectedIndex = it },
         onCustomSelect = { showDialog = true }
     )
 
     if (showDialog) {
         CustomDaysDialog(
             selectionType = NewHabitSetup.CustomDaySelectionType.SINGLE,
-            onDismiss = { showDialog = false },
+            onDismiss = {
+                showDialog = false
+                selectedIndex = 0 // Reset to "Today" on dismiss
+            },
             onDaysSelected = { days ->
                 days.firstOrNull()?.let { day ->
                     val date = getNextDateForDay(day)
-                    onDateSelected(date.format(DateTimeFormatter.ISO_DATE))
+                    onDateSelected(date.toString())
                 }
             }
         )
@@ -237,19 +240,29 @@ private fun getNextDateForDay(dayName: String): LocalDate {
 fun RepeatingSelector(onCustomDaysSelected: (List<String>) -> Unit) {
     val options = listOf("Every Day", "Weekly", "Custom")
     var showDialog by remember { mutableStateOf(false) }
+    var selectedIndex by remember { mutableIntStateOf(0) } // Manage state here
 
     SegmentButtonsSelector(
         question = "How often do you want to do it?",
         listOptions = options,
         isMultiSelect = true,
-onSelectionChanged = { /* Handle selection change */ },
-onCustomSelect = { showDialog = true }
+        selectedIndex = selectedIndex,
+        onSelectedIndexChange = { selectedIndex = it },
+        onCustomSelect = {
+            showDialog = true
+        }
     )
+
     if (showDialog) {
         CustomDaysDialog(
             selectionType = NewHabitSetup.CustomDaySelectionType.MULTIPLE,
-            onDismiss = { showDialog = false },
-            onDaysSelected = onCustomDaysSelected
+            onDismiss = {
+                showDialog = false
+                selectedIndex = 0 // Reset to "Every Day" on dismiss
+            },
+            onDaysSelected = { days ->
+                onCustomDaysSelected(days)
+            }
         )
     }
 }
@@ -260,11 +273,10 @@ fun SegmentButtonsSelector(
     question: String,
     listOptions: List<String>,
     isMultiSelect: Boolean,
-    onSelectionChanged: (Int) -> Unit, // New callback
-    onCustomSelect: ((NewHabitSetup.CustomDaySelectionType) -> Unit)? = null
+    selectedIndex: Int, // Receive selected index from parent
+    onSelectedIndexChange: (Int) -> Unit, // Callback to update index
+    onCustomSelect: (NewHabitSetup.CustomDaySelectionType) -> Unit
 ) {
-    var selectedIndex by remember { mutableIntStateOf(0) }
-
     Column {
         Text(
             text = question,
@@ -276,10 +288,9 @@ fun SegmentButtonsSelector(
                 SegmentedButton(
                     selected = index == selectedIndex,
                     onClick = {
-                        selectedIndex = index
-                        onSelectionChanged(index) // Report selection change
+                        onSelectedIndexChange(index)
                         if (option == "Custom") {
-                            onCustomSelect?.invoke(
+                            onCustomSelect(
                                 if (isMultiSelect) NewHabitSetup.CustomDaySelectionType.MULTIPLE
                                 else NewHabitSetup.CustomDaySelectionType.SINGLE
                             )
