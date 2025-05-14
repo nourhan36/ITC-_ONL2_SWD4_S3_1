@@ -40,21 +40,14 @@ class ProgressTrackerPage : ComponentActivity() {
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
                 val viewModel: HabitViewModel = viewModel()
-
-                // Filter: Only include completed days that are from yesterday or earlier
                 val completedDays by viewModel.allCompletedDays.collectAsState(initial = emptyList())
                 val today = LocalDate.now()
                 val filteredDays = completedDays.mapNotNull {
                     runCatching { LocalDate.parse(it) }.getOrNull()
-                }.filter { it.isBefore(today) } // ✅ exclude today even if it's completed
+                }.filter { it.isBefore(today) }
                 val (currentStreak, highestStreak) = remember(filteredDays) {
                     calculateStreaks(filteredDays.map { it.toString() })
                 }
-
-                val currentMonthDays = filteredDays.mapNotNull {
-                    runCatching { it.dayOfMonth }.getOrNull()
-                }
-
                 val firstDay = filteredDays.minOrNull() ?: today
                 val totalDaysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(firstDay, today).toInt().coerceAtLeast(1)
                 val progress = filteredDays.size / totalDaysSinceStart.toFloat()
@@ -63,7 +56,7 @@ class ProgressTrackerPage : ComponentActivity() {
                     currentStreak = currentStreak,
                     highestStreak = highestStreak,
                     progress = progress,
-                    completedDays = currentMonthDays
+                    completedDates = filteredDays
                 )
             }
         }
@@ -71,7 +64,7 @@ class ProgressTrackerPage : ComponentActivity() {
 }
 
 @Composable
-fun CombinedScreen(currentStreak: Int, highestStreak: Int, progress: Float, completedDays: List<Int>) {
+fun CombinedScreen(currentStreak: Int, highestStreak: Int, progress: Float, completedDates: List<LocalDate>) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -86,7 +79,7 @@ fun CombinedScreen(currentStreak: Int, highestStreak: Int, progress: Float, comp
             modifier = Modifier.weight(0.3f)
         )
         CircularProgressBar(progress = progress, modifier = Modifier.weight(1.3f))
-        CalendarView(completedDays = completedDays, modifier = Modifier.weight(1.4f))
+        CalendarView(completedDates = completedDates, modifier = Modifier.weight(1.4f))
     }
 }
 
@@ -249,7 +242,7 @@ fun CircularProgressBar(progress: Float, modifier: Modifier = Modifier) {
 //}
 
 @Composable
-fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
+fun CalendarView(completedDates: List<LocalDate>, modifier: Modifier = Modifier) {
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     val daysInMonth = currentMonth.lengthOfMonth()
     val today = LocalDate.now().dayOfMonth
@@ -261,9 +254,7 @@ fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
             .padding(16.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -313,12 +304,14 @@ fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
                     for (j in 0 until 7) {
                         val day = i + j - firstDayOfMonth + 1
                         if (day in 1..daysInMonth) {
+                            val dateForThisDay = currentMonth.atDay(day)
+                            val isCompleted = completedDates.contains(dateForThisDay)
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (day in completedDays) MaterialTheme.colorScheme.secondary
+                                        if (isCompleted) MaterialTheme.colorScheme.secondary
                                         else MaterialTheme.colorScheme.surface
                                     )
                                     .clickable { },
@@ -326,7 +319,7 @@ fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
                             ) {
                                 Text(
                                     text = day.toString(),
-                                    color = if (day == today) Color.Red else MaterialTheme.colorScheme.onSurface,
+                                    color = if (day == today && currentMonth == YearMonth.now()) Color.Red else MaterialTheme.colorScheme.onSurface,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -339,6 +332,7 @@ fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
         }
     }
 }
+
 
 @Composable
 fun StreakItem(weeks: Int, description: String, modifier: Modifier = Modifier) {
@@ -376,7 +370,7 @@ CombinedScreen(
             currentStreak = 2,
             highestStreak = 5,
             progress = 0.50f,
-            completedDays = listOf(2, 5, 10, 15, 20)
+         completedDates = listOf(LocalDate.of(2023, 1, 2), LocalDate.of(2023, 1, 5), LocalDate.of(2023, 1, 10), LocalDate.of(2023, 1, 15), LocalDate.of(2023, 1, 20))
         )
     }
 }
