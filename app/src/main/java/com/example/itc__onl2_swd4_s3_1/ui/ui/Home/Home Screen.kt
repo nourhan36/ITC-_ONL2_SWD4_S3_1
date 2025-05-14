@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -35,6 +36,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -47,43 +51,85 @@ import com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage
 import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector.HabitSelector
 import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
+import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.ResetHabitsWorker
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 class HomeScreen : ComponentActivity() {
+
+    private val viewModel: HabitViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         scheduleHabitReset(applicationContext)
-        setContent {
-            navBar(
-                onFabClick = { openHomeActivity() },
-                onNavItemClick = { index -> handleNavClick(index) }
 
-            )
+        // ✅ تحقق من إذا العادات محتاجة Reset عند أول تشغيل
+        val prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        val lastResetDate = prefs.getString("lastResetDate", null)
+        val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+
+        if (lastResetDate != today) {
+            viewModel.deleteOldHabits(today)
+            prefs.edit().putString("lastResetDate", today).apply()
+        }
+
+        setContent {
+            ITC_ONL2_SWD4_S3_1Theme {
+                navBar(
+                    viewModel = viewModel,
+                    onFabClick = { openHabitSelector() },
+                    onNavItemClick = { index -> handleNavClick(index) }
+                )
+            }
         }
     }
 
-    private fun openHomeActivity() {
+    private fun openHabitSelector() {
         val intent = Intent(this, HabitSelector::class.java)
         startActivity(intent)
     }
 
     private fun handleNavClick(index: Int) {
         when (index) {
-            0 -> openHomeActivity()
-           1-> startActivity(Intent(this, SalahContainerActivity::class.java))
+            0 -> if (this !is HomeScreen) startActivity(Intent(this, HomeScreen::class.java))
+            1 -> startActivity(Intent(this, SalahContainerActivity::class.java))
             2 -> startActivity(Intent(this, DhikrCounterActivity::class.java))
-            3-> startActivity(Intent(this, ProgressTrackerPage::class.java))
-
+            3 -> startActivity(Intent(this, ProgressTrackerPage::class.java))
         }
+    }
+
+    private fun scheduleHabitReset(context: Context) {
+        val currentDate = Calendar.getInstance()
+        val dueDate = Calendar.getInstance()
+        dueDate.set(Calendar.HOUR_OF_DAY, 0)
+        dueDate.set(Calendar.MINUTE, 0)
+        dueDate.set(Calendar.SECOND, 0)
+        if (dueDate.before(currentDate)) dueDate.add(Calendar.DAY_OF_MONTH, 1)
+        val timeDiff = dueDate.timeInMillis - currentDate.timeInMillis
+
+        val dailyWorkRequest = PeriodicWorkRequestBuilder<ResetHabitsWorker>(1, TimeUnit.DAYS)
+            .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "resetHabits",
+            ExistingPeriodicWorkPolicy.UPDATE,
+            dailyWorkRequest
+        )
     }
 }
 
+
+
+
 @Composable
 fun navBar(
+    viewModel: HabitViewModel,
     onFabClick: () -> Unit,
     onNavItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier
@@ -242,31 +288,29 @@ fun scheduleHabitReset(context: Context) {
 fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     val selectedFilter = viewModel.selectedFilter
     val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
+    // In HomeScreen Content
 
     val context = LocalContext.current
-    val activity = context as? Activity
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    // 🔁 المراقبة التلقائية للساعة 12
-    LaunchedEffect(Unit) {
-        while (true) {
-            val now = Calendar.getInstance()
-            if (now.get(Calendar.HOUR_OF_DAY) == 0 && now.get(Calendar.MINUTE) == 0) {
-                viewModel.deleteAllHabits()
-                Toast.makeText(context, "Habits reset for the new day!", Toast.LENGTH_SHORT).show()
-                activity?.recreate()
-                delay(60 * 1000L)
-            } else {
-                delay(30 * 1000L)
+    // ✅ SharedPreferences لتفادي التكرار
+    val prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+    val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshDate()
             }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
-
-
-
     Column(modifier = modifier.fillMaxSize()) {
 
-        // ✅ Box للصورة والنص بدون أي padding خارجي يسبب فراغ
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -278,7 +322,6 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxSize()
             )
 
-            // ✅ نص في الأعلى بدون أي خلفيات بيضاء
             Column(
                 modifier = Modifier
                     .align(Alignment.TopStart)
@@ -286,7 +329,7 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
             ) {
                 Text(
                     text = "Ramadan Habit Tracker",
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 24.sp
                 )
 
@@ -298,20 +341,19 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                 ) {
                     Text(
                         text = getCurrentDate(),
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onBackground,
                         fontSize = 16.sp
                     )
                     Column(horizontalAlignment = Alignment.End) {
-                        Text(text = "Cairo", fontSize = 16.sp, color = Color.Black)
-                        Text(text = "Egypt", fontSize = 16.sp, color = Color.Black)
+                        Text(text = "Cairo", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
+                        Text(text = "Egypt", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
                     }
                 }
             }
         }
 
-        // ✅ تأكد أن هذه العناصر خارج Box لتبدأ بعد الصورة مباشرة
         Surface(
-            color = MaterialTheme.colorScheme.background, // خلفية متناسقة
+            color = MaterialTheme.colorScheme.background,
             modifier = Modifier.fillMaxWidth()
         ) {
             Column {
@@ -335,7 +377,7 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                                 )
                                 .padding(8.dp),
                             fontSize = 20.sp,
-                            color = if (selectedFilter == label) Color.Red else Color.Black,
+                            color = if (selectedFilter == label) Color.Red else MaterialTheme.colorScheme.onBackground,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -431,8 +473,8 @@ fun LanguageSelector(
     }
 }
 
-@Preview
-@Composable
-fun previewMain() {
-    navBar(onFabClick = {}, onNavItemClick = {})
-}
+//@Preview
+//@Composable
+//fun previewMain() {
+//    navBar(onFabClick = {}, onNavItemClick = {})
+//}

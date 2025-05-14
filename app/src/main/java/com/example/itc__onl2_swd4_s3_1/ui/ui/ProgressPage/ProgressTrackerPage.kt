@@ -1,3 +1,4 @@
+// ProgressTrackerPage.kt
 package com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage
 
 import android.os.Bundle
@@ -7,26 +8,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,9 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.Constants
+import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -52,11 +39,24 @@ class ProgressTrackerPage : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
+                val viewModel: HabitViewModel = viewModel()
+                val completedDays by viewModel.allCompletedDays.collectAsState(initial = emptyList())
+                val today = LocalDate.now()
+                val filteredDays = completedDays.mapNotNull {
+                    runCatching { LocalDate.parse(it) }.getOrNull()
+                }.filter { it.isBefore(today) }
+                val (currentStreak, highestStreak) = remember(filteredDays) {
+                    calculateStreaks(filteredDays.map { it.toString() })
+                }
+                val firstDay = filteredDays.minOrNull() ?: today
+                val totalDaysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(firstDay, today).toInt().coerceAtLeast(1)
+                val progress = filteredDays.size / totalDaysSinceStart.toFloat()
+
                 CombinedScreen(
-                    weeks = 2,
-                    highestWeeks = 5,
-                    progress = 0.75f,
-                    completedDays = listOf(2, 5, 10, 15, 20)
+                    currentStreak = currentStreak,
+                    highestStreak = highestStreak,
+                    progress = progress,
+                    completedDates = filteredDays
                 )
             }
         }
@@ -64,7 +64,7 @@ class ProgressTrackerPage : ComponentActivity() {
 }
 
 @Composable
-fun CombinedScreen(weeks: Int, highestWeeks: Int, progress: Float, completedDays: List<Int>) {
+fun CombinedScreen(currentStreak: Int, highestStreak: Int, progress: Float, completedDates: List<LocalDate>) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -74,15 +74,101 @@ fun CombinedScreen(weeks: Int, highestWeeks: Int, progress: Float, completedDays
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         StreakBar(
-            currentWeeks = weeks,
-            highestWeeks = highestWeeks,
+            currentStreak = currentStreak,
+            highestStreak = highestStreak,
             modifier = Modifier.weight(0.3f)
         )
         CircularProgressBar(progress = progress, modifier = Modifier.weight(1.3f))
-        CalendarView(completedDays = completedDays, modifier = Modifier.weight(1.4f))
+        CalendarView(completedDates = completedDates, modifier = Modifier.weight(1.4f))
     }
 }
 
+fun formatStreak(value: Int): String {
+    return when {
+        value >= 365 -> "${value / 365} year${if (value / 365 > 1) "s" else ""}"
+        value >= 30 -> "${value / 30} month${if (value / 30 > 1) "s" else ""}"
+        value >= 7 -> "${value / 7} week${if (value / 7 > 1) "s" else ""}"
+        else -> "$value day${if (value > 1) "s" else ""}"
+    }
+}
+
+@Composable
+fun StreakBar(currentStreak: Int, highestStreak: Int, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+        StreakItem(
+            value = formatStreak(currentStreak),
+            description = stringResource(id = R.string.current_streak),
+            modifier = Modifier.weight(1f)
+        )
+        StreakItem(
+            value = formatStreak(highestStreak),
+            description = stringResource(id = R.string.highest_streak),
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun StreakItem(value: String, description: String, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.padding(4.dp)) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_streak),
+            contentDescription = stringResource(id = R.string.streak_image_description),
+            modifier = Modifier.size(32.dp)
+        )
+        Column(modifier = Modifier.padding(start = 4.dp)) {
+            Text(
+                text = value,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = description,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 1.sp
+            )
+        }
+    }
+}
+
+fun calculateStreaks(completedDates: List<String>): Pair<Int, Int> {
+    val sortedDates = completedDates.mapNotNull {
+        runCatching { LocalDate.parse(it) }.getOrNull()
+    }.sorted()
+
+    if (sortedDates.isEmpty()) return Pair(0, 0)
+
+    var currentStreak = 1
+    var highestStreak = 1
+    var tempStreak = 1
+    var previous = sortedDates.first()
+
+    for (i in 1 until sortedDates.size) {
+        val current = sortedDates[i]
+        if (previous.plusDays(1) == current) {
+            tempStreak++
+        } else {
+            tempStreak = 1
+        }
+        highestStreak = maxOf(highestStreak, tempStreak)
+        previous = current
+    }
+
+    val yesterday = LocalDate.now().minusDays(1)
+    currentStreak = if (sortedDates.contains(yesterday)) {
+        var streak = 1
+        var date = yesterday
+        while (sortedDates.contains(date.minusDays(1))) {
+            streak++
+            date = date.minusDays(1)
+        }
+        streak
+    } else 0
+
+    return Pair(currentStreak, highestStreak)
+}
 @Composable
 fun CircularProgressBar(progress: Float, modifier: Modifier = Modifier) {
     val circleSize = 200.dp
@@ -139,24 +225,24 @@ fun CircularProgressBar(progress: Float, modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun StreakBar(currentWeeks: Int, highestWeeks: Int, modifier: Modifier = Modifier) {
-    Row(modifier = modifier) {
-        StreakItem(
-            weeks = currentWeeks,
-            description = stringResource(id = R.string.current_streak),
-            modifier = Modifier.weight(1f)
-        )
-        StreakItem(
-            weeks = highestWeeks,
-            description = stringResource(id = R.string.highest_streak),
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
+//@Composable
+//fun StreakBar(currentWeeks: Int, highestWeeks: Int, modifier: Modifier = Modifier) {
+//    Row(modifier = modifier) {
+//        StreakItem(
+//            weeks = currentWeeks,
+//            description = stringResource(id = R.string.current_streak),
+//            modifier = Modifier.weight(1f)
+//        )
+//        StreakItem(
+//            weeks = highestWeeks,
+//            description = stringResource(id = R.string.highest_streak),
+//            modifier = Modifier.weight(1f)
+//        )
+//    }
+//}
 
 @Composable
-fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
+fun CalendarView(completedDates: List<LocalDate>, modifier: Modifier = Modifier) {
     var currentMonth by remember { mutableStateOf(YearMonth.now()) }
     val daysInMonth = currentMonth.lengthOfMonth()
     val today = LocalDate.now().dayOfMonth
@@ -168,9 +254,7 @@ fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
             .padding(16.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -220,12 +304,14 @@ fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
                     for (j in 0 until 7) {
                         val day = i + j - firstDayOfMonth + 1
                         if (day in 1..daysInMonth) {
+                            val dateForThisDay = currentMonth.atDay(day)
+                            val isCompleted = completedDates.contains(dateForThisDay)
                             Box(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (day in completedDays) MaterialTheme.colorScheme.secondary
+                                        if (isCompleted) MaterialTheme.colorScheme.secondary
                                         else MaterialTheme.colorScheme.surface
                                     )
                                     .clickable { },
@@ -233,7 +319,7 @@ fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
                             ) {
                                 Text(
                                     text = day.toString(),
-                                    color = if (day == today) Color.Red else MaterialTheme.colorScheme.onSurface,
+                                    color = if (day == today && currentMonth == YearMonth.now()) Color.Red else MaterialTheme.colorScheme.onSurface,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -247,6 +333,7 @@ fun CalendarView(completedDays: List<Int>, modifier: Modifier = Modifier) {
     }
 }
 
+
 @Composable
 fun StreakItem(weeks: Int, description: String, modifier: Modifier = Modifier) {
     Row(
@@ -258,17 +345,18 @@ fun StreakItem(weeks: Int, description: String, modifier: Modifier = Modifier) {
             modifier = Modifier.size(32.dp)
         )
         Column(modifier = Modifier.padding(start = 4.dp)) {
-            Text(
-                text = "$weeks ${stringResource(id = if (weeks > 1) R.string.weeks else R.string.week)}",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Text(
-                text = description,
-                fontSize = 14.sp,
-                color = Color.Gray,
-                letterSpacing = 1.sp
-            )
+Text(
+    text = "$weeks ${stringResource(id = if (weeks > 1) R.string.weeks else R.string.week)}",
+    fontWeight = FontWeight.Bold,
+    fontSize = 18.sp,
+    color = MaterialTheme.colorScheme.onSurface
+)
+Text(
+    text = description,
+    fontSize = 14.sp,
+    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    letterSpacing = 1.sp
+)
         }
     }
 }
@@ -278,11 +366,11 @@ fun StreakItem(weeks: Int, description: String, modifier: Modifier = Modifier) {
 @Composable
 fun ProgressPreview() {
     ITC_ONL2_SWD4_S3_1Theme(dynamicColor = false) {
-        CombinedScreen(
-            weeks = 2,
-            highestWeeks = 5,
+CombinedScreen(
+            currentStreak = 2,
+            highestStreak = 5,
             progress = 0.50f,
-            completedDays = listOf(2, 5, 10, 15, 20)
+         completedDates = listOf(LocalDate.of(2023, 1, 2), LocalDate.of(2023, 1, 5), LocalDate.of(2023, 1, 10), LocalDate.of(2023, 1, 15), LocalDate.of(2023, 1, 20))
         )
     }
 }
