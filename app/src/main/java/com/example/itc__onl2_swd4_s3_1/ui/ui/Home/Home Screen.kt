@@ -36,6 +36,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
@@ -59,33 +62,44 @@ import java.util.concurrent.TimeUnit
 
 class HomeScreen : ComponentActivity() {
 
-    private val viewModel: HabitViewModel by viewModels() // ✅ ViewModel tied to Activity
+    private val viewModel: HabitViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         scheduleHabitReset(applicationContext)
+
+        // ✅ تحقق من إذا العادات محتاجة Reset عند أول تشغيل
+        val prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        val lastResetDate = prefs.getString("lastResetDate", null)
+        val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+
+        if (lastResetDate != today) {
+            viewModel.deleteOldHabits(today)
+            prefs.edit().putString("lastResetDate", today).apply()
+        }
+
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
                 navBar(
                     viewModel = viewModel,
-                    onFabClick = { openHomeActivity() },
+                    onFabClick = { openHabitSelector() },
                     onNavItemClick = { index -> handleNavClick(index) }
                 )
             }
         }
     }
 
-    private fun openHomeActivity() {
-        val intent = Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector.HabitSelector::class.java)
+    private fun openHabitSelector() {
+        val intent = Intent(this, HabitSelector::class.java)
         startActivity(intent)
     }
 
     private fun handleNavClick(index: Int) {
         when (index) {
             0 -> if (this !is HomeScreen) startActivity(Intent(this, HomeScreen::class.java))
-            1 -> startActivity(Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahContainerActivity::class.java))
-            2 -> startActivity(Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity::class.java))
-            3 -> startActivity(Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage::class.java))
+            1 -> startActivity(Intent(this, SalahContainerActivity::class.java))
+            2 -> startActivity(Intent(this, DhikrCounterActivity::class.java))
+            3 -> startActivity(Intent(this, ProgressTrackerPage::class.java))
         }
     }
 
@@ -109,6 +123,9 @@ class HomeScreen : ComponentActivity() {
         )
     }
 }
+
+
+
 
 @Composable
 fun navBar(
@@ -273,15 +290,31 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
 
     val context = LocalContext.current
-    var resetDone by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(Unit) {
-        val now = Calendar.getInstance()
-        if (now.get(Calendar.HOUR_OF_DAY) == 0 && now.get(Calendar.MINUTE) == 0 && !resetDone) {
-            val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
-            viewModel.deleteOldHabits(today)
-            Toast.makeText(context, "Habits reset for the new day!", Toast.LENGTH_SHORT).show()
-            resetDone = true // ✅ نمنع التكرار
+    // ✅ SharedPreferences لتفادي التكرار
+    val prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+    val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val now = Calendar.getInstance()
+                val hour = now.get(Calendar.HOUR_OF_DAY)
+                val minute = now.get(Calendar.MINUTE)
+
+                val lastResetDate = prefs.getString("lastResetDate", null)
+                if (hour == 0 && minute == 0 && lastResetDate != today) {
+                    viewModel.deleteOldHabits(today)
+                    prefs.edit().putString("lastResetDate", today).apply()
+                    Toast.makeText(context, "Habits reset for the new day!", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -373,6 +406,7 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
         }
     }
 }
+
 
 
 
