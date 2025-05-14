@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -55,13 +56,16 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 class HomeScreen : ComponentActivity() {
+
+    private val viewModel: HabitViewModel by viewModels() // ✅ ViewModel tied to Activity
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         scheduleHabitReset(applicationContext)
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
-
                 navBar(
+                    viewModel = viewModel,
                     onFabClick = { openHomeActivity() },
                     onNavItemClick = { index -> handleNavClick(index) }
                 )
@@ -69,25 +73,44 @@ class HomeScreen : ComponentActivity() {
         }
     }
 
-
     private fun openHomeActivity() {
-        val intent = Intent(this, HabitSelector::class.java)
+        val intent = Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector.HabitSelector::class.java)
         startActivity(intent)
     }
 
     private fun handleNavClick(index: Int) {
         when (index) {
             0 -> openHomeActivity()
-           1-> startActivity(Intent(this, SalahContainerActivity::class.java))
-            2 -> startActivity(Intent(this, DhikrCounterActivity::class.java))
-            3-> startActivity(Intent(this, ProgressTrackerPage::class.java))
-
+            1 -> startActivity(Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahContainerActivity::class.java))
+            2 -> startActivity(Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity::class.java))
+            3 -> startActivity(Intent(this, com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage::class.java))
         }
+    }
+
+    private fun scheduleHabitReset(context: Context) {
+        val currentDate = Calendar.getInstance()
+        val dueDate = Calendar.getInstance()
+        dueDate.set(Calendar.HOUR_OF_DAY, 0)
+        dueDate.set(Calendar.MINUTE, 0)
+        dueDate.set(Calendar.SECOND, 0)
+        if (dueDate.before(currentDate)) dueDate.add(Calendar.DAY_OF_MONTH, 1)
+        val timeDiff = dueDate.timeInMillis - currentDate.timeInMillis
+
+        val dailyWorkRequest = PeriodicWorkRequestBuilder<ResetHabitsWorker>(1, TimeUnit.DAYS)
+            .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "resetHabits",
+            ExistingPeriodicWorkPolicy.UPDATE,
+            dailyWorkRequest
+        )
     }
 }
 
 @Composable
 fun navBar(
+    viewModel: HabitViewModel,
     onFabClick: () -> Unit,
     onNavItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier
@@ -428,8 +451,8 @@ fun LanguageSelector(
     }
 }
 
-@Preview
-@Composable
-fun previewMain() {
-    navBar(onFabClick = {}, onNavItemClick = {})
-}
+//@Preview
+//@Composable
+//fun previewMain() {
+//    navBar(onFabClick = {}, onNavItemClick = {})
+//}
