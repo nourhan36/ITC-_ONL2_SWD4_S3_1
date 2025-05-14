@@ -158,8 +158,8 @@ fun NewHabitSetupScreen(
             StartTimeSelector { date ->
                 startDate = date
             }
-            RepeatingSelector(onCustomDaysSelected = onRepeatCustomDaysSelected)
-            ReminderText()
+//            RepeatingSelector(onCustomDaysSelected = onRepeatCustomDaysSelected)
+//            ReminderText()
         }
 
         Button(
@@ -236,36 +236,36 @@ private fun getNextDateForDay(dayName: String): LocalDate {
     }
     return date
 }
-@Composable
-fun RepeatingSelector(onCustomDaysSelected: (List<String>) -> Unit) {
-    val options = listOf("Every Day", "Weekly", "Custom")
-    var showDialog by remember { mutableStateOf(false) }
-    var selectedIndex by remember { mutableIntStateOf(0) } // Manage state here
-
-    SegmentButtonsSelector(
-        question = "How often do you want to do it?",
-        listOptions = options,
-        isMultiSelect = true,
-        selectedIndex = selectedIndex,
-        onSelectedIndexChange = { selectedIndex = it },
-        onCustomSelect = {
-            showDialog = true
-        }
-    )
-
-    if (showDialog) {
-        CustomDaysDialog(
-            selectionType = NewHabitSetup.CustomDaySelectionType.MULTIPLE,
-            onDismiss = {
-                showDialog = false
-                selectedIndex = 0 // Reset to "Every Day" on dismiss
-            },
-            onDaysSelected = { days ->
-                onCustomDaysSelected(days)
-            }
-        )
-    }
-}
+//@Composable
+//fun RepeatingSelector(onCustomDaysSelected: (List<String>) -> Unit) {
+//    val options = listOf("Every Day", "Weekly", "Custom")
+//    var showDialog by remember { mutableStateOf(false) }
+//    var selectedIndex by remember { mutableIntStateOf(0) } // Manage state here
+//
+//    SegmentButtonsSelector(
+//        question = "How often do you want to do it?",
+//        listOptions = options,
+//        isMultiSelect = true,
+//        selectedIndex = selectedIndex,
+//        onSelectedIndexChange = { selectedIndex = it },
+//        onCustomSelect = {
+//            showDialog = true
+//        }
+//    )
+//
+//    if (showDialog) {
+//        CustomDaysDialog(
+//            selectionType = NewHabitSetup.CustomDaySelectionType.MULTIPLE,
+//            onDismiss = {
+//                showDialog = false
+//                selectedIndex = 0 // Reset to "Every Day" on dismiss
+//            },
+//            onDaysSelected = { days ->
+//                onCustomDaysSelected(days)
+//            }
+//        )
+//    }
+//}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -509,29 +509,29 @@ fun HabitTitleInput(value: String, onValueChange: (String) -> Unit) {
     }
 }
 
-@Composable
-fun ReminderText() {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Row(modifier = Modifier.padding(16.dp)) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Reminder Icon",
-                tint = colorScheme.primary
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Set reminder so you don't forget to do it",
-                color = colorScheme.onSurface, // Updated from primary
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-        Text(
-            text = "Create Reminder",
-            color = colorScheme.onSurface, // Updated from primary
-            modifier = Modifier.clickable { }
-        )
-    }
-}
+//@Composable
+//fun ReminderText() {
+//    Column(
+//        modifier = Modifier.fillMaxWidth(),
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        Row(modifier = Modifier.padding(16.dp)) {
+//            Icon(
+//                imageVector = Icons.Default.Notifications,
+//                contentDescription = "Reminder Icon",
+//                tint = colorScheme.primary
+//            )
+//            Spacer(modifier = Modifier.width(8.dp))
+//            Text(
+//                text = "Set reminder so you don't forget to do it",
+//                color = colorScheme.onSurface, // Updated from primary
+//                style = MaterialTheme.typography.bodyMedium
+//            )
+//        }
+//        Text(
+//            text = "Create Reminder",
+//            color = colorScheme.onSurface, // Updated from primary
+//            modifier = Modifier.clickable { }
+//        )
+//    }
+//}
