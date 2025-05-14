@@ -192,13 +192,18 @@ fun NewHabitSetupScreen(
 fun StartTimeSelector(onDateSelected: (String) -> Unit) {
     val options = listOf("Today", "Tomorrow", "Custom")
     var showDialog by remember { mutableStateOf(false) }
-    var selectedIndex by remember { mutableIntStateOf(0) } // Manage state here
+    var selectedIndex by remember { mutableIntStateOf(0) }
+    var hasCustomSelected by remember { mutableStateOf(false) }
+    var customSelectedDay by remember { mutableStateOf<String?>(null) }
 
+    // ✅ فقط لو المستخدم اختار Today أو Tomorrow
     LaunchedEffect(selectedIndex) {
-        when (options[selectedIndex]) {
-            "Today" -> onDateSelected(LocalDate.now().toString())
-            "Tomorrow" -> onDateSelected(LocalDate.now().plusDays(1).toString())
-            "Custom" -> showDialog = true
+        if (selectedIndex == 0) {
+            onDateSelected(LocalDate.now().toString())
+        } else if (selectedIndex == 1) {
+            onDateSelected(LocalDate.now().plusDays(1).toString())
+        } else {
+            showDialog = true // Custom
         }
     }
 
@@ -207,7 +212,13 @@ fun StartTimeSelector(onDateSelected: (String) -> Unit) {
         listOptions = options,
         isMultiSelect = false,
         selectedIndex = selectedIndex,
-        onSelectedIndexChange = { selectedIndex = it },
+        onSelectedIndexChange = {
+            selectedIndex = it
+            if (it != 2) {
+                hasCustomSelected = false
+                customSelectedDay = null
+            }
+        },
         onCustomSelect = { showDialog = true }
     )
 
@@ -216,17 +227,25 @@ fun StartTimeSelector(onDateSelected: (String) -> Unit) {
             selectionType = NewHabitSetup.CustomDaySelectionType.SINGLE,
             onDismiss = {
                 showDialog = false
-                selectedIndex = 0 // Reset to "Today" on dismiss
+                if (!hasCustomSelected) {
+                    // ✅ رجع Today لو مفيش يوم مختار
+                    selectedIndex = 0
+                    onDateSelected(LocalDate.now().toString())
+                }
             },
             onDaysSelected = { days ->
                 days.firstOrNull()?.let { day ->
                     val date = getNextDateForDay(day)
+                    customSelectedDay = day
+                    hasCustomSelected = true
                     onDateSelected(date.toString())
+                    showDialog = false
                 }
             }
         )
     }
 }
+
 
 private fun getNextDateForDay(dayName: String): LocalDate {
     val dayOfWeek = DayOfWeek.valueOf(dayName.uppercase())
@@ -355,13 +374,17 @@ fun CustomDaysDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = {
-                onDaysSelected(selectedDays.toList())
-                onDismiss()
-            }) {
+            TextButton(
+                onClick = {
+                    onDaysSelected(selectedDays.toList())
+                    onDismiss()
+                },
+                enabled = selectedDays.isNotEmpty() // ✅ لازم يختار على الأقل يوم
+            ) {
                 Text("OK")
             }
-        },
+        }
+,
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text("Cancel")
@@ -474,6 +497,7 @@ fun TimeUnitDropdown(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HabitTitleInput(value: String, onValueChange: (String) -> Unit) {
     Row(
