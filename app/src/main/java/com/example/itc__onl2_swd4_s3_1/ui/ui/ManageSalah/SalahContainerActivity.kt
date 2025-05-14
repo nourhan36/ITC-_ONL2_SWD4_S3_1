@@ -11,6 +11,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.itc__onl2_swd4_s3_1.ui.ui.components.AppNavBar
+import com.example.itc__onl2_swd4_s3_1.ui.ui.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.ui.ui.prayertimes.PrayerApp
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.google.accompanist.pager.*
@@ -22,7 +24,14 @@ class SalahContainerActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
-                SalahTabsScreen()
+                val context = this
+                AppNavBar(
+                    selectedIndex = 1,
+                    onIndexChanged = { index -> handleNavClick(context, index) },
+                    onFabClick = null
+                ) { innerPadding ->
+                    SalahTabsScreen()
+                }
             }
         }
     }

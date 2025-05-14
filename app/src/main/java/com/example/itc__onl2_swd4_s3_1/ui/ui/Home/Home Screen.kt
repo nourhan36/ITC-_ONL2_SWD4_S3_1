@@ -48,6 +48,8 @@ import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.getCurrentDate
 import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahContainerActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage
+import com.example.itc__onl2_swd4_s3_1.ui.ui.components.AppNavBar
+import com.example.itc__onl2_swd4_s3_1.ui.ui.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector.HabitSelector
 import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
@@ -80,11 +82,16 @@ class HomeScreen : ComponentActivity() {
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
-                navBar(
-                    viewModel = viewModel,
-                    onFabClick = { openHabitSelector() },
-                    onNavItemClick = { index -> handleNavClick(index) }
-                )
+
+                    AppNavBar(
+                        selectedIndex = 0,
+                        onIndexChanged = { index -> handleNavClick(this, index) },
+                        onFabClick = { openHabitSelector() }
+                    ) { innerPadding ->
+                        Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))
+                    }
+
+
             }
         }
     }
