@@ -8,6 +8,8 @@ import com.example.itc__onl2_swd4_s3_1.ui.data.HabitDatabase
 import com.example.itc__onl2_swd4_s3_1.ui.data.entity.CompletedDayEntity
 import com.example.itc__onl2_swd4_s3_1.ui.data.entity.HabitEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -16,9 +18,38 @@ import java.time.format.DateTimeFormatter
 class HabitViewModel(application: Application) : AndroidViewModel(application) {
 
     private val dao = HabitDatabase.getDatabase(application).habitDao()
-
+    private val _currentDate = MutableStateFlow(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
     private val _selectedFilter = mutableStateOf("All")
+    // In HabitViewModel
+    val todayHabits: Flow<List<HabitEntity>> =
+        dao.getHabitsByDate(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+
+
     val selectedFilter: String get() = _selectedFilter.value
+    val today get() = _currentDate.value
+
+    val allHabits: Flow<List<HabitEntity>> = _currentDate.flatMapLatest { date ->
+        dao.getHabitsByDate(date)
+    }
+    val completedHabits: Flow<List<HabitEntity>> = _currentDate.flatMapLatest { date ->
+        dao.getCompletedHabitsByDate(date)
+    }
+    val incompleteHabits: Flow<List<HabitEntity>> = _currentDate.flatMapLatest { date ->
+        dao.getIncompleteHabitsByDate(date)
+    }
+
+    val filteredHabits: Flow<List<HabitEntity>>
+        get() = when (selectedFilter) {
+            "Complete" -> completedHabits
+            "Incomplete" -> incompleteHabits
+            else -> allHabits
+        }
+
+    fun refreshDate() {
+        _currentDate.value = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+    }
+
+
     val completedDayDao = HabitDatabase.getDatabase(application).completedDayDao()
 
     val allCompletedDays: Flow<List<String>> =
@@ -27,16 +58,9 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
         _selectedFilter.value = filter
     }
 
-    val allHabits: Flow<List<HabitEntity>> = dao.getAllHabits()
-    val completedHabits: Flow<List<HabitEntity>> = dao.getCompletedHabits()
-    val incompleteHabits: Flow<List<HabitEntity>> = dao.getIncompleteHabits()
 
-    val filteredHabits: Flow<List<HabitEntity>>
-        get() = when (selectedFilter) {
-            "Complete" -> completedHabits
-            "Incomplete" -> incompleteHabits
-            else -> allHabits
-        }
+
+
     fun deleteAllHabits() {
         viewModelScope.launch {
             dao.deleteAllHabits()

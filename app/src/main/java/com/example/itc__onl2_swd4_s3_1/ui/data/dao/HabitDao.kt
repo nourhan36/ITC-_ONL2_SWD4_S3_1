@@ -16,6 +16,15 @@ interface HabitDao {
     @Query("SELECT * FROM habits")
     fun getAllHabits(): Flow<List<HabitEntity>>
 
+    @Query("SELECT * FROM habits WHERE date = :date")
+    fun getHabitsByDate(date: String): Flow<List<HabitEntity>>
+
+    @Query("SELECT * FROM habits WHERE date = :date AND isCompleted = 1")
+    fun getCompletedHabitsByDate(date: String): Flow<List<HabitEntity>>
+
+    @Query("SELECT * FROM habits WHERE date = :date AND isCompleted = 0")
+    fun getIncompleteHabitsByDate(date: String): Flow<List<HabitEntity>>
+
     @Query("SELECT * FROM habits WHERE isCompleted = 1")
     fun getCompletedHabits(): Flow<List<HabitEntity>>
 

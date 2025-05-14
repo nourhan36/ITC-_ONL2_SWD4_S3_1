@@ -288,6 +288,7 @@ fun scheduleHabitReset(context: Context) {
 fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     val selectedFilter = viewModel.selectedFilter
     val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
+    // In HomeScreen Content
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -299,19 +300,9 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                val now = Calendar.getInstance()
-                val hour = now.get(Calendar.HOUR_OF_DAY)
-                val minute = now.get(Calendar.MINUTE)
-
-                val lastResetDate = prefs.getString("lastResetDate", null)
-                if (hour == 0 && minute == 0 && lastResetDate != today) {
-                    viewModel.deleteOldHabits(today)
-                    prefs.edit().putString("lastResetDate", today).apply()
-                    Toast.makeText(context, "Habits reset for the new day!", Toast.LENGTH_SHORT).show()
-                }
+                viewModel.refreshDate()
             }
         }
-
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)

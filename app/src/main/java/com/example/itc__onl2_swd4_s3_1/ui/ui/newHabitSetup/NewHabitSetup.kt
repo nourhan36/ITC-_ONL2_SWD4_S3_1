@@ -47,6 +47,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -64,6 +65,9 @@ import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.ui.Home.HomeScreen
 import com.example.itc__onl2_swd4_s3_1.ui.data.entity.HabitEntity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class NewHabitSetup : ComponentActivity() {
     enum class CustomDaySelectionType {
@@ -107,7 +111,7 @@ fun NewHabitSetupScreen(
     var durationValue by remember { mutableStateOf("") }
     var selectedUnit by remember { mutableStateOf("minutes") }
     val repeatType by remember { mutableStateOf("Every Day") }
-
+    var startDate by remember { mutableStateOf(LocalDate.now().format(DateTimeFormatter.ISO_DATE)) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -151,7 +155,9 @@ fun NewHabitSetupScreen(
                 onDurationChange = { durationValue = it },
                 onUnitChange = { selectedUnit = it }
             )
-            StartTimeSelector(onCustomDaySelected = onStartCustomDaySelected)
+            StartTimeSelector { date ->
+                startDate = date
+            }
             RepeatingSelector(onCustomDaysSelected = onRepeatCustomDaysSelected)
             ReminderText()
         }
@@ -166,7 +172,8 @@ fun NewHabitSetupScreen(
                             repeatType = repeatType,
                             duration = durationValue.toInt(),
                             reminderTime = "07:50 AM",
-                            isCompleted = false
+                            isCompleted = false,
+                            date = startDate // Assign computed date
                         )
                     )
                     onHabitSaved()
@@ -182,14 +189,25 @@ fun NewHabitSetupScreen(
 }
 
 @Composable
-fun StartTimeSelector(onCustomDaySelected: (List<String>) -> Unit) {
+fun StartTimeSelector(onDateSelected: (String) -> Unit) {
     val options = listOf("Today", "Tomorrow", "Custom")
     var showDialog by remember { mutableStateOf(false) }
+    var selectedIndex by remember { mutableIntStateOf(0) }
+
+    // Update date when selection changes
+    LaunchedEffect(selectedIndex) {
+        when (options[selectedIndex]) {
+            "Today" -> onDateSelected(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+            "Tomorrow" -> onDateSelected(LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_DATE))
+            "Custom" -> showDialog = true
+        }
+    }
 
     SegmentButtonsSelector(
         question = "When would you like to start it?",
         listOptions = options,
         isMultiSelect = false,
+        onSelectionChanged = { index -> selectedIndex = index }, // Track selection
         onCustomSelect = { showDialog = true }
     )
 
@@ -197,11 +215,24 @@ fun StartTimeSelector(onCustomDaySelected: (List<String>) -> Unit) {
         CustomDaysDialog(
             selectionType = NewHabitSetup.CustomDaySelectionType.SINGLE,
             onDismiss = { showDialog = false },
-            onDaysSelected = onCustomDaySelected
+            onDaysSelected = { days ->
+                days.firstOrNull()?.let { day ->
+                    val date = getNextDateForDay(day)
+                    onDateSelected(date.format(DateTimeFormatter.ISO_DATE))
+                }
+            }
         )
     }
 }
 
+private fun getNextDateForDay(dayName: String): LocalDate {
+    val dayOfWeek = DayOfWeek.valueOf(dayName.uppercase())
+    var date = LocalDate.now()
+    while (date.dayOfWeek != dayOfWeek) {
+        date = date.plusDays(1)
+    }
+    return date
+}
 @Composable
 fun RepeatingSelector(onCustomDaysSelected: (List<String>) -> Unit) {
     val options = listOf("Every Day", "Weekly", "Custom")
@@ -211,9 +242,9 @@ fun RepeatingSelector(onCustomDaysSelected: (List<String>) -> Unit) {
         question = "How often do you want to do it?",
         listOptions = options,
         isMultiSelect = true,
-        onCustomSelect = { showDialog = true }
+onSelectionChanged = { /* Handle selection change */ },
+onCustomSelect = { showDialog = true }
     )
-
     if (showDialog) {
         CustomDaysDialog(
             selectionType = NewHabitSetup.CustomDaySelectionType.MULTIPLE,
@@ -229,6 +260,7 @@ fun SegmentButtonsSelector(
     question: String,
     listOptions: List<String>,
     isMultiSelect: Boolean,
+    onSelectionChanged: (Int) -> Unit, // New callback
     onCustomSelect: ((NewHabitSetup.CustomDaySelectionType) -> Unit)? = null
 ) {
     var selectedIndex by remember { mutableIntStateOf(0) }
@@ -236,33 +268,30 @@ fun SegmentButtonsSelector(
     Column {
         Text(
             text = question,
-            color = colorScheme.primary,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 8.dp, top = 8.dp)
         )
-        Row(modifier = Modifier.padding(start = 8.dp, top = 8.dp)) {
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                listOptions.forEachIndexed { index, option ->
-                    SegmentedButton(
-                        selected = index == selectedIndex,
-                        onClick = {
-                            selectedIndex = index
-                            if (option == "Custom") {
-                                onCustomSelect?.invoke(
-                                    if (isMultiSelect) NewHabitSetup.CustomDaySelectionType.MULTIPLE
-                                    else NewHabitSetup.CustomDaySelectionType.SINGLE
-                                )
-                            }
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(index, listOptions.size),
-                        modifier = Modifier.weight(1f),
-                        colors = SegmentedButtonDefaults.colors(
-                            activeContainerColor = colorScheme.primaryContainer,
-                            activeContentColor = colorScheme.onPrimaryContainer
-                        )
-                    ) {
-                        Text(option)
-                    }
+        SingleChoiceSegmentedButtonRow {
+            listOptions.forEachIndexed { index, option ->
+                SegmentedButton(
+                    selected = index == selectedIndex,
+                    onClick = {
+                        selectedIndex = index
+                        onSelectionChanged(index) // Report selection change
+                        if (option == "Custom") {
+                            onCustomSelect?.invoke(
+                                if (isMultiSelect) NewHabitSetup.CustomDaySelectionType.MULTIPLE
+                                else NewHabitSetup.CustomDaySelectionType.SINGLE
+                            )
+                        }
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(index, listOptions.size),
+                    colors = SegmentedButtonDefaults.colors(
+                        activeContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        activeContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    Text(option)
                 }
             }
         }
