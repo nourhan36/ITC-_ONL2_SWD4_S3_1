@@ -9,17 +9,20 @@ import com.example.itc__onl2_swd4_s3_1.ui.data.entity.CompletedDayEntity
 import com.example.itc__onl2_swd4_s3_1.ui.data.entity.HabitEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.flow.combine
 
 class HabitViewModel(application: Application) : AndroidViewModel(application) {
 
     private val dao = HabitDatabase.getDatabase(application).habitDao()
 
-    private val _selectedFilter = mutableStateOf("All")
+
 
 
 
@@ -27,8 +30,11 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
     val allHabits: Flow<List<HabitEntity>> = dao.getAllHabits()
     val completedHabits: Flow<List<HabitEntity>> = dao.getCompletedHabits()
     val incompleteHabits: Flow<List<HabitEntity>> = dao.getIncompleteHabits()
-    val selectedFilter: String get() = _selectedFilter.value
+
     val today get() = _currentDate.value
+
+    private val _selectedFilter = MutableStateFlow("All")
+    val selectedFilter: StateFlow<String> = _selectedFilter.asStateFlow()
 
 
     private val _currentDate = MutableStateFlow(LocalDate.now().toString())
@@ -39,23 +45,27 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
     fun refreshDate() {
         _currentDate.value = LocalDate.now().toString()
     }
-    val filteredHabits: Flow<List<HabitEntity>>
-        get() = when (selectedFilter) {
-            "Complete" -> completedHabits
-            "Incomplete" -> incompleteHabits
-            else -> allHabits
+    val filteredHabits: Flow<List<HabitEntity>> = activeHabits.combine(selectedFilter) { activeList, filter ->
+        when (filter) {
+            "Complete" -> activeList.filter { it.isCompleted }
+            "Incomplete" -> activeList.filter { !it.isCompleted }
+            else -> activeList
         }
+    }
+
+    // Replace existing filteredHabits with:
 
 
+    fun setFilter(filter: String) {
+        _selectedFilter.value = filter
+    }
 
 
     val completedDayDao = HabitDatabase.getDatabase(application).completedDayDao()
 
     val allCompletedDays: Flow<List<String>> =
         completedDayDao.getAllCompletedDays().map { list -> list.map { it.date } }
-    fun setFilter(filter: String) {
-        _selectedFilter.value = filter
-    }
+
 
 
 

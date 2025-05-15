@@ -132,10 +132,11 @@ class HomeScreen : ComponentActivity() {
 
 @Composable
 fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
-    val selectedFilter = viewModel.selectedFilter
 
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
+    val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
     // In HomeScreen Content
-  val habits by viewModel.activeHabits.collectAsState(initial = emptyList())
+
     val today = LocalDate.now().toString()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
