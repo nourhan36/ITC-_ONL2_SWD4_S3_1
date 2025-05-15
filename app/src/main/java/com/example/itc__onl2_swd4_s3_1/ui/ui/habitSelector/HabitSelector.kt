@@ -38,7 +38,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
-import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.NewHabitSetup
+import com.example.itc__onl2_swd4_s3_1.ui.newHabitSetup.NewHabitSetup
+
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 
 class HabitSelector : ComponentActivity() {

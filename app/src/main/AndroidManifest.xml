@@ -22,7 +22,7 @@
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1">
 
         </activity>
-        <activity android:name=".ui.ui.newHabitSetup.NewHabitSetup"
+        <activity android:name=".ui.newHabitSetup.NewHabitSetup"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 

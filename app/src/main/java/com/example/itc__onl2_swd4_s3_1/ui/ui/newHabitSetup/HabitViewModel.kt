@@ -18,26 +18,27 @@ import java.time.format.DateTimeFormatter
 class HabitViewModel(application: Application) : AndroidViewModel(application) {
 
     private val dao = HabitDatabase.getDatabase(application).habitDao()
-    private val _currentDate = MutableStateFlow(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
+
     private val _selectedFilter = mutableStateOf("All")
-    // In HabitViewModel
-    val todayHabits: Flow<List<HabitEntity>> =
-        dao.getHabitsByDate(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
 
 
+
+
+    val allHabits: Flow<List<HabitEntity>> = dao.getAllHabits()
+    val completedHabits: Flow<List<HabitEntity>> = dao.getCompletedHabits()
+    val incompleteHabits: Flow<List<HabitEntity>> = dao.getIncompleteHabits()
     val selectedFilter: String get() = _selectedFilter.value
     val today get() = _currentDate.value
 
-    val allHabits: Flow<List<HabitEntity>> = _currentDate.flatMapLatest { date ->
-        dao.getHabitsByDate(date)
-    }
-    val completedHabits: Flow<List<HabitEntity>> = _currentDate.flatMapLatest { date ->
-        dao.getCompletedHabitsByDate(date)
-    }
-    val incompleteHabits: Flow<List<HabitEntity>> = _currentDate.flatMapLatest { date ->
-        dao.getIncompleteHabitsByDate(date)
+
+    private val _currentDate = MutableStateFlow(LocalDate.now().toString())
+    val activeHabits = _currentDate.flatMapLatest { date ->
+        dao.getActiveHabits(date)
     }
 
+    fun refreshDate() {
+        _currentDate.value = LocalDate.now().toString()
+    }
     val filteredHabits: Flow<List<HabitEntity>>
         get() = when (selectedFilter) {
             "Complete" -> completedHabits
@@ -45,9 +46,7 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
             else -> allHabits
         }
 
-    fun refreshDate() {
-        _currentDate.value = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
-    }
+
 
 
     val completedDayDao = HabitDatabase.getDatabase(application).completedDayDao()
@@ -73,11 +72,7 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
             markDayCompletedIfAllHabitsDone()
         }
     }
-    fun deleteOldHabits(today: String) {
-        viewModelScope.launch {
-            dao.deleteOldHabits(today)
-        }
-    }
+
 
     fun insertHabit(habit: HabitEntity) {
         viewModelScope.launch {
@@ -88,10 +83,13 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
 
     fun markDayCompletedIfAllHabitsDone() {
         viewModelScope.launch {
-            val habits = dao.getAllHabitsNow()
-            if (habits.isNotEmpty() && habits.all { it.isCompleted }) {
-                val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+            val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+            val activeHabits = dao.getActiveHabitsNow(today) // Corrected variable name
+
+            if (activeHabits.isNotEmpty() && activeHabits.all { it.isCompleted }) {
                 completedDayDao.insert(CompletedDayEntity(today))
+            } else {
+                completedDayDao.deleteByDate(today) // Corrected function name
             }
         }
     }

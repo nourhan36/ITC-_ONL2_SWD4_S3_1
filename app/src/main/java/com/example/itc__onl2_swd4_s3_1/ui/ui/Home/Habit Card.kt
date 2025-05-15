@@ -36,19 +36,19 @@ fun HabitCard(habit: HabitEntity, onCheck: () -> Unit) {
         }
     }
 }
-@Preview
-@Composable
-fun HabitCardPreview() {
-    HabitCard(
-        habit = HabitEntity(
-            id = 1,
-            name = "Salah",
-            startTime = "08:00 AM",
-            repeatType = "Daily",
-            duration = 30,
-            reminderTime = "07:50 AM",
-            isCompleted = false
-        ),
-        onCheck = {}
-    )
-}
+//@Preview
+//@Composable
+//fun HabitCardPreview() {
+//    HabitCard(
+//        habit = HabitEntity(
+//            id = 1,
+//            name = "Salah",
+//            startTime = "08:00 AM",
+//            repeatType = "Daily",
+//            duration = 30,
+//            reminderTime = "07:50 AM",
+//
+//        ),
+//        onCheck = {}
+//    )
+//}

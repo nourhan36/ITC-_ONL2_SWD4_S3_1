@@ -83,10 +83,7 @@ class HomeScreen : ComponentActivity() {
         val lastResetDate = prefs.getString("lastResetDate", null)
         val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
 
-        if (lastResetDate != today) {
-            viewModel.deleteOldHabits(today)
-            prefs.edit().putString("lastResetDate", today).apply()
-        }
+
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
@@ -136,15 +133,16 @@ class HomeScreen : ComponentActivity() {
 @Composable
 fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     val selectedFilter = viewModel.selectedFilter
-    val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
-    // In HomeScreen Content
 
+    // In HomeScreen Content
+  val habits by viewModel.activeHabits.collectAsState(initial = emptyList())
+    val today = LocalDate.now().toString()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
     // ✅ SharedPreferences لتفادي التكرار
     val prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-    val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -234,12 +232,12 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LazyColumn(modifier = Modifier.padding(horizontal = 16.dp)) {
+                LazyColumn {
                     items(habits) { habit ->
-                        HabitCard(habit = habit, onCheck = {
-                            viewModel.toggleHabitCompletion(habit)
-                        })
-                        Spacer(modifier = Modifier.height(8.dp))
+                        HabitCard(
+                            habit = habit,
+                            onCheck = { viewModel.toggleHabitCompletion(habit) }
+                        )
                     }
                 }
             }
