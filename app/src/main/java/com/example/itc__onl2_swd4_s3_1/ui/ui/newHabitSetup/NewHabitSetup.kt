@@ -57,6 +57,15 @@ class NewHabitSetup : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val habitId = intent.getIntExtra("habitId", -1)
+        val name = intent.getStringExtra("name") ?: ""
+        val duration = intent.getIntExtra("duration", 0)
+        val repeatType = intent.getStringExtra("repeatType") ?: ""
+        val reminderTime = intent.getStringExtra("reminderTime") ?: ""
+        val startTime = intent.getStringExtra("startTime") ?: ""
+        val startDate = intent.getStringExtra("startDate") ?: ""
+
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
                 Surface(
@@ -64,12 +73,24 @@ class NewHabitSetup : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     NewHabitSetupScreen(
-                        title = intent.getStringExtra("title") ?: "New Habit",
+                        title = if (habitId != -1) "Edit Habit" else "New Habit",
                         viewModel = viewModel,
                         onHabitSaved = {
                             startActivity(Intent(this, HomeScreen::class.java))
                             finish()
-                        }
+                        },
+                        existingHabit = if (habitId != -1) {
+                            HabitEntity(
+                                id = habitId,
+                                name = name,
+                                duration = duration,
+                                repeatType = repeatType,
+                                reminderTime = reminderTime,
+                                startTime = startTime,
+                                startDate = startDate,
+                                isCompleted = false // optional
+                            )
+                        } else null
                     )
                 }
             }
@@ -77,12 +98,14 @@ class NewHabitSetup : ComponentActivity() {
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewHabitSetupScreen(
     title: String,
     viewModel: HabitViewModel,
-    onHabitSaved: () -> Unit
+    onHabitSaved: () -> Unit,
+    existingHabit: HabitEntity? = null
 ) {
     var titleText by remember { mutableStateOf("") }
     var durationValue by remember { mutableStateOf("") }
@@ -149,17 +172,23 @@ fun NewHabitSetupScreen(
         Button(
             onClick = {
                 if (validateInput(titleText, durationValue)) {
-                    viewModel.insertHabit(
-                        HabitEntity(
-                            name = titleText,
-                            duration = durationValue.toInt(),
-                            startDate = startDate.toString(),
-                            isCompleted = false,
-                            repeatType = "Daily",
-                            startTime = "08:00 AM",
-                            reminderTime = "07:50 AM"
-                        )
+                    val habit = HabitEntity(
+                        id = existingHabit?.id ?: 0,
+                        name = titleText,
+                        duration = durationValue.toInt(),
+                        startDate = startDate.toString(),
+                        isCompleted = existingHabit?.isCompleted ?: false,
+                        repeatType = existingHabit?.repeatType ?: "Daily",
+                        startTime = existingHabit?.startTime ?: "08:00 AM",
+                        reminderTime = existingHabit?.reminderTime ?: "07:50 AM"
                     )
+
+                    if (existingHabit != null) {
+                        viewModel.updateHabit(habit)
+                    } else {
+                        viewModel.insertHabit(habit)
+                    }
+
                     onHabitSaved()
                 }
             },
@@ -172,7 +201,8 @@ fun NewHabitSetupScreen(
                 contentColor = Color.White
             )
         ) {
-            Text("Save Habit", fontSize = 16.sp)
+            Text(if (existingHabit != null) "Update Habit" else "Save Habit", fontSize = 16.sp)
+
         }
 
         if (showDatePicker) {

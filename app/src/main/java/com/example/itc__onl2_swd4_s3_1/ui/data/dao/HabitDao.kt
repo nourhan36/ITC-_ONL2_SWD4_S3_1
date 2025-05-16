@@ -28,6 +28,7 @@ interface HabitDao {
     @Query("DELETE FROM habits")
     suspend fun deleteAllHabits()
 
+
     @Delete
     suspend fun deleteHabit(habit: HabitEntity)
         // Reset completion status for active habits

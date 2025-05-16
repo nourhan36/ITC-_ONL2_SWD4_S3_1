@@ -37,9 +37,13 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedFilter = MutableStateFlow("All")
     val selectedFilter: StateFlow<String> = _selectedFilter.asStateFlow()
 
-    fun deleteHabit(habit: HabitEntity) = viewModelScope.launch {
-        dao.deleteHabit(habit)
+    fun deleteHabit(habit: HabitEntity) {
+        viewModelScope.launch {
+            dao.deleteHabit(habit)
+            markDayCompletedIfAllHabitsDone() // ✅ بعد ما تمسح عادة، تأكد من تحديث أيام الإنجاز
+        }
     }
+
 
     fun editHabit(habit: HabitEntity) = viewModelScope.launch {
         dao.updateHabit(habit)
@@ -47,6 +51,13 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
     private val _currentDate = MutableStateFlow(LocalDate.now().toString())
     val activeHabits = _currentDate.flatMapLatest { date ->
         dao.getActiveHabits(date)
+    }
+
+    fun updateHabit(habit: HabitEntity) {
+        viewModelScope.launch {
+            dao.updateHabit(habit)
+            markDayCompletedIfAllHabitsDone() // ✅ علشان نحدث حالة اليوم بعد التعديل
+        }
     }
 
     fun refreshDate() {
@@ -101,15 +112,21 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
     fun markDayCompletedIfAllHabitsDone() {
         viewModelScope.launch {
             val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
-            val activeHabits = dao.getActiveHabitsNow(today) // Corrected variable name
+            val activeHabits = dao.getActiveHabitsNow(today)
 
-            if (activeHabits.isNotEmpty() && activeHabits.all { it.isCompleted }) {
-                completedDayDao.insert(CompletedDayEntity(today))
+            if (activeHabits.isNotEmpty()) {
+                if (activeHabits.all { it.isCompleted }) {
+                    completedDayDao.insert(CompletedDayEntity(today))
+                } else {
+                    completedDayDao.deleteByDate(today)
+                }
             } else {
-                completedDayDao.deleteByDate(today) // Corrected function name
+                // ✅ No habits today, remove the day from completed list if exists
+                completedDayDao.deleteByDate(today)
             }
         }
     }
+
 
 }
 

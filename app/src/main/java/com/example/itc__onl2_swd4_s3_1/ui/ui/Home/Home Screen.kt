@@ -78,6 +78,7 @@ import androidx.compose.material.*
 
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material.SwipeToDismiss
+import com.example.itc__onl2_swd4_s3_1.ui.newHabitSetup.NewHabitSetup
 
 
 class HomeScreen : ComponentActivity() {
@@ -248,16 +249,34 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                     items(habits, key = { it.id }) { habit ->
                         val dismissState = rememberDismissState(
                             confirmStateChange = { value ->
-                                if (value == DismissValue.DismissedToStart) {
-                                    viewModel.deleteHabit(habit)
-                                    true
-                                } else false
+                                when (value) {
+                                    DismissValue.DismissedToStart -> { // Delete
+                                        viewModel.deleteHabit(habit)
+                                        true
+                                    }
+                                    DismissValue.DismissedToEnd -> { // Edit
+                                        val intent = Intent(context, NewHabitSetup::class.java).apply {
+                                            putExtra("habitId", habit.id)
+                                            putExtra("name", habit.name)
+                                            putExtra("startTime", habit.startTime)
+                                            putExtra("repeatType", habit.repeatType)
+                                            putExtra("duration", habit.duration)
+                                            putExtra("reminderTime", habit.reminderTime)
+                                            putExtra("startDate", habit.startDate)
+                                        }
+                                        context.startActivity(intent)
+                                        false // نرجعه false علشان ما يختفيش الكارد بالسحب
+                                    }
+                                    else -> false
+                                }
                             }
+
                         )
 
                         SwipeToDismiss(
                             state = dismissState,
-                            directions = setOf(DismissDirection.EndToStart),
+                            directions = setOf(DismissDirection.EndToStart, DismissDirection.StartToEnd),
+
                             background = {
                                 val color = when (dismissState.dismissDirection) {
                                     DismissDirection.EndToStart -> Color.Red
