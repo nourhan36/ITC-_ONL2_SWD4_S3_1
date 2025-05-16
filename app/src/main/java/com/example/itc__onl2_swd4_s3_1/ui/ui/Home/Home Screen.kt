@@ -26,9 +26,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -69,6 +74,11 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
+import androidx.compose.material.*
+
+import androidx.compose.material.rememberDismissState
+import androidx.compose.material.SwipeToDismiss
+
 
 class HomeScreen : ComponentActivity() {
 
@@ -130,6 +140,7 @@ class HomeScreen : ComponentActivity() {
 }
 
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
 
@@ -234,12 +245,43 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LazyColumn {
-                    items(habits) { habit ->
-                        HabitCard(
-                            habit = habit,
-                            onCheck = { viewModel.toggleHabitCompletion(habit) }
+                    items(habits, key = { it.id }) { habit ->
+                        val dismissState = rememberDismissState(
+                            confirmStateChange = { value ->
+                                if (value == DismissValue.DismissedToStart) {
+                                    viewModel.deleteHabit(habit)
+                                    true
+                                } else false
+                            }
+                        )
+
+                        SwipeToDismiss(
+                            state = dismissState,
+                            directions = setOf(DismissDirection.EndToStart),
+                            background = {
+                                val color = when (dismissState.dismissDirection) {
+                                    DismissDirection.EndToStart -> Color.Red
+                                    else -> Color.Transparent
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(color)
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
+                                    Icon(Icons.Default.AccountCircle, contentDescription = "Delete", tint = Color.White)
+                                }
+                            },
+                            dismissContent = {
+                                HabitCard(
+                                    habit = habit,
+                                    onCheck = { viewModel.toggleHabitCompletion(habit) }
+                                )
+                            }
                         )
                     }
+
                 }
             }
         }

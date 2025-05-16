@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.room.Delete
 import com.example.itc__onl2_swd4_s3_1.ui.data.HabitDatabase
 import com.example.itc__onl2_swd4_s3_1.ui.data.entity.CompletedDayEntity
 import com.example.itc__onl2_swd4_s3_1.ui.data.entity.HabitEntity
@@ -36,7 +37,13 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
     private val _selectedFilter = MutableStateFlow("All")
     val selectedFilter: StateFlow<String> = _selectedFilter.asStateFlow()
 
+    fun deleteHabit(habit: HabitEntity) = viewModelScope.launch {
+        dao.deleteHabit(habit)
+    }
 
+    fun editHabit(habit: HabitEntity) = viewModelScope.launch {
+        dao.updateHabit(habit)
+    }
     private val _currentDate = MutableStateFlow(LocalDate.now().toString())
     val activeHabits = _currentDate.flatMapLatest { date ->
         dao.getActiveHabits(date)
