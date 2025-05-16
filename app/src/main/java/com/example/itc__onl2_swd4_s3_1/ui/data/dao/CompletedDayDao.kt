@@ -14,4 +14,8 @@ interface CompletedDayDao {
 
     @Query("DELETE FROM completed_days")
     suspend fun deleteAll()
+
+        @Query("DELETE FROM completed_days WHERE date = :date")
+        suspend fun deleteByDate(date: String) // Corrected function name and parameter
+
 }

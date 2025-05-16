@@ -5,15 +5,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+import com.example.itc__onl2_swd4_s3_1.ui.ui.components.AppNavBar
+import com.example.itc__onl2_swd4_s3_1.ui.ui.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.ui.ui.prayertimes.PrayerApp
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
-import com.google.accompanist.pager.*
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 
 class SalahContainerActivity : ComponentActivity() {
@@ -22,7 +30,14 @@ class SalahContainerActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
-                SalahTabsScreen()
+                val context = this
+                AppNavBar(
+                    selectedIndex = 1,
+                    onIndexChanged = { index -> handleNavClick(context, index) },
+                    onFabClick = null
+                ) { innerPadding ->
+                    SalahTabsScreen()
+                }
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.example.itc__onl2_swd4_s3_1.ui.Home
+package com.example.itc__onl2_swd4_s3_1.ui.ui.Home
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -36,19 +36,19 @@ fun HabitCard(habit: HabitEntity, onCheck: () -> Unit) {
         }
     }
 }
-@Preview
-@Composable
-fun HabitCardPreview() {
-    HabitCard(
-        habit = HabitEntity(
-            id = 1,
-            name = "Salah",
-            startTime = "08:00 AM",
-            repeatType = "Daily",
-            duration = 30,
-            reminderTime = "07:50 AM",
-            isCompleted = false
-        ),
-        onCheck = {}
-    )
-}
+//@Preview
+//@Composable
+//fun HabitCardPreview() {
+//    HabitCard(
+//        habit = HabitEntity(
+//            id = 1,
+//            name = "Salah",
+//            startTime = "08:00 AM",
+//            repeatType = "Daily",
+//            duration = 30,
+//            reminderTime = "07:50 AM",
+//
+//        ),
+//        onCheck = {}
+//    )
+//}

@@ -13,7 +13,6 @@ data class HabitEntity(
     val repeatType: String,
     val duration: Int,
     val reminderTime: String,
-    val isCompleted: Boolean = false, // ✅ مضاف جديدًا
-    val date: String = LocalDate.now().format(DateTimeFormatter.ISO_DATE) // ✅
+    val isCompleted: Boolean = false,
+    val startDate: String // YYYY-MM-DD format
 )
-

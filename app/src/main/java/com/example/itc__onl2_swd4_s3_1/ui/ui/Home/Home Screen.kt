@@ -1,14 +1,9 @@
 package com.example.itc__onl2_swd4_s3_1.ui.Home
 
 
-import android.app.Activity
 import android.content.Context
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -17,48 +12,74 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.rememberDismissState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.itc__onl2_swd4_s3_1.R
-import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
+import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.HabitCard
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.getCurrentDate
-import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahContainerActivity
-import com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage
-import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
+import com.example.itc__onl2_swd4_s3_1.ui.ui.components.AppNavBar
+import com.example.itc__onl2_swd4_s3_1.ui.ui.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.ui.ui.habitSelector.HabitSelector
 import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.ResetHabitsWorker
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
+import androidx.compose.material.*
+
+import androidx.compose.material.rememberDismissState
+import androidx.compose.material.SwipeToDismiss
+import com.example.itc__onl2_swd4_s3_1.ui.newHabitSetup.NewHabitSetup
+
 
 class HomeScreen : ComponentActivity() {
 
@@ -73,18 +94,20 @@ class HomeScreen : ComponentActivity() {
         val lastResetDate = prefs.getString("lastResetDate", null)
         val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
 
-        if (lastResetDate != today) {
-            viewModel.deleteOldHabits(today)
-            prefs.edit().putString("lastResetDate", today).apply()
-        }
+
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
-                navBar(
-                    viewModel = viewModel,
-                    onFabClick = { openHabitSelector() },
-                    onNavItemClick = { index -> handleNavClick(index) }
-                )
+
+                    AppNavBar(
+                        selectedIndex = 0,
+                        onIndexChanged = { index -> handleNavClick(this, index) },
+                        onFabClick = { openHabitSelector() }
+                    ) { innerPadding ->
+                        Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))
+                    }
+
+
             }
         }
     }
@@ -94,14 +117,7 @@ class HomeScreen : ComponentActivity() {
         startActivity(intent)
     }
 
-    private fun handleNavClick(index: Int) {
-        when (index) {
-            0 -> if (this !is HomeScreen) startActivity(Intent(this, HomeScreen::class.java))
-            1 -> startActivity(Intent(this, SalahContainerActivity::class.java))
-            2 -> startActivity(Intent(this, DhikrCounterActivity::class.java))
-            3 -> startActivity(Intent(this, ProgressTrackerPage::class.java))
-        }
-    }
+
 
     private fun scheduleHabitReset(context: Context) {
         val currentDate = Calendar.getInstance()
@@ -125,177 +141,21 @@ class HomeScreen : ComponentActivity() {
 }
 
 
-
-
-@Composable
-fun navBar(
-    viewModel: HabitViewModel,
-    onFabClick: () -> Unit,
-    onNavItemClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val viewModel: HabitViewModel = viewModel()
-    val navItemList = listOf(
-        NavItem("Home", painterResource(R.drawable.home)),
-        NavItem("Salah", painterResource(R.drawable.salah_icon)),
-        NavItem("Dhikr", painterResource(R.drawable.zikr)),
-        NavItem("Streak", painterResource(R.drawable.progress)),
-        NavItem("More", painterResource(R.drawable.menu))
-    )
-
-    var selectedIndex by remember { mutableIntStateOf(0) }
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-    var isDarkTheme by remember { mutableStateOf(false) }
-    var selectedLanguage by remember { mutableStateOf("English") }
-
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet {
-                DrawerHeader()
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { }
-                            .padding(vertical = 12.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.qiblah),
-                            contentDescription = "Qiblah",
-                            modifier = Modifier.size(30.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(text = "Qiblah", fontSize = 18.sp)
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.lightdark),
-                            contentDescription = "light/dark mode",
-                            modifier = Modifier.size(35.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text("Dark Mode", fontSize = 18.sp)
-                        Spacer(modifier = Modifier.width(150.dp))
-                        Switch(
-                            checked = isDarkTheme,
-                            onCheckedChange = { isDarkTheme = it }
-                        )
-                    }
-
-                    LanguageSelector(
-                        selectedLanguage = selectedLanguage,
-                        onLanguageSelected = { selectedLanguage = it }
-                    )
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { }
-                            .padding(vertical = 12.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.logout),
-                            contentDescription = "logout",
-                            modifier = Modifier.size(35.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(text = "Logout", fontSize = 18.sp)
-                    }
-                }
-            }
-        }
-    ) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            floatingActionButton = {
-                LargeFloatingActionButton(
-                    onClick = onFabClick,
-                    shape = CircleShape,
-                    containerColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondary,
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "add")
-                }
-            },
-            floatingActionButtonPosition = FabPosition.Center,
-            bottomBar = {
-                NavigationBar {
-                    navItemList.forEachIndexed { index, navItem ->
-                        NavigationBarItem(
-                            selected = selectedIndex == index,
-                            onClick = {
-                                selectedIndex = index
-                                if (index == 4) {
-                                    scope.launch { drawerState.open() }
-                                } else {
-                                    onNavItemClick(index)
-                                }
-                            },
-                            icon = { Icon(navItem.icon, "icon") },
-                            label = { Text(text = navItem.label) }
-                        )
-                    }
-                }
-            }
-        ) { innerPadding ->
-            Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))
-        }
-
-    }
-}
-
-fun scheduleHabitReset(context: Context) {
-    val currentDate = Calendar.getInstance()
-    val dueDate = Calendar.getInstance()
-
-    // تعيين 12:00 ظهرًا
-    dueDate.set(Calendar.HOUR_OF_DAY, 0)
-    dueDate.set(Calendar.MINUTE, 0)
-    dueDate.set(Calendar.SECOND, 0)
-
-    if (dueDate.before(currentDate)) {
-        dueDate.add(Calendar.DAY_OF_MONTH, 1)
-    }
-
-    val timeDiff = dueDate.timeInMillis - currentDate.timeInMillis
-
-    val dailyWorkRequest = PeriodicWorkRequestBuilder<ResetHabitsWorker>(1, TimeUnit.DAYS)
-        .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
-        .build()
-
-    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-        "resetHabits",
-        ExistingPeriodicWorkPolicy.UPDATE,
-        dailyWorkRequest
-    )
-}
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
-    val selectedFilter = viewModel.selectedFilter
+
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
     val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
     // In HomeScreen Content
 
+    val today = LocalDate.now().toString()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
     // ✅ SharedPreferences لتفادي التكرار
     val prefs = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-    val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -385,13 +245,62 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                LazyColumn(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    items(habits) { habit ->
-                        HabitCard(habit = habit, onCheck = {
-                            viewModel.toggleHabitCompletion(habit)
-                        })
-                        Spacer(modifier = Modifier.height(8.dp))
+                LazyColumn {
+                    items(habits, key = { it.id }) { habit ->
+                        val dismissState = rememberDismissState(
+                            confirmStateChange = { value ->
+                                when (value) {
+                                    DismissValue.DismissedToStart -> { // Delete
+                                        viewModel.deleteHabit(habit)
+                                        true
+                                    }
+                                    DismissValue.DismissedToEnd -> { // Edit
+                                        val intent = Intent(context, NewHabitSetup::class.java).apply {
+                                            putExtra("habitId", habit.id)
+                                            putExtra("name", habit.name)
+                                            putExtra("startTime", habit.startTime)
+                                            putExtra("repeatType", habit.repeatType)
+                                            putExtra("duration", habit.duration)
+                                            putExtra("reminderTime", habit.reminderTime)
+                                            putExtra("startDate", habit.startDate)
+                                        }
+                                        context.startActivity(intent)
+                                        false // نرجعه false علشان ما يختفيش الكارد بالسحب
+                                    }
+                                    else -> false
+                                }
+                            }
+
+                        )
+
+                        SwipeToDismiss(
+                            state = dismissState,
+                            directions = setOf(DismissDirection.EndToStart, DismissDirection.StartToEnd),
+
+                            background = {
+                                val color = when (dismissState.dismissDirection) {
+                                    DismissDirection.EndToStart -> Color.Red
+                                    else -> Color.Transparent
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(color)
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
+                                    Icon(Icons.Default.AccountCircle, contentDescription = "Delete", tint = Color.White)
+                                }
+                            },
+                            dismissContent = {
+                                HabitCard(
+                                    habit = habit,
+                                    onCheck = { viewModel.toggleHabitCompletion(habit) }
+                                )
+                            }
+                        )
                     }
+
                 }
             }
         }

@@ -28,6 +28,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.itc__onl2_swd4_s3_1.ui.ui.components.AppNavBar
+import com.example.itc__onl2_swd4_s3_1.ui.ui.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.Constants
 import kotlinx.coroutines.launch
@@ -48,15 +51,23 @@ class DhikrCounterActivity : ComponentActivity() {
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
-                DhikrCounter(dhikrText, dhikrCount, onDhikrCompleted = { completedDhikrText ->
-                    val intent = Intent(this, DhikrListActivity::class.java).apply {
-                        putExtra(DHIKR_COMPLETED_TEXT, completedDhikrText)
-                        putExtra(DHIKR_COMPLETED, true)
-                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    }
-                    startActivity(intent)
-                    finish()
-                })
+                AppNavBar(
+                    selectedIndex = 2,
+                    onIndexChanged = { index -> handleNavClick(this, index) }
+                ) { innerPadding ->
+
+                    DhikrCounter(dhikrText, dhikrCount, onDhikrCompleted = { completedDhikrText ->
+                        val intent = Intent(this, DhikrListActivity::class.java).apply {
+                            putExtra(DHIKR_COMPLETED_TEXT, completedDhikrText)
+                            putExtra(DHIKR_COMPLETED, true)
+                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        }
+                        startActivity(intent)
+                        finish()
+                    })
+                }
+
+
             }
         }
     }
