@@ -27,7 +27,7 @@ fun HabitCard(habit: HabitEntity, onCheck: () -> Unit) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = habit.name, fontSize = 18.sp, color = Color.Black)
-                Text(text = "0 days streak", fontSize = 14.sp, color = Color.Gray)
+
             }
             Checkbox(
                 checked = habit.isCompleted,
