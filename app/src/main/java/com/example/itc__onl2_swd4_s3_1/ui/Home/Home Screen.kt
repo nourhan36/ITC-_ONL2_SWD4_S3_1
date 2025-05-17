@@ -75,10 +75,20 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import androidx.compose.material.*
-
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.os.Build
+import android.Manifest
+import androidx.core.app.ActivityCompat
+import android.content.pm.PackageManager
+import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material.SwipeToDismiss
 import com.example.itc__onl2_swd4_s3_1.ui.newHabitSetup.NewHabitSetup
+import com.example.itc__onl2_swd4_s3_1.utils.NotificationReceiver
+import android.provider.Settings
+
 
 
 class HomeScreen : ComponentActivity() {
@@ -88,7 +98,18 @@ class HomeScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         scheduleHabitReset(applicationContext)
+        requestExactAlarmPermissionIfNeeded()
+        testNotificationAfterOneMinute()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                startActivity(intent)
+                return // ❗ مهم جدًا علشان ما يحصلش كراش
+            }
+        }
 
+        scheduleDailyNotification()
         // ✅ تحقق من إذا العادات محتاجة Reset عند أول تشغيل
         val prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
         val lastResetDate = prefs.getString("lastResetDate", null)
@@ -99,13 +120,13 @@ class HomeScreen : ComponentActivity() {
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
 
-                    AppNavBar(
-                        selectedIndex = 0,
-                        onIndexChanged = { index -> handleNavClick(this, index) },
-                        onFabClick = { openHabitSelector() }
-                    ) { innerPadding ->
-                        Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))
-                    }
+                AppNavBar(
+                    selectedIndex = 0,
+                    onIndexChanged = { index -> handleNavClick(this, index) },
+                    onFabClick = { openHabitSelector() }
+                ) { innerPadding ->
+                    Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))
+                }
 
 
             }
@@ -116,7 +137,73 @@ class HomeScreen : ComponentActivity() {
         val intent = Intent(this, HabitSelector::class.java)
         startActivity(intent)
     }
+    private fun testNotificationAfterOneMinute() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, NotificationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_IMMUTABLE)
 
+        val triggerTime = Calendar.getInstance().apply {
+            add(Calendar.MINUTE, 1)
+        }.timeInMillis
+
+        Log.d("TestAlarm", "Alarm will trigger at: $triggerTime")
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            pendingIntent
+        )
+    }
+    private fun requestExactAlarmPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                startActivity(intent)
+            }
+        }
+    }
+
+
+
+    private fun scheduleDailyNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                startActivity(intent)
+                return
+            }
+        }
+
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, NotificationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 21)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            if (before(Calendar.getInstance())) {
+                add(Calendar.DAY_OF_MONTH, 1)
+            }
+        }
+
+        Log.d("DailyAlarm", "Next notification at ${calendar.time}")
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            pendingIntent
+        )
+    }
 
 
     private fun scheduleHabitReset(context: Context) {
@@ -148,6 +235,7 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
     // In HomeScreen Content
+
 
     val today = LocalDate.now().toString()
     val context = LocalContext.current
