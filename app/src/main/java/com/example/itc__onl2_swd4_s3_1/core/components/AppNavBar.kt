@@ -143,39 +143,39 @@ fun DrawerOptions(
         LanguageSelector(selectedLanguage, onLanguageSelected)
     }
 }
-
-@Composable
-fun LanguageSelector(
-    selectedLanguage: String,
-    onLanguageSelected: (String) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { expanded = true }
-            .padding(vertical = 12.dp)
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.language),
-            contentDescription = "Language Icon",
-            modifier = Modifier.size(35.dp)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text = selectedLanguage, fontSize = 18.sp)
-        Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon")
-
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(text = { Text("English") }, onClick = {
-                onLanguageSelected("English")
-                expanded = false
-            })
-            DropdownMenuItem(text = { Text("العربية") }, onClick = {
-                onLanguageSelected("العربية")
-                expanded = false
-            })
-        }
-    }
-}
+//
+//@Composable
+//fun LanguageSelector(
+//    selectedLanguage: String,
+//    onLanguageSelected: (String) -> Unit
+//) {
+//    var expanded by remember { mutableStateOf(false) }
+//
+//    Row(
+//        verticalAlignment = Alignment.CenterVertically,
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .clickable { expanded = true }
+//            .padding(vertical = 12.dp)
+//    ) {
+//        Image(
+//            painter = painterResource(id = R.drawable.language),
+//            contentDescription = "Language Icon",
+//            modifier = Modifier.size(35.dp)
+//        )
+//        Spacer(modifier = Modifier.width(12.dp))
+//        Text(text = selectedLanguage, fontSize = 18.sp)
+//        Icon(Icons.Default.ArrowDropDown, contentDescription = "Dropdown Icon")
+//
+//        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+//            DropdownMenuItem(text = { Text("English") }, onClick = {
+//                onLanguageSelected("English")
+//                expanded = false
+//            })
+//            DropdownMenuItem(text = { Text("العربية") }, onClick = {
+//                onLanguageSelected("العربية")
+//                expanded = false
+//            })
+//        }
+//    }
+//}
