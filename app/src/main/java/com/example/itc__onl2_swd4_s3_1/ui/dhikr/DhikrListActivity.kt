@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.Constants
@@ -38,6 +39,8 @@ import androidx.work.WorkManager
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.ExistingPeriodicWorkPolicy
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.ResetDhikrWorker
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import java.util.Calendar
 class DhikrListActivity : ComponentActivity() {
@@ -82,6 +85,10 @@ class DhikrListActivity : ComponentActivity() {
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
+                lifecycleScope.launch {
+                    waitUntilMidnightAndRefresh()
+                }
+
                 DhikrScreen(
                     dhikrList = dhikrListState,
                     onDhikrClick = { selectedDhikr ->
@@ -97,6 +104,31 @@ class DhikrListActivity : ComponentActivity() {
         }
     }
 
+    private suspend fun waitUntilMidnightAndRefresh() {
+        val now = Calendar.getInstance()
+        val target = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            if (before(now)) add(Calendar.DAY_OF_MONTH, 1)
+        }
+
+        val delayMillis = target.timeInMillis - now.timeInMillis
+        delay(delayMillis)
+
+        // إعادة تحميل القيم من SharedPreferences:
+        val dhikrList = getDhikrList().filter { it.category == "تسابيح" }
+        dhikrList.forEach { dhikr ->
+            val isCompleted = sharedPreferences.getBoolean("dhikr_${dhikr.content}", false)
+            dhikr.isCompleted.value = isCompleted
+        }
+
+        dhikrListState.clear()
+        dhikrListState.addAll(dhikrList)
+
+        waitUntilMidnightAndRefresh() // ✅ لتكرار العملية
+    }
 
 
     private fun scheduleResetWorker() {

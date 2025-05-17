@@ -18,10 +18,18 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.ResetHabitsWorker
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         Log.d("NotificationReceiver", "⏰ Broadcast received at ${System.currentTimeMillis()}")
+
+        // ✅ شغّل ResetHabitsWorker فورًا
+        WorkManager.getInstance(context).enqueue(
+            OneTimeWorkRequestBuilder<ResetHabitsWorker>().build()
+        )
 
         CoroutineScope(Dispatchers.IO).launch {
             val dao = HabitDatabase.getDatabase(context).habitDao()
@@ -29,7 +37,6 @@ class NotificationReceiver : BroadcastReceiver() {
             val activeHabits = dao.getActiveHabitsNow(today)
 
             if (activeHabits.isEmpty()) {
-                // 👇 مفيش عادات النهارده
                 showNotification(
                     context,
                     "No habits today?",
@@ -52,6 +59,7 @@ class NotificationReceiver : BroadcastReceiver() {
             scheduleNextDay(context)
         }
     }
+
 
     private fun showNotification(context: Context, title: String, message: String) {
         val notificationManager =
