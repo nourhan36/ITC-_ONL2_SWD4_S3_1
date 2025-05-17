@@ -12,9 +12,14 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
+import com.example.itc__onl2_swd4_s3_1.ui.data.HabitDatabase
 import com.example.itc__onl2_swd4_s3_1.ui.ui.components.AppNavBar
 import com.example.itc__onl2_swd4_s3_1.ui.ui.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.ui.ui.prayertimes.PrayerApp
@@ -25,15 +30,38 @@ import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 
 class SalahContainerActivity : ComponentActivity() {
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
-            ITC_ONL2_SWD4_S3_1Theme {
-                val context = this
+            val context = LocalContext.current
+            val db = HabitDatabase.getDatabase(context)
+            val settingsDao = db.userSettingsDao()
+            val coroutineScope = rememberCoroutineScope()
+
+            val isDarkTheme = rememberSaveable { mutableStateOf(false) }
+
+            // ✅ قراءة الوضع الداكن المحفوظ من Room
+            LaunchedEffect(Unit) {
+                coroutineScope.launch {
+                    val storedSetting = settingsDao.getSettings()
+                    isDarkTheme.value = storedSetting?.isDarkMode ?: false
+                }
+            }
+
+            ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 AppNavBar(
                     selectedIndex = 1,
-                    onIndexChanged = { index -> handleNavClick(context, index) },
+                    onIndexChanged = { index -> handleNavClick(this, index) },
+                    drawerThemeState = isDarkTheme,
+                    onThemeToggle = { enabled ->
+                        coroutineScope.launch {
+                            settingsDao.saveSettings(UserSettingsEntity(id = 0, isDarkMode = enabled))
+                        }
+                        isDarkTheme.value = enabled
+                    },
                     onFabClick = null
                 ) { innerPadding ->
                     SalahTabsScreen()

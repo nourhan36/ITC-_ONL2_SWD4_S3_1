@@ -20,21 +20,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
-import com.example.itc__onl2_swd4_s3_1.ui.Home.HomeScreen
+import com.example.itc__onl2_swd4_s3_1.ui.home.HomeScreen
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
 import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahContainerActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage
 import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
-import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
 import kotlinx.coroutines.launch
-
+import androidx.compose.runtime.saveable.rememberSaveable
 // ✅ Navigation handler
 fun handleNavClick(context: Context, index: Int) {
     when (index) {
-        0 -> if (context !is HomeScreen) context.startActivity(Intent(context, HomeScreen::class.java))
-        1 -> context.startActivity(Intent(context, SalahContainerActivity::class.java))
-        2 -> context.startActivity(Intent(context, DhikrCounterActivity::class.java))
-        3 -> context.startActivity(Intent(context, ProgressTrackerPage::class.java))
+0 -> if (context !is HomeScreen) context.startActivity(Intent(context, HomeScreen::class.java))
+1 -> if (context !is SalahContainerActivity) context.startActivity(Intent(context, SalahContainerActivity::class.java))
+2 -> if (context !is DhikrCounterActivity) context.startActivity(Intent(context, DhikrCounterActivity::class.java))
+3 -> if (context !is ProgressTrackerPage) context.startActivity(Intent(context, ProgressTrackerPage::class.java))
     }
 }
 
@@ -43,16 +42,20 @@ fun handleNavClick(context: Context, index: Int) {
 fun AppNavBar(
     selectedIndex: Int,
     onIndexChanged: (Int) -> Unit,
+    drawerThemeState: MutableState<Boolean>,
+    onThemeToggle: (Boolean) -> Unit, // ✅ أضف هذا السطر
     onFabClick: (() -> Unit)? = null,
     content: @Composable (PaddingValues) -> Unit
-) {
+){
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var isDarkTheme by remember { mutableStateOf(false) }
+    val isDarkTheme = drawerThemeState
+
+
     var selectedLanguage by remember { mutableStateOf("English") }
 
     val navItemList = listOf(
-        NavItem("Home", painterResource(R.drawable.home)),
+        NavItem("home", painterResource(R.drawable.home)),
         NavItem("Salah", painterResource(R.drawable.salah_icon)),
         NavItem("Dhikr", painterResource(R.drawable.zikr)),
         NavItem("Streak", painterResource(R.drawable.progress)),
@@ -63,10 +66,11 @@ fun AppNavBar(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                DrawerHeader()
+//                DrawerHeader()
                 DrawerOptions(
-                    isDarkTheme = isDarkTheme,
-                    onThemeToggle = { isDarkTheme = it },
+                    isDarkTheme = isDarkTheme.value,
+                    onThemeToggle = onThemeToggle,
+
                     selectedLanguage = selectedLanguage,
                     onLanguageSelected = { selectedLanguage = it }
                 )
@@ -112,27 +116,27 @@ fun AppNavBar(
 }
 
 
-// ✅ Drawer Header
-@Composable
-fun DrawerHeader() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primary)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = Icons.Default.AccountCircle,
-            contentDescription = "Profile",
-            tint = Color.White,
-            modifier = Modifier.size(64.dp)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Welcome,", color = Color.White, style = MaterialTheme.typography.titleMedium)
-        Text("User name", color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.bodySmall)
-    }
-}
+//// ✅ Drawer Header
+//@Composable
+//fun DrawerHeader() {
+//    Column(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .background(MaterialTheme.colorScheme.primary)
+//            .padding(16.dp),
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        Icon(
+//            imageVector = Icons.Default.AccountCircle,
+//            contentDescription = "Profile",
+//            tint = Color.White,
+//            modifier = Modifier.size(64.dp)
+//        )
+//        Spacer(modifier = Modifier.height(8.dp))
+//        Text("Welcome,", color = Color.White, style = MaterialTheme.typography.titleMedium)
+//        Text("User name", color = Color.White.copy(alpha = 0.7f), style = MaterialTheme.typography.bodySmall)
+//    }
+//}
 
 // ✅ Drawer Options
 @Composable
@@ -166,21 +170,21 @@ fun DrawerOptions(
 
         LanguageSelector(selectedLanguage, onLanguageSelected)
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { /* Logout */ }
-                .padding(vertical = 12.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.logout),
-                contentDescription = "Logout",
-                modifier = Modifier.size(35.dp)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Text("Logout", fontSize = 18.sp)
-        }
+//        Row(
+//            verticalAlignment = Alignment.CenterVertically,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .clickable { /* Logout */ }
+//                .padding(vertical = 12.dp)
+//        ) {
+//            Image(
+//                painter = painterResource(id = R.drawable.logout),
+//                contentDescription = "Logout",
+//                modifier = Modifier.size(35.dp)
+//            )
+//            Spacer(modifier = Modifier.width(12.dp))
+//            Text("Logout", fontSize = 18.sp)
+//        }
     }
 }
 

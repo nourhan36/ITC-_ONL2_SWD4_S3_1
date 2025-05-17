@@ -14,9 +14,18 @@
             val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
 
             runBlocking {
-                // Reset completion for habits that have started
+                val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+
+                // جرب تجيب العادات قبل وبعد علشان تتأكد
+                val beforeReset = dao.getActiveHabitsNow(today)
+                println("Before reset: ${beforeReset.map { it.name to it.isCompleted }}")
+
                 dao.resetHabitsCompletion(today)
+
+                val afterReset = dao.getActiveHabitsNow(today)
+                println("After reset: ${afterReset.map { it.name to it.isCompleted }}")
             }
+
             return Result.success()
         }
     }

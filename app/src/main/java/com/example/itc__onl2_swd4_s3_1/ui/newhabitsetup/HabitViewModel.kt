@@ -49,6 +49,7 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
         dao.updateHabit(habit)
     }
     private val _currentDate = MutableStateFlow(LocalDate.now().toString())
+
     val activeHabits = _currentDate.flatMapLatest { date ->
         dao.getActiveHabits(date)
     }
@@ -68,6 +69,21 @@ class HabitViewModel(application: Application) : AndroidViewModel(application) {
             "Complete" -> activeList.filter { it.isCompleted }
             "Incomplete" -> activeList.filter { !it.isCompleted }
             else -> activeList
+        }
+    }
+    init {
+        startMidnightObserver()
+    }
+
+    private fun startMidnightObserver() {
+        val now = LocalDate.now().atStartOfDay()
+        val tomorrow = now.plusDays(1)
+        val delayMillis = java.time.Duration.between(java.time.LocalDateTime.now(), tomorrow).toMillis()
+
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(delayMillis)
+            refreshDate() // ✅ يحدّث اليوم
+            startMidnightObserver() // ✅ يعمل حلقة لليوم اللي بعده
         }
     }
 

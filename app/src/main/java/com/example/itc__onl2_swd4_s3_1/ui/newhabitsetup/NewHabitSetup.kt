@@ -1,4 +1,4 @@
-package com.example.itc__onl2_swd4_s3_1.ui.newHabitSetup
+package com.example.itc__onl2_swd4_s3_1.ui.newhabitsetup
 
 import android.app.DatePickerDialog
 import android.content.Intent
@@ -11,7 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -44,8 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.itc__onl2_swd4_s3_1.R
-import com.example.itc__onl2_swd4_s3_1.ui.Home.HomeScreen
+import com.example.itc__onl2_swd4_s3_1.ui.home.HomeScreen
 import com.example.itc__onl2_swd4_s3_1.ui.data.entity.HabitEntity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme

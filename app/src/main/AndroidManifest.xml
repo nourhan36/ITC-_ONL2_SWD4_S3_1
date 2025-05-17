@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <application
         android:allowBackup="true"
@@ -16,13 +17,14 @@
         <activity android:name=".ui.ui.ManageSalah.SalahContainerActivity"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1"/>
+        <receiver android:name=".utils.NotificationReceiver" android:exported="true" />
 
         <activity android:name=".ui.ui.ManageSalah.SalahTrackerScreen"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1">
 
         </activity>
-        <activity android:name=".ui.newHabitSetup.NewHabitSetup"
+        <activity android:name=".ui.newhabitsetup.NewHabitSetup"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 
@@ -42,7 +44,7 @@
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 
-                <activity android:name=".ui.Home.HomeScreen"
+                <activity android:name=".ui.home.HomeScreen"
                     android:exported="true"
                     android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1">
                     <intent-filter>
