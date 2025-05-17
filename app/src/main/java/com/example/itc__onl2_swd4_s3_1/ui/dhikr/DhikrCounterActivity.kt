@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +30,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
+import com.example.itc__onl2_swd4_s3_1.ui.data.HabitDatabase
 import com.example.itc__onl2_swd4_s3_1.ui.ui.components.AppNavBar
 import com.example.itc__onl2_swd4_s3_1.ui.ui.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
@@ -50,10 +53,31 @@ class DhikrCounterActivity : ComponentActivity() {
         val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: getDhikrList().firstOrNull()?.count?.toIntOrNull() ?: 33
 
         setContent {
-            ITC_ONL2_SWD4_S3_1Theme {
+            val context = LocalContext.current
+            val db = HabitDatabase.getDatabase(context)
+            val settingsDao = db.userSettingsDao()
+            val coroutineScope = rememberCoroutineScope()
+
+            val isDarkTheme = rememberSaveable { mutableStateOf(false) }
+
+            // ✅ قراءة الوضع الداكن المحفوظ من Room
+            LaunchedEffect(Unit) {
+                coroutineScope.launch {
+                    val storedSetting = settingsDao.getSettings()
+                    isDarkTheme.value = storedSetting?.isDarkMode ?: false
+                }
+            }
+            ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 AppNavBar(
                     selectedIndex = 2,
-                    onIndexChanged = { index -> handleNavClick(this, index) }
+                    drawerThemeState = isDarkTheme,
+                    onIndexChanged = { index -> handleNavClick(this, index) },
+                    onThemeToggle = { enabled ->
+                        coroutineScope.launch {
+                            settingsDao.saveSettings(UserSettingsEntity(id = 0, isDarkMode = enabled))
+                        }
+                        isDarkTheme.value = enabled
+                    }
                 ) { innerPadding ->
 
                     DhikrCounter(dhikrText, dhikrCount, onDhikrCompleted = { completedDhikrText ->

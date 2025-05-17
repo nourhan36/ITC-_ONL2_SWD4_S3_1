@@ -84,7 +84,12 @@ import android.util.Log
 import com.example.itc__onl2_swd4_s3_1.ui.newhabitsetup.NewHabitSetup
 import com.example.itc__onl2_swd4_s3_1.utils.NotificationReceiver
 import android.provider.Settings
-
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
+import com.example.itc__onl2_swd4_s3_1.ui.data.HabitDatabase
+import kotlinx.coroutines.launch
 
 
 class HomeScreen : ComponentActivity() {
@@ -114,12 +119,31 @@ class HomeScreen : ComponentActivity() {
 
 
         setContent {
-            ITC_ONL2_SWD4_S3_1Theme {
+            val context = LocalContext.current
+            val db = HabitDatabase.getDatabase(context)
+            val settingsDao = db.userSettingsDao()
+            val coroutineScope = rememberCoroutineScope()
+            val isDarkTheme = rememberSaveable { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                coroutineScope.launch {
+                    val storedSetting = settingsDao.getSettings()
+                    isDarkTheme.value = storedSetting?.isDarkMode ?: false
+                }
+            }
 
+
+            ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 AppNavBar(
                     selectedIndex = 0,
+                    drawerThemeState = isDarkTheme,
                     onIndexChanged = { index -> handleNavClick(this, index) },
-                    onFabClick = { openHabitSelector() }
+                    onFabClick = { openHabitSelector() },
+                    onThemeToggle = { enabled ->
+                        coroutineScope.launch {
+                            settingsDao.saveSettings(UserSettingsEntity(id = 0, isDarkMode = enabled))
+                        }
+                        isDarkTheme.value = enabled
+                    }
                 ) { innerPadding ->
                     Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))
                 }

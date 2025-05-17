@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,20 +29,40 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
+import com.example.itc__onl2_swd4_s3_1.ui.data.HabitDatabase
 import com.example.itc__onl2_swd4_s3_1.ui.ui.components.AppNavBar
 import com.example.itc__onl2_swd4_s3_1.ui.ui.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.ui.ui.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.ui.ui.utils.Constants
 import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 class ProgressTrackerPage : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
-            ITC_ONL2_SWD4_S3_1Theme {
+            val context = LocalContext.current
+            val db = HabitDatabase.getDatabase(context)
+            val settingsDao = db.userSettingsDao()
+            val coroutineScope = rememberCoroutineScope()
+
+            val isDarkTheme = rememberSaveable { mutableStateOf(false) }
+
+            // ✅ قراءة الوضع الداكن من Room
+            LaunchedEffect(Unit) {
+                coroutineScope.launch {
+                    val storedSetting = settingsDao.getSettings()
+                    isDarkTheme.value = storedSetting?.isDarkMode ?: false
+                }
+            }
+
+            ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
 
                 val viewModel: HabitViewModel = viewModel()
                 val completedDays by viewModel.allCompletedDays.collectAsState(initial = emptyList())
@@ -48,30 +70,38 @@ class ProgressTrackerPage : ComponentActivity() {
                 val filteredDays = completedDays.mapNotNull {
                     runCatching { LocalDate.parse(it) }.getOrNull()
                 }.filter { it.isBefore(today) }
+
                 val (currentStreak, highestStreak) = remember(filteredDays) {
                     calculateStreaks(filteredDays.map { it.toString() })
                 }
+
                 val firstDay = filteredDays.minOrNull() ?: today
-                val totalDaysSinceStart = java.time.temporal.ChronoUnit.DAYS.between(firstDay, today).toInt().coerceAtLeast(1)
+                val totalDaysSinceStart = ChronoUnit.DAYS.between(firstDay, today).toInt().coerceAtLeast(1)
                 val progress = filteredDays.size / totalDaysSinceStart.toFloat()
 
                 AppNavBar(
                     selectedIndex = 3,
-                    onIndexChanged = { index -> handleNavClick(this, index) }
+                    drawerThemeState = isDarkTheme,
+                    onIndexChanged = { index -> handleNavClick(this, index) },
+                    onThemeToggle = { enabled ->
+                        coroutineScope.launch {
+                            settingsDao.saveSettings(UserSettingsEntity(id = 0, isDarkMode = enabled))
+                        }
+                        isDarkTheme.value = enabled
+                    }
                 ) { innerPadding ->
                     CombinedScreen(
                         currentStreak = currentStreak,
                         highestStreak = highestStreak,
                         progress = progress,
-                        completedDates = filteredDays,
-
+                        completedDates = filteredDays
                     )
                 }
-
             }
         }
     }
 }
+
 
 @Composable
 fun CombinedScreen(currentStreak: Int, highestStreak: Int, progress: Float, completedDates: List<LocalDate>) {
