@@ -1,0 +1,455 @@
+package com.example.itc__onl2_swd4_s3_1.features.home
+
+
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SwipeToDismiss
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.rememberDismissState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.core.components.AppNavBar
+import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
+import com.example.itc__onl2_swd4_s3_1.features.habit_selector.HabitSelector
+import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.HabitViewModel
+import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
+import com.example.itc__onl2_swd4_s3_1.core.utils.ResetHabitsWorker
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.os.Build
+import android.Manifest
+import androidx.core.app.ActivityCompat
+import android.content.pm.PackageManager
+import android.util.Log
+import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.NewHabitSetup
+import com.example.itc__onl2_swd4_s3_1.core.utils.NotificationReceiver
+import android.provider.Settings
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
+import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
+import kotlinx.coroutines.launch
+
+
+class HomeScreen : ComponentActivity() {
+
+    private val viewModel: HabitViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        scheduleHabitReset(applicationContext)
+        requestExactAlarmPermissionIfNeeded()
+        testNotificationAfterOneMinute()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                startActivity(intent)
+                return
+            }
+        }
+
+        scheduleDailyNotification()
+        val prefs = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        prefs.getString("lastResetDate", null)
+        LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+
+
+
+        setContent {
+            val context = LocalContext.current
+            val db = HabitDatabase.getDatabase(context)
+            val settingsDao = db.userSettingsDao()
+            val coroutineScope = rememberCoroutineScope()
+            val isDarkTheme = rememberSaveable { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                coroutineScope.launch {
+                    val storedSetting = settingsDao.getSettings()
+                    isDarkTheme.value = storedSetting?.isDarkMode ?: false
+                }
+            }
+
+
+            ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
+                AppNavBar(
+                    selectedIndex = 0,
+                    drawerThemeState = isDarkTheme,
+                    onIndexChanged = { index -> handleNavClick(this, index) },
+                    onFabClick = { openHabitSelector() },
+                    onThemeToggle = { enabled ->
+                        coroutineScope.launch {
+                            settingsDao.saveSettings(UserSettingsEntity(id = 0, isDarkMode = enabled))
+                        }
+                        isDarkTheme.value = enabled
+                    }
+                ) { innerPadding ->
+                    Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))
+                }
+
+
+            }
+        }
+    }
+
+    private fun openHabitSelector() {
+        val intent = Intent(this, HabitSelector::class.java)
+        startActivity(intent)
+    }
+    private fun testNotificationAfterOneMinute() {
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, NotificationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 1, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        val triggerTime = Calendar.getInstance().apply {
+            add(Calendar.MINUTE, 1)
+        }.timeInMillis
+
+        Log.d("TestAlarm", "Alarm will trigger at: $triggerTime")
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            pendingIntent
+        )
+    }
+    private fun requestExactAlarmPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                startActivity(intent)
+            }
+        }
+    }
+
+
+
+    private fun scheduleDailyNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 100)
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                startActivity(intent)
+                return
+            }
+        }
+
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, NotificationReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 21)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            if (before(Calendar.getInstance())) {
+                add(Calendar.DAY_OF_MONTH, 1)
+            }
+        }
+
+        Log.d("DailyAlarm", "Next notification at ${calendar.time}")
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            pendingIntent
+        )
+    }
+
+
+    private fun scheduleHabitReset(context: Context) {
+        val currentDate = Calendar.getInstance()
+        val dueDate = Calendar.getInstance()
+        dueDate.set(Calendar.HOUR_OF_DAY, 0)
+        dueDate.set(Calendar.MINUTE, 0)
+        dueDate.set(Calendar.SECOND, 0)
+        if (dueDate.before(currentDate)) dueDate.add(Calendar.DAY_OF_MONTH, 1)
+        val timeDiff = dueDate.timeInMillis - currentDate.timeInMillis
+
+        val dailyWorkRequest = PeriodicWorkRequestBuilder<ResetHabitsWorker>(1, TimeUnit.DAYS)
+            .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "resetHabits",
+            ExistingPeriodicWorkPolicy.UPDATE,
+            dailyWorkRequest
+        )
+    }
+}
+
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
+
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
+    val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
+
+
+    LocalDate.now().toString()
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshDate()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    Column(modifier = modifier.fillMaxSize()) {
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(230.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ramadan_img),
+                contentDescription = "Ramadan Kareem",
+                modifier = Modifier.fillMaxSize()
+            )
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = "Ramadan Habit Tracker",
+                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = 24.sp
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = getCurrentDate(),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 16.sp
+                    )
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(text = "Cairo", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
+                        Text(text = "Egypt", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
+                    }
+                }
+            }
+        }
+
+        Surface(
+            color = MaterialTheme.colorScheme.background,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    listOf("All", "Complete", "Incomplete").forEach { label ->
+                        Text(
+                            text = label,
+                            modifier = Modifier
+                                .clickable { viewModel.setFilter(label) }
+                                .border(
+                                    border = if (selectedFilter == label)
+                                        BorderStroke(2.dp, Color.Blue)
+                                    else BorderStroke(0.dp, Color.Transparent),
+                                    shape = RoundedCornerShape(20.dp)
+                                )
+                                .padding(8.dp),
+                            fontSize = 20.sp,
+                            color = if (selectedFilter == label) Color.Red else MaterialTheme.colorScheme.onBackground,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LazyColumn {
+                    items(habits, key = { it.id }) { habit ->
+                        val dismissState = rememberDismissState(
+                            confirmStateChange = { value ->
+                                when (value) {
+                                    DismissValue.DismissedToStart -> {
+                                        viewModel.deleteHabit(habit)
+                                        true
+                                    }
+                                    DismissValue.DismissedToEnd -> {
+                                        val intent = Intent(context, NewHabitSetup::class.java).apply {
+                                            putExtra("habitId", habit.id)
+                                            putExtra("name", habit.name)
+                                            putExtra("startTime", habit.startTime)
+                                            putExtra("repeatType", habit.repeatType)
+                                            putExtra("duration", habit.duration)
+                                            putExtra("reminderTime", habit.reminderTime)
+                                            putExtra("startDate", habit.startDate)
+                                        }
+                                        context.startActivity(intent)
+                                        false
+                                    }
+                                    else -> false
+                                }
+                            }
+
+                        )
+
+                        SwipeToDismiss(
+                            state = dismissState,
+                            directions = setOf(DismissDirection.EndToStart, DismissDirection.StartToEnd),
+
+                            background = {
+                                val color = when (dismissState.dismissDirection) {
+                                    DismissDirection.EndToStart -> Color.Red
+                                    else -> Color.Transparent
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(color)
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
+                                    Icon(Icons.Default.AccountCircle, contentDescription = "Delete", tint = Color.White)
+                                }
+                            },
+                            dismissContent = {
+                                HabitCard(
+                                    habit = habit,
+                                    onCheck = { viewModel.toggleHabitCompletion(habit) }
+                                )
+                            }
+                        )
+                    }
+
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun LanguageSelector(
+    selectedLanguage: String,
+    onLanguageSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = true }
+            .padding(vertical = 12.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.language),
+            contentDescription = "language icon",
+            modifier = Modifier.size(35.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text = selectedLanguage, fontSize = 18.sp)
+        Icon(
+            imageVector = Icons.Default.ArrowDropDown,
+            contentDescription = "Dropdown Icon",
+            modifier = Modifier.size(24.dp)
+        )
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DropdownMenuItem(text = { Text("English") }, onClick = {
+                onLanguageSelected("English")
+                expanded = false
+            })
+            DropdownMenuItem(text = { Text("العربية") }, onClick = {
+                onLanguageSelected("العربية")
+                expanded = false
+            })
+        }
+    }
+}

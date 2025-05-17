@@ -14,37 +14,37 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1"
         tools:targetApi="31">
-        <activity android:name=".ui.ui.ManageSalah.SalahContainerActivity"
+        <activity android:name=".features.manage_salah.SalahContainerActivity"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1"/>
-        <receiver android:name=".utils.NotificationReceiver" android:exported="true" />
+        <receiver android:name=".core.utils.NotificationReceiver" android:exported="true" />
 
-        <activity android:name=".ui.ui.ManageSalah.SalahTrackerScreen"
+        <activity android:name=".features.manage_salah.SalahTrackerScreen"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1">
 
         </activity>
-        <activity android:name=".ui.newhabitsetup.NewHabitSetup"
+        <activity android:name=".features.new_habit_setup.NewHabitSetup"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 
-        <activity android:name=".ui.ui.prayertimes.PrayerTime"
+        <activity android:name=".features.prayer_times.PrayerTime"
             android:exported="false"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
         <activity
-            android:name=".ui.ui.dhikr.DhikrListActivity"
+            android:name=".features.dhikr.DhikrListActivity"
             android:exported="true"
             android:label="@string/title_activity_dhikr_list"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
-        <activity android:name=".ui.ui.dhikr.DhikrCounterActivity"
+        <activity android:name=".features.dhikr.DhikrCounterActivity"
             android:exported="false"/>
 
         <activity
-            android:name=".ui.ui.habitSelector.HabitSelector"
+            android:name=".features.habit_selector.HabitSelector"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 
-                <activity android:name=".ui.home.HomeScreen"
+                <activity android:name=".features.home.HomeScreen"
                     android:exported="true"
                     android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1">
                     <intent-filter>
@@ -53,7 +53,7 @@
                     </intent-filter>
                 </activity>
 
-        <activity android:name=".ui.ui.ProgressPage.ProgressTrackerPage"
+        <activity android:name=".features.progress_page.ProgressTrackerPage"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 

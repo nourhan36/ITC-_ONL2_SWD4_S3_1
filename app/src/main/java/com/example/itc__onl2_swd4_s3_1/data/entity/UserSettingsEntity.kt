@@ -5,6 +5,6 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "user_settings")
 data class UserSettingsEntity(
-    @PrimaryKey val id: Int = 0, // ثابت لأن فيه سطر واحد فقط
+    @PrimaryKey val id: Int = 0,
     val isDarkMode: Boolean
 )
