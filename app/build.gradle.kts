@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.play.services.mlkit.text.recognition.common)
     implementation(libs.firebase.auth)
     implementation(libs.androidx.room.common.jvm)
+    implementation(libs.generativeai)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
