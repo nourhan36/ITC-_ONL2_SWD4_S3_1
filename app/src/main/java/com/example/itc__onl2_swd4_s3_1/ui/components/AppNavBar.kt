@@ -20,12 +20,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
-import com.example.itc__onl2_swd4_s3_1.ui.Home.HomeScreen
+import com.example.itc__onl2_swd4_s3_1.ui.home.HomeScreen
 import com.example.itc__onl2_swd4_s3_1.ui.ui.Home.NavItem
 import com.example.itc__onl2_swd4_s3_1.ui.ui.ManageSalah.SalahContainerActivity
 import com.example.itc__onl2_swd4_s3_1.ui.ui.ProgressPage.ProgressTrackerPage
 import com.example.itc__onl2_swd4_s3_1.ui.ui.dhikr.DhikrCounterActivity
-import com.example.itc__onl2_swd4_s3_1.ui.ui.newHabitSetup.HabitViewModel
 import kotlinx.coroutines.launch
 
 // ✅ Navigation handler
@@ -52,7 +51,7 @@ fun AppNavBar(
     var selectedLanguage by remember { mutableStateOf("English") }
 
     val navItemList = listOf(
-        NavItem("Home", painterResource(R.drawable.home)),
+        NavItem("home", painterResource(R.drawable.home)),
         NavItem("Salah", painterResource(R.drawable.salah_icon)),
         NavItem("Dhikr", painterResource(R.drawable.zikr)),
         NavItem("Streak", painterResource(R.drawable.progress)),

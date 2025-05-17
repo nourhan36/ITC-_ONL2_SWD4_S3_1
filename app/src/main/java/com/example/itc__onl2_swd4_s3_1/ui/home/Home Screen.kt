@@ -1,4 +1,4 @@
-package com.example.itc__onl2_swd4_s3_1.ui.Home
+package com.example.itc__onl2_swd4_s3_1.ui.home
 
 
 import android.content.Context
@@ -74,7 +74,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
-import androidx.compose.material.*
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.os.Build
@@ -82,10 +81,7 @@ import android.Manifest
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
 import android.util.Log
-import androidx.annotation.RequiresPermission
-import androidx.compose.material.rememberDismissState
-import androidx.compose.material.SwipeToDismiss
-import com.example.itc__onl2_swd4_s3_1.ui.newHabitSetup.NewHabitSetup
+import com.example.itc__onl2_swd4_s3_1.ui.newhabitsetup.NewHabitSetup
 import com.example.itc__onl2_swd4_s3_1.utils.NotificationReceiver
 import android.provider.Settings
 

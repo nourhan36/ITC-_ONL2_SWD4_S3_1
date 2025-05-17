@@ -24,7 +24,7 @@
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1">
 
         </activity>
-        <activity android:name=".ui.newHabitSetup.NewHabitSetup"
+        <activity android:name=".ui.newhabitsetup.NewHabitSetup"
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 
@@ -44,7 +44,7 @@
             android:exported="true"
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
 
-                <activity android:name=".ui.Home.HomeScreen"
+                <activity android:name=".ui.home.HomeScreen"
                     android:exported="true"
                     android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1">
                     <intent-filter>
