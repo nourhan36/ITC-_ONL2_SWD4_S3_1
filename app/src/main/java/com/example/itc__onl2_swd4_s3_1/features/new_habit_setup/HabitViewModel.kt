@@ -1,122 +1,98 @@
 package com.example.itc__onl2_swd4_s3_1.features.new_habit_setup
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
-import com.example.itc__onl2_swd4_s3_1.data.entity.CompletedDayEntity
 import com.example.itc__onl2_swd4_s3_1.data.entity.HabitEntity
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
+import com.example.itc__onl2_swd4_s3_1.domain.repository.HabitRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import kotlinx.coroutines.flow.combine
+import javax.inject.Inject
+import java.time.LocalDateTime
+import java.time.Duration
 
-class HabitViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val dao = HabitDatabase.getDatabase(application).habitDao()
-
+@HiltViewModel
+class HabitViewModel @Inject constructor(
+    private val habitRepository: HabitRepository
+) : ViewModel() {
 
     private val _selectedFilter = MutableStateFlow("All")
     val selectedFilter: StateFlow<String> = _selectedFilter.asStateFlow()
 
-    fun deleteHabit(habit: HabitEntity) {
-        viewModelScope.launch {
-            dao.deleteHabit(habit)
-            markDayCompletedIfAllHabitsDone()
+    private val _currentDate = MutableStateFlow(LocalDate.now().toString())
+    val activeHabits: Flow<List<HabitEntity>> =
+        _currentDate.flatMapLatest { date -> habitRepository.getActiveHabits(date) }
+
+    val filteredHabits: Flow<List<HabitEntity>> = activeHabits.combine(selectedFilter) { habits, filter ->
+        when (filter) {
+            "Complete" -> habits.filter { it.isCompleted }
+            "Incomplete" -> habits.filter { !it.isCompleted }
+            else -> habits
         }
     }
 
+    private val _completedDays = MutableStateFlow<List<String>>(emptyList())
+    val allCompletedDays: StateFlow<List<String>> = _completedDays.asStateFlow()
 
-    private val _currentDate = MutableStateFlow(LocalDate.now().toString())
-
-    val activeHabits = _currentDate.flatMapLatest { date ->
-        dao.getActiveHabits(date)
+    init {
+        refreshDate()
+        observeCompletedDays()
+        startMidnightObserver()
     }
 
-    fun updateHabit(habit: HabitEntity) {
+    private fun observeCompletedDays() {
         viewModelScope.launch {
-            dao.updateHabit(habit)
-            markDayCompletedIfAllHabitsDone()
+            _completedDays.value = habitRepository.getCompletedDays()
         }
     }
 
     fun refreshDate() {
         _currentDate.value = LocalDate.now().toString()
     }
-    val filteredHabits: Flow<List<HabitEntity>> = activeHabits.combine(selectedFilter) { activeList, filter ->
-        when (filter) {
-            "Complete" -> activeList.filter { it.isCompleted }
-            "Incomplete" -> activeList.filter { !it.isCompleted }
-            else -> activeList
-        }
-    }
-    init {
-        startMidnightObserver()
-    }
-
-    private fun startMidnightObserver() {
-        val now = LocalDate.now().atStartOfDay()
-        val tomorrow = now.plusDays(1)
-        val delayMillis = java.time.Duration.between(java.time.LocalDateTime.now(), tomorrow).toMillis()
-
-        viewModelScope.launch {
-            kotlinx.coroutines.delay(delayMillis)
-            refreshDate()
-            startMidnightObserver()
-        }
-    }
-
-
 
     fun setFilter(filter: String) {
         _selectedFilter.value = filter
     }
 
+    fun insertHabit(habit: HabitEntity) {
+        viewModelScope.launch {
+            habitRepository.insertHabit(habit)
+        }
+    }
 
-    val completedDayDao = HabitDatabase.getDatabase(application).completedDayDao()
+    fun updateHabit(habit: HabitEntity) {
+        viewModelScope.launch {
+            habitRepository.updateHabit(habit)
+            habitRepository.markDayIfCompleted()
+        }
+    }
 
-    val allCompletedDays: Flow<List<String>> =
-        completedDayDao.getAllCompletedDays().map { list -> list.map { it.date } }
-
+    fun deleteHabit(habit: HabitEntity) {
+        viewModelScope.launch {
+            habitRepository.deleteHabit(habit)
+            habitRepository.markDayIfCompleted()
+        }
+    }
 
     fun toggleHabitCompletion(habit: HabitEntity) {
         viewModelScope.launch {
-            dao.updateHabit(habit.copy(isCompleted = !habit.isCompleted))
-            markDayCompletedIfAllHabitsDone()
+            val updated = habit.copy(isCompleted = !habit.isCompleted)
+            habitRepository.updateHabit(updated)
+            habitRepository.markDayIfCompleted()
         }
     }
 
+    private fun startMidnightObserver() {
+        val now = LocalDateTime.now()
+        val tomorrow = now.toLocalDate().plusDays(1).atStartOfDay()
+        val delayMillis = Duration.between(now, tomorrow).toMillis()
 
-    fun insertHabit(habit: HabitEntity) {
         viewModelScope.launch {
-            dao.insertHabit(habit)
+            delay(delayMillis)
+            refreshDate()
+            startMidnightObserver()
         }
     }
-
-
-    fun markDayCompletedIfAllHabitsDone() {
-        viewModelScope.launch {
-            val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
-            val activeHabits = dao.getActiveHabitsNow(today)
-
-            if (activeHabits.isNotEmpty()) {
-                if (activeHabits.all { it.isCompleted }) {
-                    completedDayDao.insert(CompletedDayEntity(today))
-                } else {
-                    completedDayDao.deleteByDate(today)
-                }
-            } else {
-                completedDayDao.deleteByDate(today)
-            }
-        }
-    }
-
-
 }
-
