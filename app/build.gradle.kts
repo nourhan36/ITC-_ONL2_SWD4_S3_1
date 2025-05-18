@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
     id ("kotlin-kapt")
+    id("dagger.hilt.android.plugin") // 🔥 أضيفي هذا السطر
 }
 
 android {
@@ -46,6 +47,12 @@ dependencies {
 
         implementation ("com.google.accompanist:accompanist-pager:0.30.1")
         implementation ("com.google.accompanist:accompanist-pager-indicators:0.30.1")
+// Hilt Core
+    implementation("com.google.dagger:hilt-android:2.51.1")
+// Hilt Compiler
+    kapt("com.google.dagger:hilt-compiler:2.51.1")
+// لو كنتِ تستخدمين Hilt مع ViewModel
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
 
     implementation ("androidx.work:work-runtime-ktx:2.8.1")
