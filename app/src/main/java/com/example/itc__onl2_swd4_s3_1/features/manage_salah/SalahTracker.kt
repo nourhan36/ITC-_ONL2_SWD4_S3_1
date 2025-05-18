@@ -5,27 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,8 +20,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.itc__onl2_swd4_s3_1.data.entity.SalahEntity
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
+import com.example.itc__onl2_swd4_s3_1.data.entity.SalahEntity
 import com.example.itc__onl2_swd4_s3_1.data.local.database.SalahDatabase
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -44,7 +30,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
 
 class SalahTrackerScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,10 +42,6 @@ class SalahTrackerScreen : ComponentActivity() {
     }
 }
 
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SalahTracker() {
     val context = LocalContext.current
@@ -75,6 +56,25 @@ fun SalahTracker() {
 
     val prayers = listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
     var selectedPrayers by remember { mutableStateOf(setOf<String>()) }
+    var completedDates by remember { mutableStateOf<List<LocalDate>>(emptyList()) }
+    var incompleteDates by remember { mutableStateOf<List<LocalDate>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        scope.launch(Dispatchers.IO) {
+            val allRecords = dao.getAllRecords()
+
+            completedDates = allRecords
+                .filter { it.prayers.split(",").size == prayers.size }
+                .mapNotNull { runCatching { LocalDate.parse(it.date) }.getOrNull() }
+
+            incompleteDates = allRecords
+                .filter {
+                    val count = it.prayers.split(",").size
+                    count in 1 until prayers.size
+                }
+                .mapNotNull { runCatching { LocalDate.parse(it.date) }.getOrNull() }
+        }
+    }
 
     LaunchedEffect(selectedDateStr) {
         val entry = dao.getPrayersForDate(selectedDateStr)
@@ -86,53 +86,88 @@ fun SalahTracker() {
             .fillMaxSize()
             .background(colorScheme.background)
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         SalahTrackerHeader()
 
-        Text(
-            text = "Which Salah did you offer today?",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = colorScheme.onBackground
-        )
-        Text(
-            text = selectedDate.format(dateFormatter),
-            fontSize = 14.sp,
-            color = colorScheme.onBackground.copy(alpha = 0.6f)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Which Salah did you offer today?",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.onBackground
+            )
+            Text(
+                text = selectedDate.format(dateFormatter),
+                fontSize = 14.sp,
+                color = colorScheme.onBackground.copy(alpha = 0.6f)
+            )
+        }
 
-        prayers.forEach { prayer ->
-            SalahCheckBox(
-                prayer = prayer,
-                selectedPrayers = selectedPrayers,
-                containerColor = colorScheme.surface,
-                textColor = colorScheme.onSurface
-            ) { checked, name ->
-                val updated = selectedPrayers.toMutableSet().apply {
-                    if (checked) add(name) else remove(name)
-                }
-                selectedPrayers = updated
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(0.4f),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(prayers.size) { index ->
+                val prayer = prayers[index]
+                SalahCheckBox(
+                    prayer = prayer,
+                    selectedPrayers = selectedPrayers,
+                    containerColor = colorScheme.surface,
+                    textColor = colorScheme.onSurface,
+                    modifier = Modifier.fillMaxWidth()
+                ) { checked, name ->
+                    val updated = selectedPrayers.toMutableSet().apply {
+                        if (checked) add(name) else remove(name)
+                    }
+                    selectedPrayers = updated
 
-                scope.launch(Dispatchers.IO) {
-                    dao.insertOrUpdate(
-                        SalahEntity(
-                            date = selectedDateStr,
-                            prayers = updated.joinToString(",")
+                    scope.launch(Dispatchers.IO) {
+                        dao.insertOrUpdate(
+                            SalahEntity(
+                                date = selectedDateStr,
+                                prayers = updated.joinToString(",")
+                            )
                         )
-                    )
+                        val allRecords = dao.getAllRecords()
+                        completedDates = allRecords
+                            .filter { it.prayers.split(",").size == prayers.size }
+                            .mapNotNull { runCatching { LocalDate.parse(it.date) }.getOrNull() }
+
+                        incompleteDates = allRecords
+                            .filter {
+                                val count = it.prayers.split(",").size
+                                count in 1 until prayers.size
+                            }
+                            .mapNotNull { runCatching { LocalDate.parse(it.date) }.getOrNull() }
+                    }
                 }
             }
         }
 
         CalendarGrid(
             selectedDate = selectedDate,
+            completedDates = completedDates,
+            incompleteDates = incompleteDates,
             onDateSelected = { selectedDate = it },
             selectedColor = colorScheme.secondary,
+            completedColor = colorScheme.primary,
+            currentDayColor = Color.Red,
             defaultColor = colorScheme.surface,
             textColor = colorScheme.onSurface,
-            selectedTextColor = colorScheme.onSecondary
+            selectedTextColor = colorScheme.onSecondary,
+            completedTextColor = colorScheme.onPrimary,
+            currentDayTextColor = Color.White,
+            modifier = Modifier.weight(0.6f)
         )
     }
 }
@@ -143,11 +178,11 @@ fun SalahCheckBox(
     selectedPrayers: Set<String>,
     containerColor: Color,
     textColor: Color,
+    modifier: Modifier = Modifier,
     onCheckedChange: (Boolean, String) -> Unit
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .background(containerColor, shape = RoundedCornerShape(12.dp))
             .clickable { onCheckedChange(!selectedPrayers.contains(prayer), prayer) }
             .padding(12.dp),
@@ -187,24 +222,34 @@ fun SalahTrackerHeader() {
 @Composable
 fun CalendarGrid(
     selectedDate: LocalDate,
+    completedDates: List<LocalDate>,
+    incompleteDates: List<LocalDate>,
     onDateSelected: (LocalDate) -> Unit,
     selectedColor: Color,
+    completedColor: Color,
+    currentDayColor: Color,
     defaultColor: Color,
     textColor: Color,
-    selectedTextColor: Color
+    selectedTextColor: Color,
+    completedTextColor: Color,
+    currentDayTextColor: Color,
+    modifier: Modifier = Modifier
 ) {
     val daysInMonth = selectedDate.withDayOfMonth(1).lengthOfMonth()
     val days = (1..daysInMonth).map { selectedDate.withDayOfMonth(it) }
     val dialogState = rememberMaterialDialogState()
+    val today = LocalDate.now()
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-
+    Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Button(onClick = { dialogState.show() }) {
+            Button(
+                onClick = { dialogState.show() },
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
                 Text(text = selectedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")))
             }
         }
@@ -221,26 +266,56 @@ fun CalendarGrid(
             }
         }
 
-        LazyVerticalGrid(columns = GridCells.Fixed(7), modifier = Modifier.fillMaxWidth()) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(7),
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
             items(days.size) { index ->
                 val date = days[index]
                 val isSelected = date == selectedDate
+                val isCompleted = completedDates.contains(date)
+                val isIncomplete = incompleteDates.contains(date)
+                val isCurrentDay = date == today
+
+                val bgColor = when {
+                    isCurrentDay -> currentDayColor
+                    isSelected -> selectedColor
+                    isCompleted -> completedColor
+                    else -> defaultColor
+                }
+
+                val textCol = when {
+                    isCurrentDay -> currentDayTextColor
+                    isSelected -> selectedTextColor
+                    isCompleted -> completedTextColor
+                    else -> textColor
+                }
+
                 Column(
                     modifier = Modifier
-                        .padding(4.dp)
-                        .background(
-                            color = if (isSelected) selectedColor else defaultColor,
-                            shape = RoundedCornerShape(8.dp)
-                        )
+                        .padding(2.dp)
+                        .background(bgColor, shape = RoundedCornerShape(4.dp))
                         .clickable { onDateSelected(date) }
-                        .padding(12.dp),
+                        .padding(4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = date.dayOfMonth.toString(),
-                        color = if (isSelected) selectedTextColor else textColor,
-                        fontWeight = FontWeight.Bold
+                        color = textCol,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
                     )
+
+                    if (isIncomplete) {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = 2.dp)
+                                .size(6.dp)
+                                .background(Color(0xFFFFA726), shape = CircleShape)
+                        )
+                    }
                 }
             }
         }

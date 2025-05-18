@@ -13,4 +13,8 @@ interface SalahDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdate(entry: SalahEntity)
+
+    @Query("SELECT * FROM salah_records")
+    suspend fun getAllRecords(): List<SalahEntity>
+
 }
