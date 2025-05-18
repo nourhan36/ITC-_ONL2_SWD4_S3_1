@@ -5,32 +5,46 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
-import com.example.itc__onl2_swd4_s3_1.data.entity.SalahEntity
-import com.example.itc__onl2_swd4_s3_1.data.local.database.SalahDatabase
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+@AndroidEntryPoint
 class SalahTrackerScreen : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,42 +57,23 @@ class SalahTrackerScreen : ComponentActivity() {
 }
 
 @Composable
-fun SalahTracker() {
-    val context = LocalContext.current
-    val db = remember { SalahDatabase.getDatabase(context) }
-    val dao = db.salahDao()
-    val scope = rememberCoroutineScope()
-
+fun SalahTracker(viewModel: SalahViewModel = hiltViewModel()) {
     val colorScheme = MaterialTheme.colorScheme
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     val selectedDateStr = selectedDate.toString()
     val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
 
     val prayers = listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
-    var selectedPrayers by remember { mutableStateOf(setOf<String>()) }
-    var completedDates by remember { mutableStateOf<List<LocalDate>>(emptyList()) }
-    var incompleteDates by remember { mutableStateOf<List<LocalDate>>(emptyList()) }
+    val selectedPrayers by viewModel.selectedPrayers.collectAsState()
+    val completedDates by viewModel.completedDates.collectAsState()
+    val incompleteDates by viewModel.incompleteDates.collectAsState()
 
     LaunchedEffect(Unit) {
-        scope.launch(Dispatchers.IO) {
-            val allRecords = dao.getAllRecords()
-
-            completedDates = allRecords
-                .filter { it.prayers.split(",").size == prayers.size }
-                .mapNotNull { runCatching { LocalDate.parse(it.date) }.getOrNull() }
-
-            incompleteDates = allRecords
-                .filter {
-                    val count = it.prayers.split(",").size
-                    count in 1 until prayers.size
-                }
-                .mapNotNull { runCatching { LocalDate.parse(it.date) }.getOrNull() }
-        }
+        viewModel.loadInitialData(prayers)
     }
 
     LaunchedEffect(selectedDateStr) {
-        val entry = dao.getPrayersForDate(selectedDateStr)
-        selectedPrayers = entry?.prayers?.split(",")?.toSet() ?: emptySet()
+        viewModel.loadPrayersForDate(selectedDateStr)
     }
 
     Column(
@@ -125,34 +120,12 @@ fun SalahTracker() {
                     containerColor = colorScheme.surface,
                     textColor = colorScheme.onSurface,
                     modifier = Modifier.fillMaxWidth()
-                ) { checked, name ->
-                    val updated = selectedPrayers.toMutableSet().apply {
-                        if (checked) add(name) else remove(name)
-                    }
-                    selectedPrayers = updated
-
-                    scope.launch(Dispatchers.IO) {
-                        dao.insertOrUpdate(
-                            SalahEntity(
-                                date = selectedDateStr,
-                                prayers = updated.joinToString(",")
-                            )
-                        )
-                        val allRecords = dao.getAllRecords()
-                        completedDates = allRecords
-                            .filter { it.prayers.split(",").size == prayers.size }
-                            .mapNotNull { runCatching { LocalDate.parse(it.date) }.getOrNull() }
-
-                        incompleteDates = allRecords
-                            .filter {
-                                val count = it.prayers.split(",").size
-                                count in 1 until prayers.size
-                            }
-                            .mapNotNull { runCatching { LocalDate.parse(it.date) }.getOrNull() }
-                    }
+                ) { _, name ->
+                    viewModel.togglePrayer(name, prayers)
                 }
             }
         }
+
 
         CalendarGrid(
             selectedDate = selectedDate,
@@ -171,6 +144,7 @@ fun SalahTracker() {
         )
     }
 }
+
 
 @Composable
 fun SalahCheckBox(

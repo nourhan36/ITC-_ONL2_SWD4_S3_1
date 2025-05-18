@@ -22,13 +22,16 @@ import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
 import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
 import com.example.itc__onl2_swd4_s3_1.core.components.AppNavBar
 import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
-import com.example.itc__onl2_swd4_s3_1.features.prayer_times.PrayerApp
+
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
+import com.example.itc__onl2_swd4_s3_1.features.prayer_times.PrayerApp
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class SalahContainerActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)

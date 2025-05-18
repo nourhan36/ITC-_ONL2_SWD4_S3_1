@@ -78,6 +78,21 @@ object NotificationHelper {
     }
 
     fun testNotificationAfterOneMinute(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                try {
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    Log.e("NotificationHelper", "Failed to launch exact alarm settings: ${e.message}")
+                }
+                return
+            }
+        }
+
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
         val intent = Intent(context, NotificationReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
@@ -99,6 +114,7 @@ object NotificationHelper {
 
         Log.d("NotificationHelper", "Test notification scheduled after one minute")
     }
+
 
     fun scheduleHabitReset(context: Context) {
         val currentDate = Calendar.getInstance()

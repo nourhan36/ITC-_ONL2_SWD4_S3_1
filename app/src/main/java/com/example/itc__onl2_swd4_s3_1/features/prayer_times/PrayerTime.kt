@@ -5,64 +5,33 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
-import kotlinx.coroutines.Dispatchers
+import com.example.itc__onl2_swd4_s3_1.domain.model.PrayerTime
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.URL
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+@AndroidEntryPoint
 class PrayerTime : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +42,6 @@ class PrayerTime : ComponentActivity() {
                 PrayerApp(this)
             }
         }
-
     }
 
     private fun createNotificationChannel() {
@@ -89,27 +57,24 @@ class PrayerTime : ComponentActivity() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun PrayerApp(context: Context) {
+@RequiresApi(Build.VERSION_CODES.O)
+fun PrayerApp(context: Context, viewModel: PrayerTimesViewModel = hiltViewModel()) {
     var selectedCity by remember { mutableStateOf("Cairo") }
-    var prayerTimes by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
+    val prayerTimes by viewModel.prayerTimes.collectAsState()
     var remainingTime by remember { mutableStateOf("0h 0m") }
     var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedCity) {
         isLoading = true
-        prayerTimes = fetchPrayerTimes(selectedCity)
-        if (prayerTimes.isEmpty()) {
-            Toast.makeText(context, "Failed to fetch prayer times", Toast.LENGTH_SHORT).show()
-        }
+        viewModel.loadPrayerTimes(selectedCity)
         isLoading = false
     }
 
     LaunchedEffect(prayerTimes) {
         while (true) {
             if (prayerTimes.isNotEmpty()) {
-                remainingTime = calculateRemainingTime(prayerTimes)
+                remainingTime = calculateRemainingTime(prayerTimes.map { it.name to it.time })
             } else {
                 remainingTime = "No data available"
             }
@@ -147,9 +112,7 @@ fun PrayerApp(context: Context) {
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(
-                        color = colorScheme.primary
-                    )
+                    CircularProgressIndicator(color = colorScheme.primary)
                 }
             } else {
                 Text(
@@ -161,14 +124,15 @@ fun PrayerApp(context: Context) {
                 )
 
                 LazyColumn {
-                    items(prayerTimes) { (name, time) ->
-                        PrayerRow(name, time, context, colorScheme)
+                    items(prayerTimes) { prayer ->
+                        PrayerRow(prayer.name, prayer.time, context, colorScheme)
                     }
                 }
             }
         }
     }
 }
+
 @Composable
 fun CitySelector(
     selectedCity: String,
@@ -180,7 +144,7 @@ fun CitySelector(
         "Alexandria", "Aswan", "Asyut", "Beheira", "Beni Suef", "Cairo", "Dakahlia",
         "Damietta", "Faiyum", "Gharbia", "Giza", "Ismailia", "Kafr El Sheikh", "Luxor",
         "Matruh", "Minya", "Monufia", "New Valley", "North Sinai", "Port Said",
-        "Qalyubia", "Qena", "Red Sea", "Sharqia","Sohag", "South Sinai", "Suez"
+        "Qalyubia", "Qena", "Red Sea", "Sharqia", "Sohag", "South Sinai", "Suez"
     )
 
     Box(modifier = Modifier.padding(16.dp)) {
@@ -275,37 +239,9 @@ fun sendNotification(context: Context, prayerName: String) {
     }
 }
 
-suspend fun fetchPrayerTimes(city: String): List<Pair<String, String>> {
-    return withContext(Dispatchers.IO) {
-        try {
-            val url = "https://api.aladhan.com/v1/timingsByCity?city=$city&country=Egypt&method=5"
-            val json = URL(url).readText()
-            val jsonObject = JSONObject(json)
-
-            if (jsonObject.has("data")) {
-                val data = jsonObject.getJSONObject("data").getJSONObject("timings")
-                listOf(
-                    "Fajr" to data.getString("Fajr"),
-                    "Dhuhr" to data.getString("Dhuhr"),
-                    "Asr" to data.getString("Asr"),
-                    "Maghrib" to data.getString("Maghrib"),
-                    "Isha" to data.getString("Isha")
-                )
-            } else {
-                emptyList()
-            }
-        } catch (e: Exception) {
-            Log.e("API Error", "Error fetching prayer times: ${e.message}")
-            emptyList()
-        }
-    }
-}
-
 @RequiresApi(Build.VERSION_CODES.O)
 fun calculateRemainingTime(prayerTimes: List<Pair<String, String>>): String {
-    if (prayerTimes.isEmpty()) {
-        return "No data available"
-    }
+    if (prayerTimes.isEmpty()) return "No data available"
 
     val now = LocalTime.now()
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
@@ -321,11 +257,4 @@ fun calculateRemainingTime(prayerTimes: List<Pair<String, String>>): String {
     val fajrTime = LocalTime.parse(prayerTimes[0].second, formatter)
     val duration = java.time.Duration.between(now, fajrTime.plusHours(24))
     return "Fajr in ${duration.toHours()}h ${duration.toMinutes() % 60}m"
-}
-
-@Preview()
-@Composable
-fun PreviewPrayerApp() {
-    val context = LocalContext.current
-    PrayerApp(context)
 }
