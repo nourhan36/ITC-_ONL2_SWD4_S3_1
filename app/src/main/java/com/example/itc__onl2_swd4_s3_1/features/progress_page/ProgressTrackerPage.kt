@@ -1,42 +1,49 @@
 package com.example.itc__onl2_swd4_s3_1.features.progress_page
 
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.itc__onl2_swd4_s3_1.core.components.AppNavBar
 import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
+import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
 import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
 import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.HabitViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-
+@AndroidEntryPoint
 class ProgressTrackerPage : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -56,7 +63,7 @@ class ProgressTrackerPage : ComponentActivity() {
             }
 
             ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
-                val viewModel: HabitViewModel = viewModel()
+                val viewModel: HabitViewModel = hiltViewModel()
                 val completedDays = viewModel.allCompletedDays.collectAsState(initial = emptyList()).value
                 val today = LocalDate.now()
                 val filteredDays = completedDays.mapNotNull {
