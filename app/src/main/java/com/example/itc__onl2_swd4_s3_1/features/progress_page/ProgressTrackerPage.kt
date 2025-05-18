@@ -35,7 +35,7 @@ import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
 import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
 import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
-import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.HabitViewModel
+import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.LocalDate

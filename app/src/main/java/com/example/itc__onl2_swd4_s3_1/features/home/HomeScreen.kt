@@ -52,7 +52,7 @@ import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.NotificationHelper
 import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
 import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
-import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.HabitViewModel
+import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitViewModel
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.NewHabitSetup
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -120,11 +120,12 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
 
     Column(modifier = modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.ramadan_img),
+            painter = painterResource(id = R.drawable.ramadan),
             contentDescription = "Ramadan Kareem",
             modifier = Modifier
                 .fillMaxWidth()
                 .height(230.dp)
+
         )
 
         Row(

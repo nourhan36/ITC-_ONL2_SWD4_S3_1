@@ -1,31 +1,52 @@
 package com.example.itc__onl2_swd4_s3_1.features.prayer_times
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
-import com.example.itc__onl2_swd4_s3_1.domain.model.PrayerTime
+import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
+import com.example.itc__onl2_swd4_s3_1.features.prayer_times.presentation.PrayerTimesViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import java.time.LocalTime
@@ -36,30 +57,20 @@ class PrayerTime : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        createNotificationChannel()
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
-                PrayerApp(this)
+                PrayerApp()
             }
         }
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                "prayer_channel", "Prayer Notifications",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
-        }
-    }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @RequiresApi(Build.VERSION_CODES.O)
-fun PrayerApp(context: Context, viewModel: PrayerTimesViewModel = hiltViewModel()) {
+fun PrayerApp(viewModel: PrayerTimesViewModel = hiltViewModel()) {
     var selectedCity by remember { mutableStateOf("Cairo") }
     val prayerTimes by viewModel.prayerTimes.collectAsState()
     var remainingTime by remember { mutableStateOf("0h 0m") }
@@ -73,10 +84,10 @@ fun PrayerApp(context: Context, viewModel: PrayerTimesViewModel = hiltViewModel(
 
     LaunchedEffect(prayerTimes) {
         while (true) {
-            if (prayerTimes.isNotEmpty()) {
-                remainingTime = calculateRemainingTime(prayerTimes.map { it.name to it.time })
+            remainingTime = if (prayerTimes.isNotEmpty()) {
+                calculateRemainingTime(prayerTimes.map { it.name to it.time })
             } else {
-                remainingTime = "No data available"
+                "No data available"
             }
             delay(1000)
         }
@@ -125,7 +136,7 @@ fun PrayerApp(context: Context, viewModel: PrayerTimesViewModel = hiltViewModel(
 
                 LazyColumn {
                     items(prayerTimes) { prayer ->
-                        PrayerRow(prayer.name, prayer.time, context, colorScheme)
+                        PrayerRow(prayer.name, prayer.time, colorScheme)
                     }
                 }
             }
@@ -140,12 +151,8 @@ fun CitySelector(
     onCitySelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val cities = listOf(
-        "Alexandria", "Aswan", "Asyut", "Beheira", "Beni Suef", "Cairo", "Dakahlia",
-        "Damietta", "Faiyum", "Gharbia", "Giza", "Ismailia", "Kafr El Sheikh", "Luxor",
-        "Matruh", "Minya", "Monufia", "New Valley", "North Sinai", "Port Said",
-        "Qalyubia", "Qena", "Red Sea", "Sharqia", "Sohag", "South Sinai", "Suez"
-    )
+    val cities = Constants.CITIES
+
 
     Box(modifier = Modifier.padding(16.dp)) {
         Button(
@@ -180,10 +187,9 @@ fun CitySelector(
 fun PrayerRow(
     name: String,
     time: String,
-    context: Context,
     colorScheme: ColorScheme
 ) {
-    var isNotificationEnabled by remember { mutableStateOf(true) }
+
 
     Card(
         modifier = Modifier
@@ -208,36 +214,12 @@ fun PrayerRow(
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface
             )
-            Switch(
-                checked = isNotificationEnabled,
-                onCheckedChange = {
-                    isNotificationEnabled = it
-                    if (it) sendNotification(context, name)
-                },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = colorScheme.primary,
-                    checkedTrackColor = colorScheme.primaryContainer,
-                    uncheckedThumbColor = colorScheme.outline,
-                    uncheckedTrackColor = colorScheme.surfaceVariant
-                )
-            )
+
         }
     }
 }
 
-fun sendNotification(context: Context, prayerName: String) {
-    val notificationManager = NotificationManagerCompat.from(context)
-    if (notificationManager.areNotificationsEnabled()) {
-        val builder = NotificationCompat.Builder(context, "prayer_channel")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("وقت الصلاة")
-            .setContentText("حان الآن وقت صلاة $prayerName")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-        notificationManager.notify(1, builder.build())
-    } else {
-        Toast.makeText(context, "Enable notifications in settings", Toast.LENGTH_SHORT).show()
-    }
-}
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun calculateRemainingTime(prayerTimes: List<Pair<String, String>>): String {

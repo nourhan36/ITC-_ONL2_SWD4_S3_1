@@ -106,7 +106,7 @@ fun SalahTabsScreen() {
             modifier = Modifier.fillMaxSize()
         ) { page ->
             when (page) {
-                0 -> PrayerApp(context = context)
+                0 -> PrayerApp()
                 1 -> SalahTracker()
             }
         }

@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.data.entity.HabitEntity
 import com.example.itc__onl2_swd4_s3_1.features.home.HomeScreen
+import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -58,7 +59,14 @@ class NewHabitSetup : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
+
         val habitId = intent.getIntExtra("habitId", -1)
+        val habitTitleFromSelector = if (habitId != -1) {
+            intent.getStringExtra("name") ?: ""
+        } else {
+            intent.getStringExtra("title") ?: ""
+        }
         val habit = if (habitId != -1) HabitEntity(
             id = habitId,
             name = intent.getStringExtra("name") ?: "",
@@ -72,9 +80,12 @@ class NewHabitSetup : ComponentActivity() {
 
         setContent {
             ITC_ONL2_SWD4_S3_1Theme {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
                     NewHabitSetupScreen(
-                        title = if (habitId != -1) "Edit Habit" else "New Habit",
+                        title = habitTitleFromSelector,
                         viewModel = viewModel,
                         onHabitSaved = {
                             startActivity(Intent(this, HomeScreen::class.java))

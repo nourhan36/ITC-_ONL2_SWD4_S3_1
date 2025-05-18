@@ -1,4 +1,4 @@
-package com.example.itc__onl2_swd4_s3_1.features.manage_salah
+package com.example.itc__onl2_swd4_s3_1.features.manage_salah.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
