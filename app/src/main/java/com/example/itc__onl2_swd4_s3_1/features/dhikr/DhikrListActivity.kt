@@ -13,48 +13,26 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
+import androidx.work.*
 import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
 import com.example.itc__onl2_swd4_s3_1.core.utils.ResetDhikrWorker
@@ -62,7 +40,7 @@ import kotlinx.coroutines.delay
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
-class DhikrListActivity : ComponentActivity() {
+class DhikrListActivity : BaseActivity() {
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
     private val dhikrListState = mutableStateListOf<Dhikr>()
     private lateinit var sharedPreferences: SharedPreferences
@@ -73,7 +51,7 @@ class DhikrListActivity : ComponentActivity() {
 
         sharedPreferences = getSharedPreferences("DhikrPrefs", Context.MODE_PRIVATE)
         scheduleResetWorker()
-        val dhikrList = getDhikrList().filter { it.category == "تسابيح" }
+        val dhikrList = getDhikrList(this).filter { it.category == "تسابيح" }
 
         dhikrList.forEach { dhikr ->
             val isCompleted = sharedPreferences.getBoolean("dhikr_${dhikr.content}", false)
@@ -117,7 +95,6 @@ class DhikrListActivity : ComponentActivity() {
                 )
             }
         }
-
     }
 
     private suspend fun waitUntilMidnightAndRefresh() {
@@ -133,7 +110,7 @@ class DhikrListActivity : ComponentActivity() {
         val delayMillis = target.timeInMillis - now.timeInMillis
         delay(delayMillis)
 
-        val dhikrList = getDhikrList().filter { it.category == "تسابيح" }
+        val dhikrList = getDhikrList(this).filter { it.category == "تسابيح" }
         dhikrList.forEach { dhikr ->
             val isCompleted = sharedPreferences.getBoolean("dhikr_${dhikr.content}", false)
             dhikr.isCompleted.value = isCompleted
@@ -144,7 +121,6 @@ class DhikrListActivity : ComponentActivity() {
 
         waitUntilMidnightAndRefresh()
     }
-
 
     private fun scheduleResetWorker() {
         val currentTime = Calendar.getInstance()
@@ -169,17 +145,16 @@ class DhikrListActivity : ComponentActivity() {
             workRequest
         )
     }
+
     private fun updateDhikrCompletionStatus(dhikrText: String, completed: Boolean) {
         val index = dhikrListState.indexOfFirst { it.content == dhikrText }
         if (index != -1) {
             dhikrListState[index].isCompleted.value = completed
-
             sharedPreferences.edit().putBoolean("dhikr_${dhikrText}", completed).apply()
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DhikrScreen(dhikrList: List<Dhikr>, onDhikrClick: (Dhikr) -> Unit, onBack: () -> Unit) {
     val colorScheme = MaterialTheme.colorScheme
@@ -188,7 +163,7 @@ fun DhikrScreen(dhikrList: List<Dhikr>, onDhikrClick: (Dhikr) -> Unit, onBack: (
         TopAppBar(
             title = {
                 Text(
-                    "Dhikr",
+                    stringResource(R.string.dhikr),
                     modifier = Modifier.fillMaxWidth().padding(end = 48.dp),
                     textAlign = TextAlign.Center,
                     color = colorScheme.onBackground
@@ -198,7 +173,7 @@ fun DhikrScreen(dhikrList: List<Dhikr>, onDhikrClick: (Dhikr) -> Unit, onBack: (
                 IconButton(onClick = onBack) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.back),
                         tint = colorScheme.onBackground
                     )
                 }
@@ -218,6 +193,14 @@ fun DhikrScreen(dhikrList: List<Dhikr>, onDhikrClick: (Dhikr) -> Unit, onBack: (
         }
     }
 }
+
+fun getDhikrList(context: Context): List<Dhikr> = listOf(
+    Dhikr("تسابيح", "33", context.getString(R.string.dhikr_virtue), context.getString(R.string.dhikr_1)),
+    Dhikr("تسابيح", "33", context.getString(R.string.dhikr_forgiveness), context.getString(R.string.dhikr_2))
+)
+
+
+
 
 @Composable
 fun DhikrItem(dhikr: Dhikr, onDhikrClick: (Dhikr) -> Unit) {
@@ -252,7 +235,7 @@ fun DhikrHeader(dhikr: Dhikr) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.size(48.dp)) {
             Icon(
                 painter = painterResource(id = R.drawable.islamic_star),
-                contentDescription = "Dhikr Icon",
+                contentDescription = stringResource(R.string.streak_image_description),
                 tint = colorScheme.primary,
                 modifier = Modifier.size(48.dp)
             )
@@ -290,7 +273,7 @@ fun DhikrDetails(dhikr: Dhikr) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "${dhikr.count} Times",
+                text = stringResource(R.string.dhikr_completed_times, dhikr.count.toIntOrNull() ?: 0),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface

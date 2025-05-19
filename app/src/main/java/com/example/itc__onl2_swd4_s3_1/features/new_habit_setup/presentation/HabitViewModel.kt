@@ -9,29 +9,32 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import javax.inject.Inject
 import java.time.LocalDateTime
 import java.time.Duration
+import javax.inject.Inject
+import androidx.annotation.StringRes
+import com.example.itc__onl2_swd4_s3_1.R
 
 @HiltViewModel
 class HabitViewModel @Inject constructor(
     private val habitRepository: HabitRepository
 ) : ViewModel() {
 
-    private val _selectedFilter = MutableStateFlow("All")
-    val selectedFilter: StateFlow<String> = _selectedFilter.asStateFlow()
+    private val _selectedFilter = MutableStateFlow(HabitFilter.ALL)
+    val selectedFilter: StateFlow<HabitFilter> = _selectedFilter
 
     private val _currentDate = MutableStateFlow(LocalDate.now().toString())
     val activeHabits: Flow<List<HabitEntity>> =
         _currentDate.flatMapLatest { date -> habitRepository.getActiveHabits(date) }
 
-    val filteredHabits: Flow<List<HabitEntity>> = activeHabits.combine(selectedFilter) { habits, filter ->
-        when (filter) {
-            "Complete" -> habits.filter { it.isCompleted }
-            "Incomplete" -> habits.filter { !it.isCompleted }
-            else -> habits
+    val filteredHabits: Flow<List<HabitEntity>> =
+        activeHabits.combine(selectedFilter) { habits, filter ->
+            when (filter) {
+                HabitFilter.COMPLETE -> habits.filter { it.isCompleted }
+                HabitFilter.INCOMPLETE -> habits.filter { !it.isCompleted }
+                HabitFilter.ALL -> habits
+            }
         }
-    }
 
     private val _completedDays = MutableStateFlow<List<String>>(emptyList())
     val allCompletedDays: StateFlow<List<String>> = _completedDays.asStateFlow()
@@ -52,7 +55,7 @@ class HabitViewModel @Inject constructor(
         _currentDate.value = LocalDate.now().toString()
     }
 
-    fun setFilter(filter: String) {
+    fun setFilter(filter: HabitFilter) {
         _selectedFilter.value = filter
     }
 
@@ -96,3 +99,17 @@ class HabitViewModel @Inject constructor(
         }
     }
 }
+
+
+
+enum class HabitFilter {
+    ALL, COMPLETE, INCOMPLETE
+}
+
+@StringRes
+fun HabitFilter.getLabelRes(): Int = when (this) {
+    HabitFilter.ALL -> R.string.all
+    HabitFilter.COMPLETE -> R.string.complete
+    HabitFilter.INCOMPLETE -> R.string.incomplete
+}
+

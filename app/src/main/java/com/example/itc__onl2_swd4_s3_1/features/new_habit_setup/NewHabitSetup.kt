@@ -40,9 +40,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.data.entity.HabitEntity
 import com.example.itc__onl2_swd4_s3_1.features.home.HomeScreen
@@ -52,7 +55,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
-class NewHabitSetup : ComponentActivity() {
+class NewHabitSetup : BaseActivity() {
 
     private val viewModel: HabitViewModel by viewModels()
 
@@ -127,7 +130,7 @@ fun NewHabitSetupScreen(
         OutlinedTextField(
             value = titleText,
             onValueChange = { titleText = it },
-            label = { Text("Habit Title") },
+            label = { Text(stringResource(R.string.habit_title)) },
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -142,7 +145,7 @@ fun NewHabitSetupScreen(
             OutlinedTextField(
                 value = durationValue,
                 onValueChange = { if (it.all(Char::isDigit)) durationValue = it },
-                label = { Text("Duration") },
+                label = { Text(stringResource(R.string.duration_label)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.weight(1f),
                 colors = TextFieldDefaults.outlinedTextFieldColors(
@@ -187,7 +190,10 @@ fun NewHabitSetupScreen(
                 contentColor = Color.White
             )
         ) {
-            Text(if (existingHabit != null) "Update Habit" else "Save Habit", fontSize = 16.sp)
+            Text(
+                if (existingHabit != null)stringResource(R.string.update_habit)
+                else stringResource(R.string.save_habit),
+                fontSize = 16.sp)
         }
 
         if (showDatePicker) {
@@ -208,8 +214,10 @@ fun NewHabitSetupScreen(
 @Composable
 private fun UnitDropdown(selectedUnit: String, onUnitSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    val units = listOf("minutes", "hours")
-
+    val units = listOf(
+        stringResource(R.string.minutes),
+        stringResource(R.string.hours)
+    )
     Surface(
         modifier = Modifier.width(120.dp).clickable { expanded = true },
         shape = RoundedCornerShape(4.dp),
@@ -222,7 +230,7 @@ private fun UnitDropdown(selectedUnit: String, onUnitSelected: (String) -> Unit)
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(selectedUnit)
-                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select unit")
+                Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.habit_duration_unit_label))
             }
 
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -246,7 +254,7 @@ private fun DateSelector(
     onDateSelected: (LocalDate) -> Unit,
     showDatePicker: () -> Unit
 ) {
-    val options = listOf("Today", "Tomorrow", "Custom")
+
     var expanded by remember { mutableStateOf(false) }
 
     Surface(
@@ -264,18 +272,26 @@ private fun DateSelector(
                     text = selectedDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
                     style = MaterialTheme.typography.bodyLarge
                 )
-                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select date")
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = stringResource(R.string.habit_date_label)
+                )
             }
+            val options = listOf(
+                "today" to stringResource(R.string.today),
+                "tomorrow" to stringResource(R.string.tomorrow),
+                "custom" to stringResource(R.string.custom)
+            )
 
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                options.forEach { option ->
+                options.forEach { (key, label) ->
                     DropdownMenuItem(
-                        text = { Text(option) },
+                        text = { Text(label) },
                         onClick = {
-                            when (option) {
-                                "Today" -> onDateSelected(LocalDate.now())
-                                "Tomorrow" -> onDateSelected(LocalDate.now().plusDays(1))
-                                "Custom" -> showDatePicker()
+                            when (key) {
+                                "today" -> onDateSelected(LocalDate.now())
+                                "tomorrow" -> onDateSelected(LocalDate.now().plusDays(1))
+                                "custom" -> showDatePicker()
                             }
                             expanded = false
                         }
@@ -285,7 +301,6 @@ private fun DateSelector(
         }
     }
 }
-
 private fun validateInput(title: String, duration: String): Boolean {
     return title.isNotBlank() && duration.isNotBlank() && duration.all { it.isDigit() }
 }

@@ -1,21 +1,14 @@
 package com.example.itc__onl2_swd4_s3_1.features.home
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,65 +19,50 @@ import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.rememberDismissState
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.core.components.AppNavBar
+import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
+import com.example.itc__onl2_swd4_s3_1.core.components.LocaleHelper
 import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.NotificationHelper
-import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
-import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
-import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitViewModel
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.NewHabitSetup
+import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitFilter
+import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class HomeScreen : ComponentActivity() {
+class HomeScreen : BaseActivity() {
 
-
+    override fun attachBaseContext(newBase: Context) {
+        val lang = LocaleHelper.getSavedLanguage(newBase)
+        val context = LocaleHelper.setLocale(newBase, lang)
+        super.attachBaseContext(context)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         NotificationHelper.scheduleHabitReset(applicationContext)
         NotificationHelper.requestNotificationPermissionIfNeeded(this)
-
         NotificationHelper.testNotificationAfterOneMinute(applicationContext)
         NotificationHelper.scheduleDailyNotification(applicationContext)
 
         setContent {
-            val viewModel: HabitViewModel = hiltViewModel()
-            val context = LocalContext.current
-            val db = HabitDatabase.getDatabase(context)
-            val settingsDao = db.userSettingsDao()
-            val coroutineScope = rememberCoroutineScope()
-            val isDarkTheme = remember { mutableStateOf(false) }
-
-            LaunchedEffect(Unit) {
-                coroutineScope.launch {
-                    val storedSetting = settingsDao.getSettings()
-                    isDarkTheme.value = storedSetting?.isDarkMode ?: false
-                }
-            }
+            val viewModel: HabitViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+            val isDarkTheme = rememberSaveable { mutableStateOf(false) }
 
             ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 AppNavBar(
@@ -93,9 +71,6 @@ class HomeScreen : ComponentActivity() {
                     onIndexChanged = { index -> handleNavClick(this, index) },
                     onFabClick = { openHabitSelector() },
                     onThemeToggle = { enabled ->
-                        coroutineScope.launch {
-                            settingsDao.saveSettings(UserSettingsEntity(id = 0, isDarkMode = enabled))
-                        }
                         isDarkTheme.value = enabled
                     }
                 ) { innerPadding ->
@@ -106,7 +81,10 @@ class HomeScreen : ComponentActivity() {
     }
 
     private fun openHabitSelector() {
-        val intent = Intent(this, com.example.itc__onl2_swd4_s3_1.features.habit_selector.HabitSelector::class.java)
+        val intent = Intent(
+            this,
+            com.example.itc__onl2_swd4_s3_1.features.habit_selector.HabitSelector::class.java
+        )
         startActivity(intent)
     }
 }
@@ -118,14 +96,19 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     val habits by viewModel.filteredHabits.collectAsState(initial = emptyList())
     val context = LocalContext.current
 
+    val filters = listOf(
+        HabitFilter.ALL to stringResource(R.string.all),
+        HabitFilter.COMPLETE to stringResource(R.string.complete),
+        HabitFilter.INCOMPLETE to stringResource(R.string.incomplete)
+    )
+
     Column(modifier = modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.ramadan),
-            contentDescription = "Ramadan Kareem",
+            contentDescription = stringResource(R.string.streak_image_description),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(230.dp)
-
         )
 
         Row(
@@ -134,19 +117,19 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            listOf("All", "Complete", "Incomplete").forEach { label ->
+            filters.forEach { (filter, label) ->
                 Text(
                     text = label,
                     modifier = Modifier
-                        .clickable { viewModel.setFilter(label) }
+                        .clickable { viewModel.setFilter(filter) }
                         .border(
                             width = 2.dp,
-                            color = if (selectedFilter == label) Color.Blue else Color.Transparent,
+                            color = if (selectedFilter == filter) Color.Blue else Color.Transparent,
                             shape = RoundedCornerShape(20.dp)
                         )
                         .padding(8.dp),
                     fontSize = 20.sp,
-                    color = if (selectedFilter == label) Color.Red else MaterialTheme.colorScheme.onBackground,
+                    color = if (selectedFilter == filter) Color.Red else MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.Center
                 )
             }
@@ -161,6 +144,7 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                                 viewModel.deleteHabit(habit)
                                 true
                             }
+
                             DismissValue.DismissedToEnd -> {
                                 val intent = Intent(context, NewHabitSetup::class.java).apply {
                                     putExtra("habitId", habit.id)
@@ -174,6 +158,7 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                                 context.startActivity(intent)
                                 false
                             }
+
                             else -> false
                         }
                     }
@@ -199,7 +184,7 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.AccountCircle,
-                                contentDescription = "Delete",
+                                contentDescription = stringResource(R.string.delete_habit),
                                 tint = Color.White
                             )
                         }

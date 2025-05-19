@@ -2,9 +2,9 @@
 
 package com.example.itc__onl2_swd4_s3_1.features.dhikr
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.Animatable
@@ -24,20 +24,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
-import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
+import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.core.components.AppNavBar
+import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
 import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
 import kotlinx.coroutines.launch
 
-class DhikrCounterActivity : ComponentActivity() {
+class DhikrCounterActivity : BaseActivity() {
 
     companion object {
         const val DHIKR_COMPLETED_TEXT = "dhikr_completed_text"
@@ -52,33 +53,16 @@ class DhikrCounterActivity : ComponentActivity() {
         val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: getDhikrList().firstOrNull()?.count?.toIntOrNull() ?: 33
 
         setContent {
-            val context = LocalContext.current
-            val db = HabitDatabase.getDatabase(context)
-            val settingsDao = db.userSettingsDao()
-            val coroutineScope = rememberCoroutineScope()
-
             val isDarkTheme = rememberSaveable { mutableStateOf(false) }
 
-            LaunchedEffect(Unit) {
-                coroutineScope.launch {
-                    val storedSetting = settingsDao.getSettings()
-                    isDarkTheme.value = storedSetting?.isDarkMode ?: false
-                }
-            }
             ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 AppNavBar(
                     selectedIndex = 2,
                     drawerThemeState = isDarkTheme,
                     onIndexChanged = { index -> handleNavClick(this, index) },
-                    onThemeToggle = { enabled ->
-                        coroutineScope.launch {
-                            settingsDao.saveSettings(UserSettingsEntity(id = 0, isDarkMode = enabled))
-                        }
-                        isDarkTheme.value = enabled
-                    }
+                    onThemeToggle = { enabled -> isDarkTheme.value = enabled }
                 ) { innerPadding ->
-
-                    DhikrCounter(dhikrText, dhikrCount, onDhikrCompleted = { completedDhikrText ->
+                    DhikrCounter(dhikrText, dhikrCount) { completedDhikrText ->
                         val intent = Intent(this, DhikrListActivity::class.java).apply {
                             putExtra(DHIKR_COMPLETED_TEXT, completedDhikrText)
                             putExtra(DHIKR_COMPLETED, true)
@@ -86,27 +70,26 @@ class DhikrCounterActivity : ComponentActivity() {
                         }
                         startActivity(intent)
                         finish()
-                    })
+                    }
                 }
-
-
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Unit) {
     var count by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
 
     Column(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CenterAlignedTopAppBar(
-            title = { Text("Dhikr") },
+            title = { Text(stringResource(R.string.dhikr)) },
             actions = {
                 IconButton(onClick = { count = 0 }) {
                     Icon(Icons.Filled.Refresh, contentDescription = "Reset Counter")
@@ -115,8 +98,17 @@ fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Un
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-Text(text = "$count/$total", fontSize = 48.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-Text(text = "Total: $count", fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = "$count/$total",
+            fontSize = 48.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = stringResource(R.string.total, count),
+            fontSize = 24.sp,
+            color = MaterialTheme.colorScheme.onSurface
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -131,14 +123,16 @@ Text(text = "Total: $count", fontSize = 24.sp, color = MaterialTheme.colorScheme
                 }
             }
         }
+
         Text(
-            text = "Tap to count your daily Dhikr",
+            text = stringResource(R.string.tap_to_count),
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
 
+@SuppressLint("StringFormatInvalid")
 @Composable
 fun DhikrCard(dhikrText: String, total: Int, context: android.content.Context) {
     Card(
@@ -165,7 +159,7 @@ fun DhikrCard(dhikrText: String, total: Int, context: android.content.Context) {
                 modifier = Modifier.fillMaxWidth()
             )
             Text(
-                text = "$total Times : May Allah be Praised",
+                text = context.getString(R.string.dhikr_completed_times, total),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -205,7 +199,11 @@ fun AnimatedCounterButton(onCountIncrease: () -> Unit) {
                     triggerAnimation()
                 }
         ) {
-            Text(text = "Count", color = MaterialTheme.colorScheme.onPrimary, fontSize = 24.sp)
+            Text(
+                text = stringResource(R.string.count),
+                color = MaterialTheme.colorScheme.onPrimary,
+                fontSize = 24.sp
+            )
         }
     }
 }

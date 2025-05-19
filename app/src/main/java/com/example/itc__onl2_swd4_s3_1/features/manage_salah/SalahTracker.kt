@@ -44,9 +44,12 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import androidx.compose.ui.res.stringResource
+import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
 
 @AndroidEntryPoint
-class SalahTrackerScreen : ComponentActivity() {
+class SalahTrackerScreen : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -64,7 +67,13 @@ fun SalahTracker(viewModel: SalahViewModel = hiltViewModel()) {
     val selectedDateStr = selectedDate.toString()
     val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
 
-    val prayers = listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
+    val prayers = listOf(
+        stringResource(R.string.fajr),
+        stringResource(R.string.dhuhr),
+        stringResource(R.string.asr),
+        stringResource(R.string.maghrib),
+        stringResource(R.string.isha)
+    )
     val selectedPrayers by viewModel.selectedPrayers.collectAsState()
     val completedDates by viewModel.completedDates.collectAsState()
     val incompleteDates by viewModel.incompleteDates.collectAsState()
@@ -93,7 +102,7 @@ fun SalahTracker(viewModel: SalahViewModel = hiltViewModel()) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Which Salah did you offer today?",
+                text = stringResource(R.string.which_salah_did_you_offer),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onBackground
@@ -186,7 +195,7 @@ fun SalahTrackerHeader() {
             .padding(16.dp)
     ) {
         Text(
-            text = "Salah Tracker",
+            text = stringResource(R.string.salah_tracker),
             color = colorScheme.onPrimary,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
@@ -232,11 +241,12 @@ fun CalendarGrid(
         MaterialDialog(
             dialogState = dialogState,
             buttons = {
-                positiveButton(text = "OK")
-                negativeButton(text = "Cancel")
+                positiveButton(text = stringResource(R.string.complete))
+                negativeButton(text = stringResource(R.string.incomplete))
+
             }
         ) {
-            datepicker(initialDate = selectedDate, title = "Pick a date") {
+            datepicker(initialDate = selectedDate, title = stringResource(R.string.habit_date_label)) {
                 onDateSelected(it)
             }
         }

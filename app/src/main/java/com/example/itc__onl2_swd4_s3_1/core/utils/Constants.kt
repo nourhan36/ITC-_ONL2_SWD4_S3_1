@@ -9,11 +9,13 @@ object Constants {
     const val PROGRESS_ALMOST = 0.75f
     const val PROGRESS_GOOD = 0.5f
 
+    var selectedLanguage = "English"
+
     val CITIES = listOf(
-            "Alexandria", "Aswan", "Asyut", "Beheira", "Beni Suef", "Cairo", "Dakahlia",
-            "Damietta", "Faiyum", "Gharbia", "Giza", "Ismailia", "Kafr El Sheikh", "Luxor",
-            "Matruh", "Minya", "Monufia", "New Valley", "North Sinai", "Port Said",
-            "Qalyubia", "Qena", "Red Sea", "Sharqia", "Sohag", "South Sinai", "Suez"
-        )
+        "Alexandria", "Aswan", "Asyut", "Beheira", "Beni Suef", "Cairo", "Dakahlia",
+        "Damietta", "Faiyum", "Gharbia", "Giza", "Ismailia", "Kafr El Sheikh", "Luxor",
+        "Matruh", "Minya", "Monufia", "New Valley", "North Sinai", "Port Said",
+        "Qalyubia", "Qena", "Red Sea", "Sharqia", "Sohag", "South Sinai", "Suez"
+    )
 
 }

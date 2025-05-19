@@ -2,37 +2,28 @@ package com.example.itc__onl2_swd4_s3_1.features.manage_salah
 
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
-import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
+import androidx.compose.ui.res.stringResource
+import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.core.components.AppNavBar
+import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
 import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
-
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.features.prayer_times.PrayerApp
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.pager.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class SalahContainerActivity : ComponentActivity() {
+class SalahContainerActivity : BaseActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,18 +31,9 @@ class SalahContainerActivity : ComponentActivity() {
 
         setContent {
             val context = LocalContext.current
-            val db = HabitDatabase.getDatabase(context)
-            val settingsDao = db.userSettingsDao()
+            val prefs = context.getSharedPreferences("app_settings", MODE_PRIVATE)
+            val isDarkTheme = rememberSaveable { mutableStateOf(prefs.getBoolean("dark_mode", false)) }
             val coroutineScope = rememberCoroutineScope()
-
-            val isDarkTheme = rememberSaveable { mutableStateOf(false) }
-
-            LaunchedEffect(Unit) {
-                coroutineScope.launch {
-                    val storedSetting = settingsDao.getSettings()
-                    isDarkTheme.value = storedSetting?.isDarkMode ?: false
-                }
-            }
 
             ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 AppNavBar(
@@ -59,10 +41,8 @@ class SalahContainerActivity : ComponentActivity() {
                     onIndexChanged = { index -> handleNavClick(this, index) },
                     drawerThemeState = isDarkTheme,
                     onThemeToggle = { enabled ->
-                        coroutineScope.launch {
-                            settingsDao.saveSettings(UserSettingsEntity(id = 0, isDarkMode = enabled))
-                        }
                         isDarkTheme.value = enabled
+                        prefs.edit().putBoolean("dark_mode", enabled).apply()
                     },
                     onFabClick = null
                 ) {
@@ -79,8 +59,10 @@ class SalahContainerActivity : ComponentActivity() {
 fun SalahTabsScreen() {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val tabTitles = listOf("Prayer Times", "Salah Tracker")
+    val tabTitles = listOf(
+        stringResource(R.string.praying_times),
+        stringResource(R.string.salah_tracker)
+    )
 
     Column(modifier = Modifier.fillMaxSize()) {
         TabRow(

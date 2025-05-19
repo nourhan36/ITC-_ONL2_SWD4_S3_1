@@ -10,11 +10,11 @@ import androidx.core.content.ContextCompat
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.work.*
+import com.example.itc__onl2_swd4_s3_1.R
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 object NotificationHelper {
-
 
     fun requestNotificationPermissionIfNeeded(activity: Activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -40,7 +40,7 @@ object NotificationHelper {
                 try {
                     context.startActivity(intent)
                 } catch (e: Exception) {
-                    Log.e("NotificationHelper", "Failed to launch exact alarm settings: ${e.message}")
+                    Log.e("NotificationHelper", context.getString(R.string.alarm_schedule_failed) + ": ${e.message}")
                 }
                 return
             }
@@ -48,7 +48,7 @@ object NotificationHelper {
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
         if (alarmManager == null) {
-            Log.e("NotificationHelper", "AlarmManager is null")
+            Log.e("NotificationHelper", context.getString(R.string.alarm_manager_null))
             return
         }
 
@@ -74,7 +74,7 @@ object NotificationHelper {
             pendingIntent
         )
 
-        Log.d("NotificationHelper", "Notification scheduled for ${calendar.time}")
+        Log.d("NotificationHelper", context.getString(R.string.notification_scheduled, calendar.time.toString()))
     }
 
     fun testNotificationAfterOneMinute(context: Context) {
@@ -87,7 +87,7 @@ object NotificationHelper {
                 try {
                     context.startActivity(intent)
                 } catch (e: Exception) {
-                    Log.e("NotificationHelper", "Failed to launch exact alarm settings: ${e.message}")
+                    Log.e("NotificationHelper", context.getString(R.string.alarm_schedule_failed) + ": ${e.message}")
                 }
                 return
             }
@@ -112,9 +112,8 @@ object NotificationHelper {
             pendingIntent
         )
 
-        Log.d("NotificationHelper", "Test notification scheduled after one minute")
+        Log.d("NotificationHelper", context.getString(R.string.test_alarm_scheduled))
     }
-
 
     fun scheduleHabitReset(context: Context) {
         val currentDate = Calendar.getInstance()

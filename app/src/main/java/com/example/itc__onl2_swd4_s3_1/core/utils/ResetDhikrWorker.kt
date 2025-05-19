@@ -6,6 +6,7 @@ import android.os.Handler
 import android.widget.Toast
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import com.example.itc__onl2_swd4_s3_1.R
 
 class ResetDhikrWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
     override fun doWork(): Result {
@@ -20,7 +21,11 @@ class ResetDhikrWorker(context: Context, workerParams: WorkerParameters) : Worke
         editor.apply()
 
         Handler(applicationContext.mainLooper).post {
-            Toast.makeText(applicationContext, "Dhikr reset!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                applicationContext,
+                applicationContext.getString(R.string.dhikr_reset_toast),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         return Result.success()

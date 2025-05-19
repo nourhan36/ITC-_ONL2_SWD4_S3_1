@@ -39,10 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.NewHabitSetup
-
+import androidx.compose.ui.res.stringResource
+import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 
-class HabitSelector : ComponentActivity() {
+class HabitSelector : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -50,19 +51,15 @@ class HabitSelector : ComponentActivity() {
             ITC_ONL2_SWD4_S3_1Theme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     HabitsScreen { habitTitle ->
-                        val intent = when (habitTitle) {
-                            "Dhikr", "Salah", "Quran", "Fasting", "Dhul Hijah", "Prayers" -> {
-                                Intent(this, NewHabitSetup::class.java).apply {
-                                    putExtra("title", habitTitle)
-                                }
-                            }
-                            else -> null
+                        val intent = Intent(this, NewHabitSetup::class.java).apply {
+                            putExtra("title", habitTitle)
                         }
-                        intent?.let { startActivity(it) }
+                        startActivity(intent)
                     }
                 }
             }
         }
+
     }
 }
 
@@ -84,7 +81,7 @@ fun HabitsScreen(onClick: (String) -> Unit) {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Select Habit",
+                        stringResource(R.string.select_habit),
                         color = colorScheme.onPrimaryContainer
                     )
                 },
@@ -103,14 +100,13 @@ fun HabitsScreen(onClick: (String) -> Unit) {
 @Composable
 fun HabitGrid(modifier: Modifier = Modifier, onClick: (String) -> Unit) {
     val habits = listOf(
-        Habit("Salah", R.drawable.salah),
-        Habit("Quran", R.drawable.quraan),
-        Habit("Dhikr", R.drawable.dhikr),
-        Habit("Dhul Hijah", R.drawable.kaaba),
-        Habit("Fasting", R.drawable.fasting),
-        Habit("Prayers", R.drawable.duaa)
+        Habit(stringResource(R.string.salah_tracker), R.drawable.salah),
+        Habit(stringResource(R.string.quran), R.drawable.quraan),
+        Habit(stringResource(R.string.dhikr), R.drawable.dhikr),
+        Habit(stringResource(R.string.dhul_hijah), R.drawable.kaaba),
+        Habit(stringResource(R.string.fasting), R.drawable.fasting),
+        Habit(stringResource(R.string.prayers), R.drawable.duaa)
     )
-
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier
@@ -120,7 +116,7 @@ fun HabitGrid(modifier: Modifier = Modifier, onClick: (String) -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(habits) { habit ->
-            HabitCard(habit) { onClick(habit.title) }
+            HabitCard(habit) { onClick (habit.title) }
         }
     }
 }

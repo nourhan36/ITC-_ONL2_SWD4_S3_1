@@ -1,6 +1,5 @@
 package com.example.itc__onl2_swd4_s3_1.features.progress_page
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,40 +14,67 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.itc__onl2_swd4_s3_1.R
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun CalendarView(completedDates: List<LocalDate>, modifier: Modifier = Modifier) {
-    var currentMonth = remember { mutableStateOf(YearMonth.now()) }
+    val currentMonth = remember { mutableStateOf(YearMonth.now()) }
     val daysInMonth = currentMonth.value.lengthOfMonth()
     val today = LocalDate.now().dayOfMonth
-    val weekDays = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+    val currentLocale = Locale.getDefault()
+
+    val weekDays = listOf(
+        stringResource(R.string.sun),
+        stringResource(R.string.mon),
+        stringResource(R.string.tue),
+        stringResource(R.string.wed),
+        stringResource(R.string.thu),
+        stringResource(R.string.fri),
+        stringResource(R.string.sat)
+    )
 
     Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
+        // Header with month and navigation
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = currentMonth.value.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                text = currentMonth.value.format(
+                    DateTimeFormatter.ofPattern("MMMM yyyy", currentLocale)
+                ),
                 fontSize = MaterialTheme.typography.titleLarge.fontSize,
                 fontWeight = MaterialTheme.typography.titleLarge.fontWeight,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Row {
-                Text("<", modifier = Modifier.clickable { currentMonth.value = currentMonth.value.minusMonths(1) })
+                Text(
+                    text = stringResource(R.string.left_arrow),
+                    modifier = Modifier.clickable {
+                        currentMonth.value = currentMonth.value.minusMonths(1)
+                    }
+                )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(">", modifier = Modifier.clickable { currentMonth.value = currentMonth.value.plusMonths(1) })
+                Text(
+                    text = stringResource(R.string.right_arrow),
+                    modifier = Modifier.clickable {
+                        currentMonth.value = currentMonth.value.plusMonths(1)
+                    }
+                )
             }
         }
 
+        // Day headers
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
@@ -62,6 +88,7 @@ fun CalendarView(completedDates: List<LocalDate>, modifier: Modifier = Modifier)
             }
         }
 
+        // Days grid
         val firstDayOfMonth = currentMonth.value.atDay(1).dayOfWeek.value % 7
         val totalCells = firstDayOfMonth + daysInMonth
 
@@ -89,7 +116,8 @@ fun CalendarView(completedDates: List<LocalDate>, modifier: Modifier = Modifier)
                             ) {
                                 Text(
                                     text = day.toString(),
-                                    color = if (day == today && currentMonth.value == YearMonth.now()) Color.Red else MaterialTheme.colorScheme.onSurface,
+                                    color = if (day == today && currentMonth.value == YearMonth.now())
+                                        Color.Red else MaterialTheme.colorScheme.onSurface,
                                     fontWeight = MaterialTheme.typography.bodyMedium.fontWeight
                                 )
                             }

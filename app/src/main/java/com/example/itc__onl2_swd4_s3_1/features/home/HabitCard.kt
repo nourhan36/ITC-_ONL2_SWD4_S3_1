@@ -9,6 +9,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.data.entity.HabitEntity
+import androidx.compose.ui.res.stringResource
+import com.example.itc__onl2_swd4_s3_1.R
 
 @Composable
 fun HabitCard(habit: HabitEntity, onCheck: () -> Unit) {
@@ -25,9 +27,25 @@ fun HabitCard(habit: HabitEntity, onCheck: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = habit.name, fontSize = 18.sp, color = Color.Black)
+                val habitNameId = when (habit.name) {
+                    "habit_prayer" -> R.string.habit_prayer
+                    "habit_quran" -> R.string.habit_quran
+                    "habit_fasting" -> R.string.habit_fasting
+                    else -> null
+                }
 
+                Text(
+                    text = when (habit.name) {
+                        "habit_prayer" -> stringResource(R.string.habit_prayer)
+                        "habit_fasting" -> stringResource(R.string.habit_fasting)
+                        "habit_quran" -> stringResource(R.string.habit_quran)
+                        else -> habit.name
+                    },
+                    fontSize = 18.sp,
+                    color = Color.Black
+                )
             }
+
             Checkbox(
                 checked = habit.isCompleted,
                 onCheckedChange = { onCheck() }

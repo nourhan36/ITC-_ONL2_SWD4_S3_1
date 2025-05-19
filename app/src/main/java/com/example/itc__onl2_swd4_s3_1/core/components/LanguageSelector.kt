@@ -1,33 +1,32 @@
 package com.example.itc__onl2_swd4_s3_1.core.components
 
-
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.features.home.HomeScreen
 
 @Composable
 fun LanguageSelector(
-    selectedLanguage: String,
+    selectedLanguage: String, // "en" or "ar"
     onLanguageSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val languages = listOf("en" to "English", "ar" to "العربية")
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -38,11 +37,15 @@ fun LanguageSelector(
     ) {
         Image(
             painter = painterResource(id = R.drawable.language),
-            contentDescription = "language icon",
+            contentDescription = "Language Icon",
             modifier = Modifier.size(35.dp)
         )
-        Spacer(modifier = Modifier.size(12.dp))
-        Text(text = selectedLanguage, fontSize = 18.sp)
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = getLanguageDisplayName(selectedLanguage),
+            fontSize = 18.sp
+        )
+        Spacer(modifier = Modifier.weight(1f))
         Icon(
             imageVector = Icons.Default.ArrowDropDown,
             contentDescription = "Dropdown Icon",
@@ -53,14 +56,33 @@ fun LanguageSelector(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            DropdownMenuItem(text = { Text("English") }, onClick = {
-                onLanguageSelected("English")
-                expanded = false
-            })
-            DropdownMenuItem(text = { Text("العربية") }, onClick = {
-                onLanguageSelected("العربية")
-                expanded = false
-            })
+            languages.forEach { (code, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        LocaleHelper.setLocale(context, code)
+                        LocaleHelper.saveLanguage(context, code)
+                        onLanguageSelected(code)
+                        restartApp(context)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
+}
+
+fun getLanguageDisplayName(code: String): String {
+    return when (code) {
+        "ar" -> "العربية"
+        "en" -> "English"
+        else -> "English"
+    }
+}
+
+fun restartApp(context: Context) {
+    val intent = Intent(context, HomeScreen::class.java).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+    }
+    context.startActivity(intent)
 }

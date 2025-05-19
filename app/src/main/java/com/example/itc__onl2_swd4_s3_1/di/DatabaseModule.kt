@@ -6,7 +6,6 @@ import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
 import com.example.itc__onl2_swd4_s3_1.data.local.database.SalahDatabase
 import com.example.itc__onl2_swd4_s3_1.data.local.dao.CompletedDayDao
 import com.example.itc__onl2_swd4_s3_1.data.local.dao.HabitDao
-import com.example.itc__onl2_swd4_s3_1.data.local.dao.UserSettingsDao
 import com.example.itc__onl2_swd4_s3_1.data.local.dao.SalahDao
 import dagger.Module
 import dagger.Provides
@@ -44,9 +43,6 @@ object DatabaseModule {
 
     @Provides
     fun provideCompletedDayDao(db: HabitDatabase): CompletedDayDao = db.completedDayDao()
-
-    @Provides
-    fun provideUserSettingsDao(db: HabitDatabase): UserSettingsDao = db.userSettingsDao()
 
     @Provides
     fun provideSalahDao(db: SalahDatabase): SalahDao = db.salahDao()

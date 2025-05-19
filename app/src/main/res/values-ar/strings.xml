@@ -1,0 +1,163 @@
+<resources>
+    <string name="app_name">تطبيق ITC-_ONL2_SWD4_S3_1</string>
+    <string name="title_activity_dhikr">نشاط الذكر</string>
+    <string name="title_activity_dhirk_counter">عداد الذكر</string>
+    <string name="title_activity_dhikr_list">قائمة الأذكار</string>
+    <string name="current_streak">السلسلة الحالية</string>
+    <string name="highest_streak">أعلى سلسلة</string>
+    <string name="your_progress">تقدمك</string>
+    <string name="completion_message_congrats">تهانينا! لقد أنهيتها!</string>
+    <string name="completion_message_almost_there">لقد اقتربت من النهاية!</string>
+    <string name="completion_message_great_job">عمل رائع! استمر!</string>
+    <string name="completion_message_keep_pushing">تابع المضي قدمًا!</string>
+    <string name="week">أسبوع</string>
+    <string name="weeks">أسابيع</string>
+    <string name="streak_image_description">سلسلة</string>
+    <string name="progress_percentage">٪</string>
+    <string name="duration">المدة</string>
+    <string name="minutes">دقائق</string>
+    <string name="hours">ساعات</string>
+    <string name="repeat_cycle">دورة التكرار</string>
+    <string name="set_reminder_so_you_dont_forget_to_do_it">اضبط تذكيرًا حتى لا تنسى القيام به</string>
+    <string name="create_reminder">إنشاء تذكير</string>
+    <string name="when_would_you_like_to_start_it">متى تريد أن تبدأ؟</string>
+    <string-array name="start_time_options">
+        <item>اليوم</item>
+        <item>غدًا</item>
+        <item>مخصص</item>
+    </string-array>
+    <string name="how_often_do_you_want_to_do_it">كم مرة تريد القيام به؟</string>
+    <string-array name="repeat_options">
+        <item>كل يوم</item>
+        <item>أسبوعي</item>
+        <item>مخصص</item>
+    </string-array>
+    <string-array name="time_units">
+        <item>دقائق</item>
+        <item>ساعات</item>
+    </string-array>
+    <string name="title_activity_login">تسجيل الدخول</string>
+    <string name="title_activity_sign_up">إنشاء حساب</string>
+    <string name="excellent">رائع! استمر في ذلك.</string>
+    <string name="almost_there">اقتربت!</string>
+    <string name="great_job">عمل ممتاز!</string>
+    <string name="keep_pushing">استمر!</string>
+    <string name="habit_title">عنوان العادة</string>
+    <string name="today">اليوم</string>
+    <string name="tomorrow">غدًا</string>
+    <string name="custom">مخصص</string>
+    <string name="save_habit">حفظ العادة</string>
+    <string name="update_habit">تحديث العادة</string>
+    <string name="next_prayer_in">الصلاة التالية بعد: %1$s</string>
+    <string name="praying_times">مواقيت الصلاة</string>
+    <string name="select_city">اختر المدينة</string>
+    <string name="salah_tracker">متابعة الصلاة</string>
+    <string name="which_salah_did_you_offer">ما الصلوات التي أديتها اليوم؟</string>
+    <string name="reset_counter">إعادة ضبط العداد</string>
+    <string name="total">المجموع: %1$d</string>
+    <string name="tap_to_count">اضغط لعد الأذكار اليومية</string>
+    <string name="dhikr">الذكر</string>
+    <string name="dhikr_completed_times">مرة : سبحان الله وبحمده</string>
+    <string name="select_habit">اختر عادة</string>
+    <string name="duration_label">المدة</string>
+    <string name="habit_duration_unit_label">اختر الوحدة</string>
+    <string name="habit_date_label">اختر تاريخ البدء</string>
+    <string name="title_dhikr_counter">عداد الأذكار</string>
+    <string name="title_dhikr_list">قائمة الأذكار</string>
+    <string name="title_manage_salah">متابعة الصلاة</string>
+    <string name="delete_habit">حذف العادة</string>
+    <string name="edit_habit">تعديل العادة</string>
+    <string name="all">الكل</string>
+    <string name="complete">مكتمل</string>
+    <string name="incomplete">غير مكتمل</string>
+    <string name="back">عودة</string>
+    <string name="dhikr_icon">رمز الذكر</string>
+    <string name="fajr">الفجر</string>
+    <string name="dhuhr">الظهر</string>
+    <string name="asr">العصر</string>
+    <string name="maghrib">المغرب</string>
+    <string name="isha">العشاء</string>
+    <string name="quran">القرآن</string>
+    <string name="dhul_hijah">ذو الحجة</string>
+    <string name="fasting">الصيام</string>
+    <string name="prayers">الصلوات</string>
+    <string name="no_data_available">لا توجد بيانات</string>
+    <string name="fajr_in">الفجر بعد %1$dh %2$dm</string>
+    <string name="prayer_in">بعد %1$dh %2$dm</string>
+    <string name="sun">الأحد</string>
+    <string name="mon">الاثنين</string>
+    <string name="tue">الثلاثاء</string>
+    <string name="wed">الأربعاء</string>
+    <string name="thu">الخميس</string>
+    <string name="fri">الجمعة</string>
+    <string name="notif_no_habits_title">لا عادات اليوم؟</string>
+    <string name="notif_no_habits_message">هل ترغب في إضافة عادات جديدة؟</string>
+    <string name="notif_incomplete_title">لا تنسَ عاداتك!</string>
+    <string name="notif_incomplete_message_singular">لديك عادة واحدة غير مكتملة اليوم 🌙</string>
+    <string name="notif_incomplete_message_plural">لديك %1$d عادات غير مكتملة اليوم 🌙</string>
+    <string name="notif_channel_name">تذكيرات العادات</string>
+    <string name="reset_log_before">قبل التصفير</string>
+    <string name="reset_log_after">بعد التصفير</string>
+    <string name="sat">السبت</string>
+    <string name="dhikr_reset_toast">تم تصفير الأذكار!</string>
+    <string name="count">عد</string>
+    <string name="alarm_schedule_failed">فشل في تشغيل إعدادات التنبيه</string>
+    <string name="alarm_manager_null">مدير التنبيهات غير متوفر</string>
+    <string name="notification_scheduled">تم جدولة الإشعار في %1$s</string>
+    <string name="test_alarm_scheduled">تم جدولة إشعار تجريبي بعد دقيقة</string>
+    <string name="dhikr_virtue">Virtue of saying this dhikr</string>
+    <string name="dhikr_1">سُبْحَانَ ٱللَّٰه</string>
+    <string name="dhikr_2">لَا إِلَٰهَ إِلَّا ٱللَّٰهُ</string>
+    <string name="dhikr_3">ٱللَّهُ أَكْبَر</string>
+    <string name="dhikr_forgiveness">استغفر الله</string>
+    <string name="habit_prayer">الصلاة</string>
+    <string name="habit_fasting">الصيام</string>
+    <string name="habit_quran">القرآن</string>
+    <string name="habit_custom">عادة مخصصة</string>
+    <string name="prayer_fajr">الفجر</string>
+    <string name="prayer_dhuhr">الظهر</string>
+    <string name="prayer_asr">العصر</string>
+    <string name="prayer_maghrib">المغرب</string>
+    <string name="prayer_isha">العشاء</string>
+    <string name="left_arrow">&lt;</string>
+    <string name="right_arrow">&gt;</string>
+
+
+
+    <plurals name="streak_days">
+        <item quantity="zero">٠ أيام</item>
+        <item quantity="one">يوم واحد</item>
+        <item quantity="two">يومان</item>
+        <item quantity="few">%d أيام</item>
+        <item quantity="many">%d يومًا</item>
+        <item quantity="other">%d يوم</item>
+    </plurals>
+
+    <plurals name="streak_weeks">
+        <item quantity="zero">٠ أسابيع</item>
+        <item quantity="one">أسبوع واحد</item>
+        <item quantity="two">أسبوعان</item>
+        <item quantity="few">%d أسابيع</item>
+        <item quantity="many">%d أسبوعًا</item>
+        <item quantity="other">%d أسبوع</item>
+    </plurals>
+
+    <plurals name="streak_months">
+        <item quantity="zero">٠ أشهر</item>
+        <item quantity="one">شهر واحد</item>
+        <item quantity="two">شهران</item>
+        <item quantity="few">%d أشهر</item>
+        <item quantity="many">%d شهرًا</item>
+        <item quantity="other">%d شهر</item>
+    </plurals>
+
+    <plurals name="streak_years">
+        <item quantity="zero">٠ سنوات</item>
+        <item quantity="one">سنة واحدة</item>
+        <item quantity="two">سنتان</item>
+        <item quantity="few">%d سنوات</item>
+        <item quantity="many">%d سنةً</item>
+        <item quantity="other">%d سنة</item>
+    </plurals>
+
+</resources>

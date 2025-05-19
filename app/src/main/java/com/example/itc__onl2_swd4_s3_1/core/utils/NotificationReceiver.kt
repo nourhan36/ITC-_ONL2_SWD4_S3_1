@@ -19,43 +19,49 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.itc__onl2_swd4_s3_1.R
+import android.content.res.Configuration
 
 class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
+        // Apply the saved locale
+        val localizedContext = applyAppLocale(context)
+
         Log.d("NotificationReceiver", "⏰ Broadcast received at ${System.currentTimeMillis()}")
 
-        WorkManager.getInstance(context).enqueue(
+        WorkManager.getInstance(localizedContext).enqueue(
             OneTimeWorkRequestBuilder<ResetHabitsWorker>().build()
         )
 
         CoroutineScope(Dispatchers.IO).launch {
-            val dao = HabitDatabase.getDatabase(context).habitDao()
+            val dao = HabitDatabase.getDatabase(localizedContext).habitDao()
             val today = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
             val activeHabits = dao.getActiveHabitsNow(today)
 
             if (activeHabits.isEmpty()) {
                 showNotification(
-                    context,
-                    "No habits today?",
-                    "Do you want to add any new habits?"
+                    localizedContext,
+                    localizedContext.getString(R.string.notif_no_habits_title),
+                    localizedContext.getString(R.string.notif_no_habits_message)
                 )
             } else {
                 val incompleteCount = activeHabits.count { !it.isCompleted }
 
                 if (incompleteCount > 0) {
                     showNotification(
-                        context,
-                        "Don't forget your habits!",
-                        "You have $incompleteCount incomplete habit${if (incompleteCount > 1) "s" else ""} today 🌙"
+                        localizedContext,
+                        localizedContext.getString(R.string.notif_incomplete_title),
+                        localizedContext.getString(R.string.notif_incomplete_message_plural, incompleteCount)
                     )
                 } else {
                     Log.d("NotificationReceiver", "✅ All habits are completed. No notification.")
                 }
             }
 
-            scheduleNextDay(context)
+            scheduleNextDay(localizedContext)
         }
     }
+
 
 
     private fun showNotification(context: Context, title: String, message: String) {
@@ -65,7 +71,7 @@ class NotificationReceiver : BroadcastReceiver() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 "habit_reminder",
-                "Habit Reminders",
+                context.getString(R.string.notif_channel_name),
                 NotificationManager.IMPORTANCE_HIGH
             )
             notificationManager.createNotificationChannel(channel)
@@ -125,5 +131,23 @@ class NotificationReceiver : BroadcastReceiver() {
         } catch (e: SecurityException) {
             Log.e("NotificationReceiver", "❌ SecurityException: ${e.message}")
         }
+    }
+}
+private fun applyAppLocale(context: Context): Context {
+    val sharedPref = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+    val language = sharedPref.getString("language", "en") ?: "en"
+
+    val locale = Locale(language)
+    Locale.setDefault(locale)
+
+    val config = Configuration(context.resources.configuration)
+    config.setLocale(locale)
+
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        context.createConfigurationContext(config)
+    } else {
+        @Suppress("DEPRECATION")
+        context.resources.updateConfiguration(config, context.resources.displayMetrics)
+        context
     }
 }

@@ -1,24 +1,13 @@
 package com.example.itc__onl2_swd4_s3_1.features.progress_page
 
-
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,41 +15,31 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.core.components.AppNavBar
+import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
 import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
-import com.example.itc__onl2_swd4_s3_1.data.entity.UserSettingsEntity
-import com.example.itc__onl2_swd4_s3_1.data.local.database.HabitDatabase
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @AndroidEntryPoint
-class ProgressTrackerPage : ComponentActivity() {
+class ProgressTrackerPage : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val context = LocalContext.current
-            val db = HabitDatabase.getDatabase(context)
-            val settingsDao = db.userSettingsDao()
-            val coroutineScope = rememberCoroutineScope()
-
             val isDarkTheme = rememberSaveable { mutableStateOf(false) }
-
-            LaunchedEffect(Unit) {
-                coroutineScope.launch {
-                    val storedSetting = settingsDao.getSettings()
-                    isDarkTheme.value = storedSetting?.isDarkMode ?: false
-                }
-            }
 
             ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 val viewModel: HabitViewModel = hiltViewModel()
@@ -81,9 +60,6 @@ class ProgressTrackerPage : ComponentActivity() {
                     drawerThemeState = isDarkTheme,
                     onIndexChanged = { index -> handleNavClick(this, index) },
                     onThemeToggle = { enabled ->
-                        coroutineScope.launch {
-                            settingsDao.saveSettings(UserSettingsEntity(id = 0, isDarkMode = enabled))
-                        }
                         isDarkTheme.value = enabled
                     }
                 ) { innerPadding ->
@@ -162,6 +138,7 @@ fun calculateStreaks(completedDates: List<String>): Pair<Int, Int> {
 
     return Pair(currentStreak, highestStreak)
 }
+
 @Composable
 fun CircularProgressBar(progress: Float, modifier: Modifier = Modifier) {
     val circleSize = 200.dp
@@ -173,7 +150,7 @@ fun CircularProgressBar(progress: Float, modifier: Modifier = Modifier) {
 
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = modifier) {
         Text(
-            text = "Your Progress",
+            text = stringResource(R.string.your_progress),
             fontSize = 20.sp,
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(16.dp)
@@ -203,10 +180,10 @@ fun CircularProgressBar(progress: Float, modifier: Modifier = Modifier) {
         }
 
         val message = when {
-            progress >= Constants.PROGRESS_COMPLETE -> "Excellent! Keep it up."
-            progress >= Constants.PROGRESS_ALMOST -> "Almost there!"
-            progress >= Constants.PROGRESS_GOOD -> "Great job!"
-            else -> "Keep pushing!"
+            progress >= Constants.PROGRESS_COMPLETE -> stringResource(R.string.excellent)
+            progress >= Constants.PROGRESS_ALMOST -> stringResource(R.string.almost_there)
+            progress >= Constants.PROGRESS_GOOD -> stringResource(R.string.great_job)
+            else -> stringResource(R.string.keep_pushing)
         }
 
         Text(
@@ -215,5 +192,55 @@ fun CircularProgressBar(progress: Float, modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(16.dp)
         )
+    }
+}
+
+@Composable
+fun StreakBar(currentStreak: Int, highestStreak: Int, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+        StreakItem(
+            value = formatStreak(currentStreak),
+            description = stringResource(id = R.string.current_streak),
+            modifier = Modifier.weight(1f)
+        )
+        StreakItem(
+            value = formatStreak(highestStreak),
+            description = stringResource(id = R.string.highest_streak),
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun StreakItem(value: String, description: String, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.padding(4.dp)) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_streak),
+            contentDescription = stringResource(id = R.string.streak_image_description),
+            modifier = Modifier.size(32.dp)
+        )
+        Column(modifier = Modifier.padding(start = 4.dp)) {
+            Text(
+                text = value,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = description,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 1.sp
+            )
+        }
+    }
+}
+
+fun formatStreak(value: Int): String {
+    return when {
+        value >= 365 -> "${value / 365} year${if (value / 365 > 1) "s" else ""}"
+        value >= 30 -> "${value / 30} month${if (value / 30 > 1) "s" else ""}"
+        value >= 7 -> "${value / 7} week${if (value / 7 > 1) "s" else ""}"
+        else -> "$value day${if (value > 1) "s" else ""}"
     }
 }
