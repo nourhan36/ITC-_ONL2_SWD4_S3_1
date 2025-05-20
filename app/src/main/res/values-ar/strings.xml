@@ -159,5 +159,12 @@
         <item quantity="many">%d سنةً</item>
         <item quantity="other">%d سنة</item>
     </plurals>
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_salah">الصلاة</string>
+    <string name="nav_dhikr">الذكر</string>
+    <string name="nav_streak">السلسلة</string>
+    <string name="nav_more">المزيد</string>
+    <string name="dark_mode">الوضع الداكن</string>
+    <string name="add">إضافة</string>
 
 </resources>

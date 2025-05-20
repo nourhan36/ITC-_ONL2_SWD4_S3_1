@@ -11,6 +11,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.work.*
 import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.core.utils.Constants.HABIT_RESET_WORK_NAME
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -132,7 +133,7 @@ object NotificationHelper {
             .build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            "resetHabits",
+            HABIT_RESET_WORK_NAME,
             ExistingPeriodicWorkPolicy.UPDATE,
             dailyWorkRequest
         )

@@ -138,5 +138,12 @@
         <item quantity="one">%d year</item>
         <item quantity="other">%d years</item>
     </plurals>
+    <string name="nav_home">Home</string>
+    <string name="nav_salah">Salah</string>
+    <string name="nav_dhikr">Dhikr</string>
+    <string name="nav_streak">Streak</string>
+    <string name="nav_more">More</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="add">Add</string>
 
 </resources>

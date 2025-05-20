@@ -16,17 +16,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
+import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
 import com.example.itc__onl2_swd4_s3_1.features.home.HomeScreen
 
 @Composable
 fun LanguageSelector(
-    selectedLanguage: String, // "en" or "ar"
+    selectedLanguage: String,
     onLanguageSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    val languages = listOf("en" to "English", "ar" to "العربية")
+    val languages = listOf(
+        Constants.LANG_ENGLISH to Constants.TEXT_ENGLISH,
+        Constants.LANG_ARABIC to Constants.TEXT_ARABIC
+    )
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -37,7 +41,7 @@ fun LanguageSelector(
     ) {
         Image(
             painter = painterResource(id = R.drawable.language),
-            contentDescription = "Language Icon",
+            contentDescription = Constants.TEXT_LANGUAGE_ICON_DESC,
             modifier = Modifier.size(35.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))
@@ -48,7 +52,7 @@ fun LanguageSelector(
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             imageVector = Icons.Default.ArrowDropDown,
-            contentDescription = "Dropdown Icon",
+            contentDescription = Constants.TEXT_DROPDOWN_ICON_DESC,
             modifier = Modifier.size(24.dp)
         )
 
@@ -74,9 +78,9 @@ fun LanguageSelector(
 
 fun getLanguageDisplayName(code: String): String {
     return when (code) {
-        "ar" -> "العربية"
-        "en" -> "English"
-        else -> "English"
+        Constants.LANG_ARABIC -> Constants.TEXT_ARABIC
+        Constants.LANG_ENGLISH -> Constants.TEXT_ENGLISH
+        else -> Constants.TEXT_DEFAULT_LANGUAGE
     }
 }
 

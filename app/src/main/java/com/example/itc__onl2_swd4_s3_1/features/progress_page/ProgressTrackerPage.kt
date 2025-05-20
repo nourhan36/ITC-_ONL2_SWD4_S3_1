@@ -5,21 +5,32 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.core.components.AppNavBar
 import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
@@ -30,7 +41,6 @@ import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.Hab
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import androidx.hilt.navigation.compose.hiltViewModel
 
 @AndroidEntryPoint
 class ProgressTrackerPage : BaseActivity() {
@@ -89,18 +99,30 @@ fun CombinedScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         StreakBar(
             currentStreak = currentStreak,
             highestStreak = highestStreak,
-            modifier = Modifier.weight(0.3f)
+            modifier = Modifier.wrapContentHeight()
         )
-        CircularProgressBar(progress = progress, modifier = Modifier.weight(1.3f))
-        CalendarView(completedDates = completedDates, modifier = Modifier.weight(1.4f))
+
+        CircularProgressBar(
+            progress = progress,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(top = 8.dp)
+        )
+
+        CalendarView(
+            completedDates = completedDates,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
+
 
 fun calculateStreaks(completedDates: List<String>): Pair<Int, Int> {
     val sortedDates = completedDates.mapNotNull {
@@ -109,7 +131,7 @@ fun calculateStreaks(completedDates: List<String>): Pair<Int, Int> {
 
     if (sortedDates.isEmpty()) return Pair(0, 0)
 
-    var currentStreak = 1
+    val currentStreak: Int
     var highestStreak = 1
     var tempStreak = 1
     var previous = sortedDates.first()
