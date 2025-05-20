@@ -4,6 +4,8 @@ package com.example.itc__onl2_swd4_s3_1.core.utils
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 object ThemeManager {
     private const val PREF_NAME = "theme_settings"

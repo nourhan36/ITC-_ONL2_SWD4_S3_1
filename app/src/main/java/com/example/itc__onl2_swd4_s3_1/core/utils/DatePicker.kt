@@ -21,25 +21,26 @@ fun DatePicker(
     val dateDialogState = rememberMaterialDialogState()
 
     Button(onClick = { dateDialogState.show() }) {
-        Text(text = Constants.TEXT_PICK_DATE_BUTTON)
+        Text(text = "Pick date")
     }
 
     MaterialDialog(
         dialogState = dateDialogState,
         buttons = {
             positiveButton(
-                text = Constants.TEXT_OK,
+                text = "Ok",
                 textStyle = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary)
-            ) {}
+            ) {
+            }
             negativeButton(
-                text = Constants.TEXT_CANCEL,
+                text = "Cancel",
                 textStyle = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.secondary)
             )
         }
     ) {
         datepicker(
             initialDate = initialDate,
-            title = Constants.TEXT_DATE_DIALOG_TITLE,
+            title = "Pick a date",
             allowedDateValidator = allowedDateValidator,
             colors = DatePickerDefaults.colors(
                 headerBackgroundColor = MaterialTheme.colorScheme.primary,
@@ -66,3 +67,5 @@ fun PreviewDatePicker() {
         )
     }
 }
+
+

@@ -145,12 +145,6 @@
     <string name="add">Add</string>
 
     <string name="next_prayer">Next Prayer In: %1$s in %2$d h %3$d m</string>
-    <string name="nav_home">Home</string>
-    <string name="nav_salah">Salah</string>
-    <string name="nav_dhikr">Dhikr</string>
-    <string name="nav_streak">Streak</string>
-    <string name="nav_more">More</string>
-    <string name="dark_mode">Dark Mode</string>
     <string name="city_alexandria">Alexandria</string>
     <string name="city_aswan">Aswan</string>
     <string name="city_asyut">Asyut</string>
