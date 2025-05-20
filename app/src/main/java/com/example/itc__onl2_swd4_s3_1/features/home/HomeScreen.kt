@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,6 +37,7 @@ import com.example.itc__onl2_swd4_s3_1.core.components.LocaleHelper
 import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.NotificationHelper
+import com.example.itc__onl2_swd4_s3_1.core.utils.ThemeManager
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.NewHabitSetup
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitFilter
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitViewModel
@@ -62,7 +62,7 @@ class HomeScreen : BaseActivity() {
 
         setContent {
             val viewModel: HabitViewModel = androidx.hilt.navigation.compose.hiltViewModel()
-            val isDarkTheme = rememberSaveable { mutableStateOf(false) }
+            val isDarkTheme = ThemeManager.isDarkMode // observe directly
 
             ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 AppNavBar(
@@ -71,7 +71,7 @@ class HomeScreen : BaseActivity() {
                     onIndexChanged = { index -> handleNavClick(this, index) },
                     onFabClick = { openHabitSelector() },
                     onThemeToggle = { enabled ->
-                        isDarkTheme.value = enabled
+                        ThemeManager.toggleDarkMode(enabled)
                     }
                 ) { innerPadding ->
                     Content(viewModel = viewModel, modifier = Modifier.padding(innerPadding))

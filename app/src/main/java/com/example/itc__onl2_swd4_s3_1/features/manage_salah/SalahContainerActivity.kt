@@ -8,15 +8,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.core.components.AppNavBar
 import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
 import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
+import com.example.itc__onl2_swd4_s3_1.core.utils.ThemeManager
 import com.example.itc__onl2_swd4_s3_1.features.prayer_times.PrayerApp
 import com.google.accompanist.pager.*
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,20 +29,14 @@ class SalahContainerActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val context = LocalContext.current
-            val prefs = context.getSharedPreferences("app_settings", MODE_PRIVATE)
-            val isDarkTheme = rememberSaveable { mutableStateOf(prefs.getBoolean("dark_mode", false)) }
-            val coroutineScope = rememberCoroutineScope()
+            val isDarkTheme = ThemeManager.isDarkMode
 
             ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 AppNavBar(
                     selectedIndex = 1,
-                    onIndexChanged = { index -> handleNavClick(this, index) },
                     drawerThemeState = isDarkTheme,
-                    onThemeToggle = { enabled ->
-                        isDarkTheme.value = enabled
-                        prefs.edit().putBoolean("dark_mode", enabled).apply()
-                    },
+                    onIndexChanged = { index -> handleNavClick(this, index) },
+                    onThemeToggle = { enabled -> ThemeManager.toggleDarkMode(enabled) },
                     onFabClick = null
                 ) {
                     SalahTabsScreen()
@@ -59,6 +52,7 @@ class SalahContainerActivity : BaseActivity() {
 fun SalahTabsScreen() {
     val pagerState = rememberPagerState()
     val coroutineScope = rememberCoroutineScope()
+
     val tabTitles = listOf(
         stringResource(R.string.praying_times),
         stringResource(R.string.salah_tracker)

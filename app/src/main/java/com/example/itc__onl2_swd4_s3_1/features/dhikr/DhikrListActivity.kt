@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.example.itc__onl2_swd4_s3_1.features.dhikr
 
@@ -6,11 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -36,9 +34,12 @@ import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
 import com.example.itc__onl2_swd4_s3_1.core.utils.ResetDhikrWorker
+import com.example.itc__onl2_swd4_s3_1.core.utils.ThemeManager
 import kotlinx.coroutines.delay
-import java.util.Calendar
+import java.util.*
 import java.util.concurrent.TimeUnit
+import androidx.activity.compose.setContent
+
 
 class DhikrListActivity : BaseActivity() {
     private lateinit var resultLauncher: ActivityResultLauncher<Intent>
@@ -51,13 +52,12 @@ class DhikrListActivity : BaseActivity() {
 
         sharedPreferences = getSharedPreferences("DhikrPrefs", Context.MODE_PRIVATE)
         scheduleResetWorker()
-        val dhikrList = getDhikrList(this).filter { it.category == "تسابيح" }
 
+        val dhikrList = getDhikrList(this).filter { it.category == "تسابيح" }
         dhikrList.forEach { dhikr ->
             val isCompleted = sharedPreferences.getBoolean("dhikr_${dhikr.content}", false)
             dhikr.isCompleted.value = isCompleted
         }
-
         dhikrListState.addAll(dhikrList)
 
         val completedDhikrText = intent.getStringExtra(DhikrCounterActivity.DHIKR_COMPLETED_TEXT)
@@ -70,17 +70,15 @@ class DhikrListActivity : BaseActivity() {
         resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 val resultDhikrText = result.data?.getStringExtra(DhikrCounterActivity.DHIKR_COMPLETED_TEXT)
-                resultDhikrText?.let { text ->
-                    updateDhikrCompletionStatus(text, true)
-                }
+                resultDhikrText?.let { updateDhikrCompletionStatus(it, true) }
             }
         }
 
         setContent {
-            ITC_ONL2_SWD4_S3_1Theme {
-                LaunchedEffect(Unit) {
-                    waitUntilMidnightAndRefresh()
-                }
+            val isDark = ThemeManager.isDarkMode
+
+            ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDark.value) {
+                LaunchedEffect(Unit) { waitUntilMidnightAndRefresh() }
 
                 DhikrScreen(
                     dhikrList = dhikrListState,
@@ -111,9 +109,9 @@ class DhikrListActivity : BaseActivity() {
         delay(delayMillis)
 
         val dhikrList = getDhikrList(this).filter { it.category == "تسابيح" }
-        dhikrList.forEach { dhikr ->
-            val isCompleted = sharedPreferences.getBoolean("dhikr_${dhikr.content}", false)
-            dhikr.isCompleted.value = isCompleted
+        dhikrList.forEach {
+            val isCompleted = sharedPreferences.getBoolean("dhikr_${it.content}", false)
+            it.isCompleted.value = isCompleted
         }
 
         dhikrListState.clear()
@@ -128,9 +126,7 @@ class DhikrListActivity : BaseActivity() {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
-            if (before(currentTime)) {
-                add(Calendar.DAY_OF_MONTH, 1)
-            }
+            if (before(currentTime)) add(Calendar.DAY_OF_MONTH, 1)
         }
 
         val initialDelay = targetTime.timeInMillis - currentTime.timeInMillis
@@ -159,12 +155,17 @@ class DhikrListActivity : BaseActivity() {
 fun DhikrScreen(dhikrList: List<Dhikr>, onDhikrClick: (Dhikr) -> Unit, onBack: () -> Unit) {
     val colorScheme = MaterialTheme.colorScheme
 
-    Column(modifier = Modifier.fillMaxSize().background(colorScheme.background)) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(colorScheme.background)) {
+
         TopAppBar(
             title = {
                 Text(
-                    stringResource(R.string.dhikr),
-                    modifier = Modifier.fillMaxWidth().padding(end = 48.dp),
+                    text = stringResource(R.string.dhikr),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 48.dp),
                     textAlign = TextAlign.Center,
                     color = colorScheme.onBackground
                 )
@@ -193,14 +194,6 @@ fun DhikrScreen(dhikrList: List<Dhikr>, onDhikrClick: (Dhikr) -> Unit, onBack: (
         }
     }
 }
-
-fun getDhikrList(context: Context): List<Dhikr> = listOf(
-    Dhikr("تسابيح", "33", context.getString(R.string.dhikr_virtue), context.getString(R.string.dhikr_1)),
-    Dhikr("تسابيح", "33", context.getString(R.string.dhikr_forgiveness), context.getString(R.string.dhikr_2))
-)
-
-
-
 
 @Composable
 fun DhikrItem(dhikr: Dhikr, onDhikrClick: (Dhikr) -> Unit) {
@@ -267,12 +260,6 @@ fun DhikrDetails(dhikr: Dhikr) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = dhikr.description,
-                fontSize = 14.sp,
-                color = colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
                 text = stringResource(R.string.dhikr_completed_times, dhikr.count.toIntOrNull() ?: 0),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
@@ -282,8 +269,8 @@ fun DhikrDetails(dhikr: Dhikr) {
         Checkbox(
             checked = dhikr.isCompleted.value,
             onCheckedChange = null,
-            modifier = Modifier.padding(start = 8.dp),
             enabled = false,
+            modifier = Modifier.padding(start = 8.dp),
             colors = CheckboxDefaults.colors(
                 checkedColor = colorScheme.primary,
                 uncheckedColor = colorScheme.onSurfaceVariant,
@@ -293,15 +280,20 @@ fun DhikrDetails(dhikr: Dhikr) {
     }
 }
 
-fun getDhikrList(): List<Dhikr> = listOf(
-    Dhikr("تسابيح", "33", "Virtue of saying this dhikr", "سُبْحَانَ اللهِ وَبِحَمْدِهِ"),
-    Dhikr("تسابيح", "33", "Forgiveness of sins", "لَا إِلَهَ إِلَّا اللَّهُ")
+fun getDhikrList(context: Context): List<Dhikr> = listOf(
+    Dhikr("تسابيح", "33", context.getString(R.string.dhikr_virtue), context.getString(R.string.dhikr_1)),
+    Dhikr("تسابيح", "33", context.getString(R.string.dhikr_forgiveness), context.getString(R.string.dhikr_2))
 )
+
 
 @Preview
 @Composable
 fun DhikrListPreview() {
     ITC_ONL2_SWD4_S3_1Theme {
-        DhikrScreen(dhikrList = remember { mutableStateListOf(Dhikr("تسابيح", "33", "...", "...", mutableStateOf(false))) }, onDhikrClick = {}, onBack = {})
+        DhikrScreen(
+            dhikrList = remember { mutableStateListOf(Dhikr("تسابيح", "33", "...", "...", mutableStateOf(false))) },
+            onDhikrClick = {},
+            onBack = {}
+        )
     }
 }

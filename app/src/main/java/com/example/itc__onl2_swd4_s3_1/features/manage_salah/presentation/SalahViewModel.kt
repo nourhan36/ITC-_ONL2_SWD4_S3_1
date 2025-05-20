@@ -25,45 +25,50 @@ class SalahViewModel @Inject constructor(
 
     private val _selectedPrayers = MutableStateFlow<Set<String>>(emptySet())
     val selectedPrayers: StateFlow<Set<String>> = _selectedPrayers
+
     private var currentDate: String = ""
+
     fun loadInitialData(prayers: List<String>) {
         viewModelScope.launch(Dispatchers.IO) {
             val allRecords = repository.getAllRecords()
-            _completedDates.value = allRecords.filter {
-                it.prayers.split(",").size == prayers.size
-            }.mapNotNull { runCatching { LocalDate.parse(it.date) }.getOrNull() }
 
-            _incompleteDates.value = allRecords.filter {
+            val (completed, incomplete) = allRecords.partition {
+                it.prayers.split(",").size == prayers.size
+            }
+
+            _completedDates.value = completed.mapNotNull { it.date.toLocalDateOrNull() }
+            _incompleteDates.value = incomplete.filter {
                 val count = it.prayers.split(",").size
                 count in 1 until prayers.size
-            }.mapNotNull { runCatching { LocalDate.parse(it.date) }.getOrNull() }
+            }.mapNotNull { it.date.toLocalDateOrNull() }
         }
     }
+
 
     fun loadPrayersForDate(date: String) {
         currentDate = date
         viewModelScope.launch(Dispatchers.IO) {
             val result = repository.getPrayersForDate(date)
-            _selectedPrayers.value = result?.prayers?.split(",")?.toSet() ?: emptySet()
+            val prayerSet = result?.prayers?.split(",")?.toSet().orEmpty()
+            _selectedPrayers.value = prayerSet
         }
     }
 
-
     fun togglePrayer(prayer: String, allPrayers: List<String>) {
-        val updated = _selectedPrayers.value.toMutableSet().apply {
+        val newSet = _selectedPrayers.value.toMutableSet().apply {
             if (contains(prayer)) remove(prayer) else add(prayer)
         }
-        _selectedPrayers.value = updated
+        _selectedPrayers.value = newSet
 
         viewModelScope.launch(Dispatchers.IO) {
             repository.insertOrUpdate(
                 SalahEntity(
                     date = currentDate,
-                    prayers = updated.joinToString(",")
+                    prayers = newSet.joinToString(",")
                 )
             )
             loadInitialData(allPrayers)
         }
     }
-
+    private fun String.toLocalDateOrNull(): LocalDate? = runCatching { LocalDate.parse(this) }.getOrNull()
 }

@@ -1,7 +1,6 @@
 package com.example.itc__onl2_swd4_s3_1.features.manage_salah
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -127,7 +126,7 @@ fun SalahTracker(viewModel: SalahViewModel = hiltViewModel()) {
                 SalahCheckBox(
                     prayer = prayer,
                     selectedPrayers = selectedPrayers,
-                    containerColor = colorScheme.surface,
+                    containerColor = colorScheme.surfaceVariant,
                     textColor = colorScheme.onSurface,
                     modifier = Modifier.fillMaxWidth()
                 ) { _, name ->
@@ -136,20 +135,19 @@ fun SalahTracker(viewModel: SalahViewModel = hiltViewModel()) {
             }
         }
 
-
         CalendarGrid(
             selectedDate = selectedDate,
             completedDates = completedDates,
             incompleteDates = incompleteDates,
             onDateSelected = { selectedDate = it },
-            selectedColor = colorScheme.secondary,
-            completedColor = colorScheme.primary,
-            currentDayColor = Color.Red,
-            defaultColor = colorScheme.surface,
+            selectedColor = colorScheme.secondaryContainer,
+            completedColor = colorScheme.primaryContainer,
+            currentDayColor = colorScheme.tertiary,
+            defaultColor = colorScheme.surfaceVariant,
             textColor = colorScheme.onSurface,
-            selectedTextColor = colorScheme.onSecondary,
-            completedTextColor = colorScheme.onPrimary,
-            currentDayTextColor = Color.White,
+            selectedTextColor = colorScheme.onSecondaryContainer,
+            completedTextColor = colorScheme.onPrimaryContainer,
+            currentDayTextColor = colorScheme.onTertiary,
             modifier = Modifier.weight(0.6f)
         )
     }

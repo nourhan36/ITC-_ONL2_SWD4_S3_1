@@ -19,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +36,7 @@ import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
 import kotlinx.coroutines.launch
+import com.example.itc__onl2_swd4_s3_1.core.utils.ThemeManager
 
 class DhikrCounterActivity : BaseActivity() {
 
@@ -49,11 +49,12 @@ class DhikrCounterActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val dhikrText = intent.getStringExtra(Constants.DHIKR_TEXT) ?: getDhikrList().firstOrNull()?.content ?: "سبحان الله"
-        val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: getDhikrList().firstOrNull()?.count?.toIntOrNull() ?: 33
+        val dhikrList = getDhikrList(this)
+        val dhikrText = intent.getStringExtra(Constants.DHIKR_TEXT) ?: dhikrList.firstOrNull()?.content ?: "سبحان الله"
+        val dhikrCount = intent.getStringExtra(Constants.DHIKR_COUNT)?.toIntOrNull() ?: dhikrList.firstOrNull()?.count?.toIntOrNull() ?: 33
 
         setContent {
-            val isDarkTheme = rememberSaveable { mutableStateOf(false) }
+            val isDarkTheme = ThemeManager.isDarkMode
 
             ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 AppNavBar(
@@ -104,11 +105,7 @@ fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Un
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
-        Text(
-            text = stringResource(R.string.total, count),
-            fontSize = 24.sp,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -158,12 +155,7 @@ fun DhikrCard(dhikrText: String, total: Int, context: android.content.Context) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
-            Text(
-                text = context.getString(R.string.dhikr_completed_times, total),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+
         }
     }
 }

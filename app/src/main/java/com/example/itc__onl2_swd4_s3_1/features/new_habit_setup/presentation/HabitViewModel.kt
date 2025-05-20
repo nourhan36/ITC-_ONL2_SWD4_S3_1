@@ -21,14 +21,18 @@ class HabitViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _selectedFilter = MutableStateFlow(HabitFilter.ALL)
-    val selectedFilter: StateFlow<HabitFilter> = _selectedFilter
+    val selectedFilter: StateFlow<HabitFilter> = _selectedFilter.asStateFlow()
 
     private val _currentDate = MutableStateFlow(LocalDate.now().toString())
+    val currentDate: StateFlow<String> = _currentDate.asStateFlow()
+
     val activeHabits: Flow<List<HabitEntity>> =
-        _currentDate.flatMapLatest { date -> habitRepository.getActiveHabits(date) }
+        _currentDate.flatMapLatest { date ->
+            habitRepository.getActiveHabits(date)
+        }
 
     val filteredHabits: Flow<List<HabitEntity>> =
-        activeHabits.combine(selectedFilter) { habits, filter ->
+        activeHabits.combine(_selectedFilter) { habits, filter ->
             when (filter) {
                 HabitFilter.COMPLETE -> habits.filter { it.isCompleted }
                 HabitFilter.INCOMPLETE -> habits.filter { !it.isCompleted }
@@ -100,16 +104,8 @@ class HabitViewModel @Inject constructor(
     }
 }
 
-
-
 enum class HabitFilter {
     ALL, COMPLETE, INCOMPLETE
 }
 
-@StringRes
-fun HabitFilter.getLabelRes(): Int = when (this) {
-    HabitFilter.ALL -> R.string.all
-    HabitFilter.COMPLETE -> R.string.complete
-    HabitFilter.INCOMPLETE -> R.string.incomplete
-}
 

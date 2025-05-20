@@ -48,7 +48,6 @@
     <string name="custom">مخصص</string>
     <string name="save_habit">حفظ العادة</string>
     <string name="update_habit">تحديث العادة</string>
-    <string name="next_prayer_in">الصلاة التالية بعد: %1$s</string>
     <string name="praying_times">مواقيت الصلاة</string>
     <string name="select_city">اختر المدينة</string>
     <string name="salah_tracker">متابعة الصلاة</string>
@@ -166,5 +165,41 @@
     <string name="nav_more">المزيد</string>
     <string name="dark_mode">الوضع الداكن</string>
     <string name="add">إضافة</string>
+
+    <string name="next_prayer">الصلاة التالية بعد: %1$s بعد %2$d س %3$d د</string>
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_salah">الصلاة</string>
+    <string name="nav_dhikr">الذكر</string>
+    <string name="nav_streak">السلسلة</string>
+    <string name="nav_more">المزيد</string>
+    <string name="dark_mode">الوضع الليلي</string>
+    <string name="city_alexandria">الإسكندرية</string>
+    <string name="city_aswan">أسوان</string>
+    <string name="city_asyut">أسيوط</string>
+    <string name="city_beheira">البحيرة</string>
+    <string name="city_beni_suef">بني سويف</string>
+    <string name="city_cairo">القاهرة</string>
+    <string name="city_dakahlia">الدقهلية</string>
+    <string name="city_damietta">دمياط</string>
+    <string name="city_faiyum">الفيوم</string>
+    <string name="city_gharbia">الغربية</string>
+    <string name="city_giza">الجيزة</string>
+    <string name="city_ismailia">الإسماعيلية</string>
+    <string name="city_kafr_el_sheikh">كفر الشيخ</string>
+    <string name="city_luxor">الأقصر</string>
+    <string name="city_matruh">مطروح</string>
+    <string name="city_minya">المنيا</string>
+    <string name="city_monufia">المنوفية</string>
+    <string name="city_new_valley">الوادي الجديد</string>
+    <string name="city_north_sinai">شمال سيناء</string>
+    <string name="city_port_said">بورسعيد</string>
+    <string name="city_qalyubia">القليوبية</string>
+    <string name="city_qena">قنا</string>
+    <string name="city_red_sea">البحر الأحمر</string>
+    <string name="city_sharqia">الشرقية</string>
+    <string name="city_sohag">سوهاج</string>
+    <string name="city_south_sinai">جنوب سيناء</string>
+    <string name="city_suez">السويس</string>
+
 
 </resources>

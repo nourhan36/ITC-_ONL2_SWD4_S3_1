@@ -77,6 +77,7 @@ fun PrayerApp(viewModel: PrayerTimesViewModel = androidx.hilt.navigation.compose
     var remainingTime by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val colorScheme = MaterialTheme.colorScheme
 
     LaunchedEffect(selectedCity) {
         isLoading = true
@@ -94,8 +95,6 @@ fun PrayerApp(viewModel: PrayerTimesViewModel = androidx.hilt.navigation.compose
             delay(1000)
         }
     }
-
-    val colorScheme = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {
@@ -115,24 +114,22 @@ fun PrayerApp(viewModel: PrayerTimesViewModel = androidx.hilt.navigation.compose
         },
         containerColor = colorScheme.background
     ) { padding ->
-        Column(modifier = Modifier
-            .padding(padding)
-            .fillMaxSize()) {
-
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
             CitySelector(selectedCity, colorScheme) { selectedCity = it }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = colorScheme.primary)
                 }
             } else {
                 Text(
-                    text = stringResource(R.string.next_prayer_in, remainingTime),
+                    text = remainingTime,
                     fontSize = 18.sp,
                     modifier = Modifier.padding(16.dp),
                     color = colorScheme.primary,
@@ -157,6 +154,11 @@ fun CitySelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val cities = Constants.CITIES
+    val context = LocalContext.current
+
+    val selectedCityLabel = cities.find { it.first == selectedCity }?.second?.let {
+        stringResource(id = it)
+    } ?: selectedCity
 
     Box(modifier = Modifier.padding(16.dp)) {
         Button(
@@ -166,7 +168,7 @@ fun CitySelector(
                 contentColor = colorScheme.onPrimary
             )
         ) {
-            Text(text = selectedCity)
+            Text(text = selectedCityLabel)
         }
 
         DropdownMenu(
@@ -174,11 +176,12 @@ fun CitySelector(
             onDismissRequest = { expanded = false },
             modifier = Modifier.heightIn(max = 400.dp)
         ) {
-            cities.forEach { city ->
+            cities.forEach { (key, resId) ->
+                val label = stringResource(id = resId)
                 DropdownMenuItem(
-                    text = { Text(city, color = colorScheme.onSurface) },
+                    text = { Text(label, color = colorScheme.onSurface) },
                     onClick = {
-                        onCitySelected(city)
+                        onCitySelected(key)
                         expanded = false
                     }
                 )
@@ -193,10 +196,13 @@ fun PrayerRow(
     time: String,
     colorScheme: ColorScheme
 ) {
+    val context = LocalContext.current
+    val displayName = getLocalizedPrayerName(name, context)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = colorScheme.surface,
@@ -211,7 +217,7 @@ fun PrayerRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "$name - $time",
+                text = "$displayName - $time",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface
@@ -234,11 +240,33 @@ fun calculateRemainingTime(
         val prayerTime = LocalTime.parse(time, formatter)
         if (prayerTime.isAfter(now)) {
             val duration = java.time.Duration.between(now, prayerTime)
-            return "$name ${context.getString(R.string.prayer_in, duration.toHours(), duration.toMinutes() % 60)}"
+            val hours = duration.toHours()
+            val minutes = duration.toMinutes() % 60
+            val prayerNameLocalized = getLocalizedPrayerName(name, context)
+
+            return context.getString(R.string.next_prayer, prayerNameLocalized, hours, minutes)
         }
     }
 
+    // fallback to next day Fajr
     val fajrTime = LocalTime.parse(prayerTimes[0].second, formatter)
     val duration = java.time.Duration.between(now, fajrTime.plusHours(24))
-    return context.getString(R.string.fajr_in, duration.toHours(), duration.toMinutes() % 60)
+    val hours = duration.toHours()
+    val minutes = duration.toMinutes() % 60
+    val prayerNameLocalized = getLocalizedPrayerName(prayerTimes[0].first, context)
+
+    return context.getString(R.string.next_prayer, prayerNameLocalized, hours, minutes)
 }
+
+fun getLocalizedPrayerName(name: String, context: Context): String {
+    return when (name.lowercase()) {
+        "fajr" -> context.getString(R.string.fajr)
+        "dhuhr" -> context.getString(R.string.dhuhr)
+        "asr" -> context.getString(R.string.asr)
+        "maghrib" -> context.getString(R.string.maghrib)
+        "isha" -> context.getString(R.string.isha)
+        else -> name
+    }
+}
+
+

@@ -3,42 +3,19 @@ package com.example.itc__onl2_swd4_s3_1.features.new_habit_setup
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -62,14 +39,13 @@ class NewHabitSetup : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-
         val habitId = intent.getIntExtra("habitId", -1)
         val habitTitleFromSelector = if (habitId != -1) {
             intent.getStringExtra("name") ?: ""
         } else {
             intent.getStringExtra("title") ?: ""
         }
+
         val habit = if (habitId != -1) HabitEntity(
             id = habitId,
             name = intent.getStringExtra("name") ?: "",
@@ -118,7 +94,9 @@ fun NewHabitSetupScreen(
     val context = LocalContext.current
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
@@ -183,17 +161,20 @@ fun NewHabitSetupScreen(
                     onHabitSaved()
                 }
             },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
+                contentColor = MaterialTheme.colorScheme.onPrimary
             )
         ) {
             Text(
-                if (existingHabit != null)stringResource(R.string.update_habit)
+                if (existingHabit != null) stringResource(R.string.update_habit)
                 else stringResource(R.string.save_habit),
-                fontSize = 16.sp)
+                fontSize = 16.sp
+            )
         }
 
         if (showDatePicker) {
@@ -218,14 +199,19 @@ private fun UnitDropdown(selectedUnit: String, onUnitSelected: (String) -> Unit)
         stringResource(R.string.minutes),
         stringResource(R.string.hours)
     )
+
     Surface(
-        modifier = Modifier.width(120.dp).clickable { expanded = true },
+        modifier = Modifier
+            .width(120.dp)
+            .clickable { expanded = true },
         shape = RoundedCornerShape(4.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column {
             Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -254,17 +240,20 @@ private fun DateSelector(
     onDateSelected: (LocalDate) -> Unit,
     showDatePicker: () -> Unit
 ) {
-
     var expanded by remember { mutableStateOf(false) }
 
     Surface(
-        modifier = Modifier.fillMaxWidth().clickable { expanded = true },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = true },
         shape = RoundedCornerShape(4.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column {
             Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).fillMaxWidth(),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -272,11 +261,9 @@ private fun DateSelector(
                     text = selectedDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
                     style = MaterialTheme.typography.bodyLarge
                 )
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    contentDescription = stringResource(R.string.habit_date_label)
-                )
+                Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.habit_date_label))
             }
+
             val options = listOf(
                 "today" to stringResource(R.string.today),
                 "tomorrow" to stringResource(R.string.tomorrow),
@@ -301,6 +288,7 @@ private fun DateSelector(
         }
     }
 }
+
 private fun validateInput(title: String, duration: String): Boolean {
     return title.isNotBlank() && duration.isNotBlank() && duration.all { it.isDigit() }
 }

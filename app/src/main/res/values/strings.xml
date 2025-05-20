@@ -48,8 +48,6 @@
     <string name="custom">Custom</string>
     <string name="save_habit">Save Habit</string>
     <string name="update_habit">Update Habit</string>
-
-    <string name="next_prayer_in">Next Prayer In: %1$s</string>
     <string name="praying_times">Praying Times</string>
     <string name="select_city">Select City</string>
     <string name="salah_tracker">Salah Tracker</string>
@@ -145,5 +143,42 @@
     <string name="nav_more">More</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="add">Add</string>
+
+    <string name="next_prayer">Next Prayer In: %1$s in %2$d h %3$d m</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_salah">Salah</string>
+    <string name="nav_dhikr">Dhikr</string>
+    <string name="nav_streak">Streak</string>
+    <string name="nav_more">More</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="city_alexandria">Alexandria</string>
+    <string name="city_aswan">Aswan</string>
+    <string name="city_asyut">Asyut</string>
+    <string name="city_beheira">Beheira</string>
+    <string name="city_beni_suef">Beni Suef</string>
+    <string name="city_cairo">Cairo</string>
+    <string name="city_dakahlia">Dakahlia</string>
+    <string name="city_damietta">Damietta</string>
+    <string name="city_faiyum">Faiyum</string>
+    <string name="city_gharbia">Gharbia</string>
+    <string name="city_giza">Giza</string>
+    <string name="city_ismailia">Ismailia</string>
+    <string name="city_kafr_el_sheikh">Kafr El Sheikh</string>
+    <string name="city_luxor">Luxor</string>
+    <string name="city_matruh">Matruh</string>
+    <string name="city_minya">Minya</string>
+    <string name="city_monufia">Monufia</string>
+    <string name="city_new_valley">New Valley</string>
+    <string name="city_north_sinai">North Sinai</string>
+    <string name="city_port_said">Port Said</string>
+    <string name="city_qalyubia">Qalyubia</string>
+    <string name="city_qena">Qena</string>
+    <string name="city_red_sea">Red Sea</string>
+    <string name="city_sharqia">Sharqia</string>
+    <string name="city_sohag">Sohag</string>
+    <string name="city_south_sinai">South Sinai</string>
+    <string name="city_suez">Suez</string>
+
+
 
 </resources>

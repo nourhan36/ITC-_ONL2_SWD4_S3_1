@@ -1,5 +1,7 @@
 package com.example.itc__onl2_swd4_s3_1.core.utils
 
+import com.example.itc__onl2_swd4_s3_1.R
+
 object Constants {
     const val DHIKR_TEXT = "dhikr_text"
     const val DHIKR_COUNT = "dhikr_count"
@@ -8,32 +10,35 @@ object Constants {
     const val PROGRESS_COMPLETE = 1f
     const val PROGRESS_ALMOST = 0.75f
     const val PROGRESS_GOOD = 0.5f
-    const val NAV_HOME = "home"
-    const val NAV_SALAH = "Salah"
-    const val NAV_DHIKR = "Dhikr"
-    const val NAV_STREAK = "Streak"
-    const val NAV_MORE = "More"
-    const val TEXT_LANGUAGE_ICON_DESC = "Language Icon"
-    const val TEXT_DROPDOWN_ICON_DESC = "Dropdown Icon"
-    const val TEXT_ENGLISH = "English"
-    const val TEXT_ARABIC = "العربية"
-    const val LANG_ENGLISH = "en"
-    const val LANG_ARABIC = "ar"
-    const val TEXT_DEFAULT_LANGUAGE = TEXT_ENGLISH
-    const val PREF_LANGUAGE_KEY = "app_language"
-    const val PREF_NAME = "app_settings"
-    const val DEFAULT_LANGUAGE = "en"
-    const val TEXT_PICK_DATE_BUTTON = "Pick date"
-    const val TEXT_DATE_DIALOG_TITLE = "Pick a date"
-    const val TEXT_OK = "Ok"
-    const val TEXT_CANCEL = "Cancel"
-    const val HABIT_RESET_WORK_NAME = "resetHabits"
 
     val CITIES = listOf(
-        "Alexandria", "Aswan", "Asyut", "Beheira", "Beni Suef", "Cairo", "Dakahlia",
-        "Damietta", "Faiyum", "Gharbia", "Giza", "Ismailia", "Kafr El Sheikh", "Luxor",
-        "Matruh", "Minya", "Monufia", "New Valley", "North Sinai", "Port Said",
-        "Qalyubia", "Qena", "Red Sea", "Sharqia", "Sohag", "South Sinai", "Suez"
+        "Alexandria" to R.string.city_alexandria,
+        "Aswan" to R.string.city_aswan,
+        "Asyut" to R.string.city_asyut,
+        "Beheira" to R.string.city_beheira,
+        "Beni Suef" to R.string.city_beni_suef,
+        "Cairo" to R.string.city_cairo,
+        "Dakahlia" to R.string.city_dakahlia,
+        "Damietta" to R.string.city_damietta,
+        "Faiyum" to R.string.city_faiyum,
+        "Gharbia" to R.string.city_gharbia,
+        "Giza" to R.string.city_giza,
+        "Ismailia" to R.string.city_ismailia,
+        "Kafr El Sheikh" to R.string.city_kafr_el_sheikh,
+        "Luxor" to R.string.city_luxor,
+        "Matruh" to R.string.city_matruh,
+        "Minya" to R.string.city_minya,
+        "Monufia" to R.string.city_monufia,
+        "New Valley" to R.string.city_new_valley,
+        "North Sinai" to R.string.city_north_sinai,
+        "Port Said" to R.string.city_port_said,
+        "Qalyubia" to R.string.city_qalyubia,
+        "Qena" to R.string.city_qena,
+        "Red Sea" to R.string.city_red_sea,
+        "Sharqia" to R.string.city_sharqia,
+        "Sohag" to R.string.city_sohag,
+        "South Sinai" to R.string.city_south_sinai,
+        "Suez" to R.string.city_suez
     )
 
 }
