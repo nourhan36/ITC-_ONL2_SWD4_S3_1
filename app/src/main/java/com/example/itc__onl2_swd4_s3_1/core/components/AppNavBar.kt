@@ -25,6 +25,7 @@ import com.example.itc__onl2_swd4_s3_1.features.manage_salah.SalahContainerActiv
 import com.example.itc__onl2_swd4_s3_1.features.progress_page.ProgressTrackerPage
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 fun handleNavClick(context: Context, index: Int) {
     when (index) {
         0 -> if (context !is HomeScreen) context.startActivity(Intent(context, HomeScreen::class.java))
