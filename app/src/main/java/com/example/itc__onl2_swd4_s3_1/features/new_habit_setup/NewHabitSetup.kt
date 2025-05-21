@@ -54,6 +54,7 @@ class NewHabitSetup : BaseActivity() {
             reminderTime = intent.getStringExtra("reminderTime") ?: "",
             startTime = intent.getStringExtra("startTime") ?: "",
             startDate = intent.getStringExtra("startDate") ?: "",
+            durationUnit= intent.getStringExtra("durationUnit") ?: "",
             isCompleted = false
         ) else null
 
@@ -152,7 +153,8 @@ fun NewHabitSetupScreen(
                         isCompleted = existingHabit?.isCompleted ?: false,
                         repeatType = existingHabit?.repeatType ?: "Daily",
                         startTime = existingHabit?.startTime ?: "08:00 AM",
-                        reminderTime = existingHabit?.reminderTime ?: "07:50 AM"
+                        reminderTime = existingHabit?.reminderTime ?: "07:50 AM",
+                        durationUnit = selectedUnit
                     )
 
                     if (existingHabit != null) viewModel.updateHabit(habit)
