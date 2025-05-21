@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -78,6 +79,7 @@ class DhikrCounterActivity : BaseActivity() {
     }
 }
 
+@ExperimentalMaterial3Api
 @Composable
 fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Unit) {
     var count by remember { mutableIntStateOf(0) }
@@ -129,9 +131,23 @@ fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Un
     }
 }
 
-@SuppressLint("StringFormatInvalid")
 @Composable
 fun DhikrCard(dhikrText: String, total: Int, context: android.content.Context) {
+    val locale = context.resources.configuration.locales[0].language
+    val resources = context.resources
+
+
+    val translationResId = when (dhikrText) {
+        context.getString(R.string.dhikr_1_text) -> R.string.dhikr_translation_subhan
+        context.getString(R.string.dhikr_2_text) -> R.string.dhikr_translation_alhamdulillah
+        context.getString(R.string.dhikr_3_text) -> R.string.dhikr_translation_allahuakbar
+        context.getString(R.string.dhikr_4_text) -> R.string.dhikr_translation_astaghfirullah
+        else -> null
+    }
+
+
+    val translation = translationResId?.let { context.getString(it) } ?: ""
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -156,9 +172,19 @@ fun DhikrCard(dhikrText: String, total: Int, context: android.content.Context) {
                 modifier = Modifier.fillMaxWidth()
             )
 
+            if (translation.isNotEmpty()) {
+                Text(
+                    text = translation,
+                    fontSize = 18.sp,
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }
+
 
 @Composable
 fun AnimatedCounterButton(onCountIncrease: () -> Unit) {
@@ -196,6 +222,7 @@ fun AnimatedCounterButton(onCountIncrease: () -> Unit) {
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 24.sp
             )
+
         }
     }
 }

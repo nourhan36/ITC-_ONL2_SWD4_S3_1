@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 
 
 data class Dhikr(
+    val key: String,
     val category: String,
     val count: String,
     val description: String,

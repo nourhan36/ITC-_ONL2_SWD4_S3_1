@@ -104,9 +104,20 @@
     <string name="notification_scheduled">Notification scheduled for %1$s</string>
     <string name="test_alarm_scheduled">Test notification scheduled after one minute</string>
     <string name="dhikr_virtue">Virtue of saying this dhikr</string>
-    <string name="dhikr_1">Glory be to Allah</string>
-    <string name="dhikr_2">There is no god but Allah</string>
-    <string name="dhikr_3">Allah is the Greatest</string>
+    <string name="dhikr_translation_subhan">سبحان الله</string>
+    <string name="dhikr_translation_alhamdulillah">الحمد لله</string>
+    <string name="dhikr_translation_allahuakbar">الله أكبر</string>
+    <string name="dhikr_translation_astaghfirullah">أستغفر الله</string>
+
+    <string name="dhikr_virtue_subhan">Sins are forgiven even if they are like the foam of the sea.</string>
+    <string name="dhikr_virtue_alhamdulillah">It fills the scale with rewards.</string>
+    <string name="dhikr_virtue_allahuakbar">One of the most beloved phrases to Allah.</string>
+    <string name="dhikr_virtue_astaghfirullah">Brings relief from worry and a way out of hardship.</string>
+    <string name="dhikr_1_text">Subhan Allah</string>
+    <string name="dhikr_2_text">Alhamdulillah</string>
+    <string name="dhikr_3_text">Allahu Akbar</string>
+    <string name="dhikr_4_text">Astaghfir Allah</string>
+
     <string name="dhikr_forgiveness">Forgiveness of sins</string>
     <string name="habit_prayer">Prayer</string>
     <string name="habit_fasting">Fasting</string>

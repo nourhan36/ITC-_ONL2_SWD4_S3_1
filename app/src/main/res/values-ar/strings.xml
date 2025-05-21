@@ -105,9 +105,14 @@
     <string name="notification_scheduled">تم جدولة الإشعار في %1$s</string>
     <string name="test_alarm_scheduled">تم جدولة إشعار تجريبي بعد دقيقة</string>
     <string name="dhikr_virtue">Virtue of saying this dhikr</string>
-    <string name="dhikr_1">سُبْحَانَ ٱللَّٰه</string>
-    <string name="dhikr_2">لَا إِلَٰهَ إِلَّا ٱللَّٰهُ</string>
-    <string name="dhikr_3">ٱللَّهُ أَكْبَر</string>
+    <string name="dhikr_virtue_subhan">تُغفر الذنوب ولو كانت مثل زبد البحر.</string>
+    <string name="dhikr_virtue_alhamdulillah">تملأ الميزان بالحسنات.</string>
+    <string name="dhikr_virtue_allahuakbar">من أحبّ الكلام إلى الله.</string>
+    <string name="dhikr_virtue_astaghfirullah">يفرّج الهموم وييسر الأمور.</string>
+    <string name="dhikr_1_text">سبحان الله</string>
+    <string name="dhikr_2_text">الحمد لله</string>
+    <string name="dhikr_3_text">الله أكبر</string>
+    <string name="dhikr_4_text">أستغفر الله</string>
     <string name="dhikr_forgiveness">استغفر الله</string>
     <string name="habit_prayer">الصلاة</string>
     <string name="habit_fasting">الصيام</string>
@@ -120,6 +125,10 @@
     <string name="prayer_isha">العشاء</string>
     <string name="left_arrow">&lt;</string>
     <string name="right_arrow">&gt;</string>
+    <string name="dhikr_translation_subhan">Subhan Allah</string>
+    <string name="dhikr_translation_alhamdulillah">Alhamdulillah</string>
+    <string name="dhikr_translation_allahuakbar">Allahu Akbar</string>
+    <string name="dhikr_translation_astaghfirullah">Astaghfir Allah</string>
 
 
 
