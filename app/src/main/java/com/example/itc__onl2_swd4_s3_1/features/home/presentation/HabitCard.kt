@@ -1,4 +1,4 @@
-package com.example.itc__onl2_swd4_s3_1.features.home
+package com.example.itc__onl2_swd4_s3_1.features.home.presentation
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*

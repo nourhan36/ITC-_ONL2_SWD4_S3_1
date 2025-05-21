@@ -38,6 +38,8 @@ import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.NotificationHelper
 import com.example.itc__onl2_swd4_s3_1.core.utils.ThemeManager
+import com.example.itc__onl2_swd4_s3_1.features.home.presentation.HabitCard
+import com.example.itc__onl2_swd4_s3_1.features.home.presentation.HabitListItem
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.NewHabitSetup
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitFilter
 import com.example.itc__onl2_swd4_s3_1.features.new_habit_setup.presentation.HabitViewModel
@@ -89,7 +91,6 @@ class HomeScreen : BaseActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
     val selectedFilter by viewModel.selectedFilter.collectAsState()
@@ -137,63 +138,25 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
 
         LazyColumn {
             items(habits, key = { it.id }) { habit ->
-                val dismissState = rememberDismissState(
-                    confirmStateChange = {
-                        when (it) {
-                            DismissValue.DismissedToStart -> {
-                                viewModel.deleteHabit(habit)
-                                true
-                            }
-
-                            DismissValue.DismissedToEnd -> {
-                                val intent = Intent(context, NewHabitSetup::class.java).apply {
-                                    putExtra("habitId", habit.id)
-                                    putExtra("name", habit.name)
-                                    putExtra("startTime", habit.startTime)
-                                    putExtra("repeatType", habit.repeatType)
-                                    putExtra("duration", habit.duration)
-                                    putExtra("reminderTime", habit.reminderTime)
-                                    putExtra("startDate", habit.startDate)
-                                }
-                                context.startActivity(intent)
-                                false
-                            }
-
-                            else -> false
+                HabitListItem(
+                    habit = habit,
+                    onEdit = { habitToEdit ->
+                        val intent = Intent(context, NewHabitSetup::class.java).apply {
+                            putExtra("habitId", habitToEdit.id)
+                            putExtra("name", habitToEdit.name)
+                            putExtra("startTime", habitToEdit.startTime)
+                            putExtra("repeatType", habitToEdit.repeatType)
+                            putExtra("duration", habitToEdit.duration)
+                            putExtra("reminderTime", habitToEdit.reminderTime)
+                            putExtra("startDate", habitToEdit.startDate)
                         }
-                    }
-                )
-
-                SwipeToDismiss(
-                    state = dismissState,
-                    directions = setOf(
-                        DismissDirection.EndToStart,
-                        DismissDirection.StartToEnd
-                    ),
-                    background = {
-                        val color = when (dismissState.dismissDirection) {
-                            DismissDirection.EndToStart -> Color.Red
-                            else -> Color.Transparent
-                        }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(color)
-                                .padding(16.dp),
-                            contentAlignment = Alignment.CenterEnd
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AccountCircle,
-                                contentDescription = stringResource(R.string.delete_habit),
-                                tint = Color.White
-                            )
-                        }
+                        context.startActivity(intent)
                     },
-                    dismissContent = {
-                        HabitCard(
-                            habit = habit,
-                            onCheck = { viewModel.toggleHabitCompletion(habit) }
-                        )
+                    onDeleteConfirmed = { habitToDelete ->
+                        viewModel.deleteHabit(habitToDelete)
+                    },
+                    onToggleComplete = {
+                        viewModel.toggleHabitCompletion(habit)
                     }
                 )
             }
