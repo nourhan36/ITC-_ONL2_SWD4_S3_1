@@ -1,8 +1,8 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 
 package com.example.itc__onl2_swd4_s3_1.features.dhikr
 
-import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
@@ -12,13 +12,31 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,9 +54,10 @@ import com.example.itc__onl2_swd4_s3_1.core.components.BaseActivity
 import com.example.itc__onl2_swd4_s3_1.core.components.handleNavClick
 import com.example.itc__onl2_swd4_s3_1.core.theme.ITC_ONL2_SWD4_S3_1Theme
 import com.example.itc__onl2_swd4_s3_1.core.utils.Constants
-import kotlinx.coroutines.launch
 import com.example.itc__onl2_swd4_s3_1.core.utils.ThemeManager
+import kotlinx.coroutines.launch
 
+@ExperimentalMaterial3Api
 class DhikrCounterActivity : BaseActivity() {
 
     companion object {
@@ -65,6 +84,10 @@ class DhikrCounterActivity : BaseActivity() {
                     onThemeToggle = { enabled -> isDarkTheme.value = enabled }
                 ) { innerPadding ->
                     DhikrCounter(dhikrText, dhikrCount) { completedDhikrText ->
+                        val sharedPrefs = this.getSharedPreferences("DhikrPrefs", Context.MODE_PRIVATE)
+                        val completedKey = getDhikrKeyByContent(completedDhikrText, this)
+                        sharedPrefs.edit().putBoolean(completedKey, true).apply()
+
                         val intent = Intent(this, DhikrListActivity::class.java).apply {
                             putExtra(DHIKR_COMPLETED_TEXT, completedDhikrText)
                             putExtra(DHIKR_COMPLETED, true)
@@ -73,10 +96,14 @@ class DhikrCounterActivity : BaseActivity() {
                         startActivity(intent)
                         finish()
                     }
+
                 }
             }
         }
     }
+}
+fun getDhikrKeyByContent(content: String, context: Context): String {
+    return getDhikrList(context).find { it.content == content }?.key ?: "unknown"
 }
 
 @ExperimentalMaterial3Api
@@ -111,7 +138,7 @@ fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Un
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        DhikrCard(dhikrText, total, context)
+        DhikrCard(dhikrText, context)
         Spacer(modifier = Modifier.weight(1f))
 
         AnimatedCounterButton {
@@ -132,9 +159,8 @@ fun DhikrCounter(dhikrText: String, total: Int, onDhikrCompleted: (String) -> Un
 }
 
 @Composable
-fun DhikrCard(dhikrText: String, total: Int, context: android.content.Context) {
-    val locale = context.resources.configuration.locales[0].language
-    val resources = context.resources
+fun DhikrCard(dhikrText: String, context: Context) {
+
 
 
     val translationResId = when (dhikrText) {
