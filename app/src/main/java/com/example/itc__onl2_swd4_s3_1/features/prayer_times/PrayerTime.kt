@@ -233,28 +233,30 @@ fun calculateRemainingTime(
 ): String {
     if (prayerTimes.isEmpty()) return context.getString(R.string.no_data_available)
 
-    val now = LocalTime.now()
+    val now = java.time.LocalDateTime.now()
+    val today = java.time.LocalDate.now()
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
 
     for ((name, time) in prayerTimes) {
         val prayerTime = LocalTime.parse(time, formatter)
-        if (prayerTime.isAfter(now)) {
-            val duration = java.time.Duration.between(now, prayerTime)
+        val prayerDateTime = java.time.LocalDateTime.of(today, prayerTime)
+
+        if (prayerDateTime.isAfter(now)) {
+            val duration = java.time.Duration.between(now, prayerDateTime)
             val hours = duration.toHours()
             val minutes = duration.toMinutes() % 60
             val prayerNameLocalized = getLocalizedPrayerName(name, context)
-
             return context.getString(R.string.next_prayer, prayerNameLocalized, hours, minutes)
         }
     }
-
-    // fallback to next day Fajr
     val fajrTime = LocalTime.parse(prayerTimes[0].second, formatter)
-    val duration = java.time.Duration.between(now, fajrTime.plusHours(24))
+    val tomorrow = today.plusDays(1)
+    val nextFajrDateTime = java.time.LocalDateTime.of(tomorrow, fajrTime)
+
+    val duration = java.time.Duration.between(now, nextFajrDateTime)
     val hours = duration.toHours()
     val minutes = duration.toMinutes() % 60
     val prayerNameLocalized = getLocalizedPrayerName(prayerTimes[0].first, context)
-
     return context.getString(R.string.next_prayer, prayerNameLocalized, hours, minutes)
 }
 

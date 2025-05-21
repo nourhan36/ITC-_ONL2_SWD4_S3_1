@@ -41,19 +41,21 @@ class NewHabitSetup : BaseActivity() {
 
         val habitId = intent.getIntExtra("habitId", -1)
         val habitTitleFromSelector = if (habitId != -1) {
-            intent.getStringExtra("name") ?: ""
+            intent.getStringExtra("type") ?: ""
         } else {
             intent.getStringExtra("title") ?: ""
         }
 
         val habit = if (habitId != -1) HabitEntity(
             id = habitId,
+            type = habitTitleFromSelector,
             name = intent.getStringExtra("name") ?: "",
             duration = intent.getIntExtra("duration", 0),
             repeatType = intent.getStringExtra("repeatType") ?: "",
             reminderTime = intent.getStringExtra("reminderTime") ?: "",
             startTime = intent.getStringExtra("startTime") ?: "",
             startDate = intent.getStringExtra("startDate") ?: "",
+            durationUnit= intent.getStringExtra("durationUnit") ?: "",
             isCompleted = false
         ) else null
 
@@ -152,7 +154,9 @@ fun NewHabitSetupScreen(
                         isCompleted = existingHabit?.isCompleted ?: false,
                         repeatType = existingHabit?.repeatType ?: "Daily",
                         startTime = existingHabit?.startTime ?: "08:00 AM",
-                        reminderTime = existingHabit?.reminderTime ?: "07:50 AM"
+                        reminderTime = existingHabit?.reminderTime ?: "07:50 AM",
+                        durationUnit = selectedUnit,
+                        type = existingHabit?.type ?: title
                     )
 
                     if (existingHabit != null) viewModel.updateHabit(habit)

@@ -1,3 +1,4 @@
+// Theme.kt
 package com.example.itc__onl2_swd4_s3_1.core.theme
 
 import android.os.Build
@@ -45,6 +46,39 @@ private val LightColorScheme = lightColorScheme(
     onError = Color(0xFFFFFFFF)
 )
 
+// Splash-specific color schemes
+private val SplashDarkColorScheme = DarkColorScheme.copy(
+    surface = Color(0xFF121212),
+    onSurface = Color(0xFF9FC9E2)
+)
+
+private val SplashLightColorScheme = LightColorScheme.copy(
+    surface = Color(0xFFE7DFCF),
+    onSurface = Color(0xFF162E42)
+)
+
+@Composable
+fun SplashTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = true,
+    content: @Composable () -> Unit
+) {
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+        darkTheme -> SplashDarkColorScheme
+        else -> SplashLightColorScheme
+    }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
+}
+
 @Composable
 fun ITC_ONL2_SWD4_S3_1Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -66,4 +100,3 @@ fun ITC_ONL2_SWD4_S3_1Theme(
         content = content
     )
 }
-

@@ -6,11 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.itc__onl2_swd4_s3_1.R
 import com.example.itc__onl2_swd4_s3_1.data.entity.HabitEntity
-
 @Composable
 fun HabitCard(habit: HabitEntity, onCheck: () -> Unit) {
     val colorScheme = MaterialTheme.colorScheme
@@ -26,37 +26,53 @@ fun HabitCard(habit: HabitEntity, onCheck: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                val label = when (habit.name) {
-                    "habit_prayer" -> stringResource(R.string.habit_prayer)
-                    "habit_quran" -> stringResource(R.string.habit_quran)
-                    "habit_fasting" -> stringResource(R.string.habit_fasting)
-                    else -> habit.name
+
+            Text(
+                text = habit.type,
+                fontSize = 12.sp,
+                color = colorScheme.onSurfaceVariant
+            )
+
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column {
+
+                    Text(
+                        text = habit.name,
+                        fontSize = 20.sp,
+                        color = colorScheme.onSurface
+                    )
+
+                    // 👇 عرض المدة أسفل الرقم
+                    Text(
+                        text = "${habit.duration} ${habit.durationUnit}",
+                        fontSize = 12.sp,
+                        color = colorScheme.onSurfaceVariant
+                    )
                 }
 
-                Text(
-                    text = label,
-                    fontSize = 18.sp,
-                    color = colorScheme.onSurface
+                Checkbox(
+                    checked = habit.isCompleted,
+                    onCheckedChange = { onCheck() },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = colorScheme.primary,
+                        uncheckedColor = colorScheme.onSurfaceVariant,
+                        checkmarkColor = colorScheme.onPrimary
+                    )
                 )
             }
-
-            Checkbox(
-                checked = habit.isCompleted,
-                onCheckedChange = { onCheck() },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = colorScheme.primary,
-                    uncheckedColor = colorScheme.onSurfaceVariant,
-                    checkmarkColor = colorScheme.onPrimary
-                )
-            )
         }
     }
 }
+

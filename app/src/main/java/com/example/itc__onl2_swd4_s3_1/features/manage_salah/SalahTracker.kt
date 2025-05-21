@@ -66,19 +66,13 @@ fun SalahTracker(viewModel: SalahViewModel = hiltViewModel()) {
     val selectedDateStr = selectedDate.toString()
     val dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
 
-    val prayers = listOf(
-        stringResource(R.string.fajr),
-        stringResource(R.string.dhuhr),
-        stringResource(R.string.asr),
-        stringResource(R.string.maghrib),
-        stringResource(R.string.isha)
-    )
+    val prayerKeys = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")
     val selectedPrayers by viewModel.selectedPrayers.collectAsState()
     val completedDates by viewModel.completedDates.collectAsState()
     val incompleteDates by viewModel.incompleteDates.collectAsState()
 
     LaunchedEffect(Unit) {
-        viewModel.loadInitialData(prayers)
+        viewModel.loadInitialData(prayerKeys)
     }
 
     LaunchedEffect(selectedDateStr) {
@@ -121,16 +115,27 @@ fun SalahTracker(viewModel: SalahViewModel = hiltViewModel()) {
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(prayers.size) { index ->
-                val prayer = prayers[index]
+            items(prayerKeys.size) { index ->
+                val prayerKey = prayerKeys[index]
+                val prayerName = stringResource(
+                    when (prayerKey) {
+                        "fajr" -> R.string.fajr
+                        "dhuhr" -> R.string.dhuhr
+                        "asr" -> R.string.asr
+                        "maghrib" -> R.string.maghrib
+                        "isha" -> R.string.isha
+                        else -> R.string.prayers
+                    }
+                )
+
                 SalahCheckBox(
-                    prayer = prayer,
+                    prayerKey = prayerKey,
                     selectedPrayers = selectedPrayers,
                     containerColor = colorScheme.surfaceVariant,
                     textColor = colorScheme.onSurface,
                     modifier = Modifier.fillMaxWidth()
                 ) { _, name ->
-                    viewModel.togglePrayer(name, prayers)
+                    viewModel.togglePrayer(prayerKey, prayerKeys)
                 }
             }
         }
@@ -156,32 +161,44 @@ fun SalahTracker(viewModel: SalahViewModel = hiltViewModel()) {
 
 @Composable
 fun SalahCheckBox(
-    prayer: String,
+    prayerKey: String,
     selectedPrayers: Set<String>,
     containerColor: Color,
     textColor: Color,
     modifier: Modifier = Modifier,
     onCheckedChange: (Boolean, String) -> Unit
 ) {
+    val prayerName = stringResource(
+        when (prayerKey) {
+            "fajr" -> R.string.fajr
+            "dhuhr" -> R.string.dhuhr
+            "asr" -> R.string.asr
+            "maghrib" -> R.string.maghrib
+            "isha" -> R.string.isha
+            else -> R.string.prayers
+        }
+    )
+
     Row(
         modifier = modifier
             .background(containerColor, shape = RoundedCornerShape(12.dp))
-            .clickable { onCheckedChange(!selectedPrayers.contains(prayer), prayer) }
+            .clickable { onCheckedChange(!selectedPrayers.contains(prayerKey), prayerKey) }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = prayer,
+            text = prayerName,
             fontSize = 18.sp,
             modifier = Modifier.weight(1f),
             color = textColor
         )
         Checkbox(
-            checked = selectedPrayers.contains(prayer),
-            onCheckedChange = { onCheckedChange(it, prayer) }
+            checked = selectedPrayers.contains(prayerKey),
+            onCheckedChange = { onCheckedChange(it, prayerKey) }
         )
     }
 }
+
 
 @Composable
 fun SalahTrackerHeader() {

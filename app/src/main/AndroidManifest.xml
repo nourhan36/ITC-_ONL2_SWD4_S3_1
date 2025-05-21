@@ -39,6 +39,15 @@
             android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1" />
         <activity android:name=".features.dhikr.DhikrCounterActivity"
             android:exported="false"/>
+        <activity
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".features.habit_selector.HabitSelector"
@@ -48,10 +57,7 @@
                 <activity android:name=".features.home.HomeScreen"
                     android:exported="true"
                     android:theme="@style/Theme.ITC_ONL2_SWD4_S3_1">
-                    <intent-filter>
-                        <action android:name="android.intent.action.MAIN" />
-                        <category android:name="android.intent.category.LAUNCHER" />
-                    </intent-filter>
+
                 </activity>
 
         <activity android:name=".features.progress_page.ProgressTrackerPage"
