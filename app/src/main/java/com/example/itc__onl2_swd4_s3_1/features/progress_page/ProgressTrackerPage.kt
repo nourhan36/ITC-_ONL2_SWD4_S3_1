@@ -2,6 +2,7 @@ package com.example.itc__onl2_swd4_s3_1.features.progress_page
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,7 +42,8 @@ class ProgressTrackerPage : BaseActivity() {
         setContent {
             // Observe theme from ThemeManager
             val isDarkTheme by ThemeManager.isDarkMode
-
+            enableEdgeToEdge()
+            setEdgeToEdgeStatusBar(ThemeManager.isDarkMode.value)
             ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme) {
                 val viewModel: HabitViewModel = hiltViewModel()
                 val completedDays = viewModel.allCompletedDays.collectAsState(initial = emptyList()).value

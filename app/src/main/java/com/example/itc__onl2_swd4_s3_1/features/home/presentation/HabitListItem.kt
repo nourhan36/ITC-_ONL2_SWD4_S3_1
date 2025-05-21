@@ -8,7 +8,8 @@ import androidx.compose.material.DismissValue
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -32,7 +33,7 @@ fun HabitListItem(
     val dismissState = rememberDismissState()
     val direction = dismissState.dismissDirection
 
-    // Handle state change after dismiss
+
     LaunchedEffect(dismissState.currentValue) {
         when (dismissState.currentValue) {
             DismissValue.DismissedToStart -> {
@@ -113,7 +114,8 @@ fun HabitListItem(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.AccountCircle,
+                            imageVector = if (direction == DismissDirection.StartToEnd)
+                                Icons.Default.Edit else Icons.Default.Delete,
                             contentDescription = if (direction == DismissDirection.StartToEnd)
                                 "Edit" else "Delete",
                             tint = Color.White

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,15 +57,17 @@ class HomeScreen : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setEdgeToEdgeStatusBar(ThemeManager.isDarkMode.value)
 
         NotificationHelper.scheduleHabitReset(applicationContext)
         NotificationHelper.requestNotificationPermissionIfNeeded(this)
-        NotificationHelper.testNotificationAfterOneMinute(applicationContext)
+//        NotificationHelper.testNotificationAfterOneMinute(applicationContext)
         NotificationHelper.scheduleDailyNotification(applicationContext)
 
         setContent {
             val viewModel: HabitViewModel = androidx.hilt.navigation.compose.hiltViewModel()
-            val isDarkTheme = ThemeManager.isDarkMode // observe directly
+            val isDarkTheme = ThemeManager.isDarkMode
 
             ITC_ONL2_SWD4_S3_1Theme(darkTheme = isDarkTheme.value) {
                 AppNavBar(
