@@ -8,6 +8,7 @@ data class HabitEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
     val startTime: String,
+    val type: String,
     val repeatType: String,
     val duration: Int,
     val durationUnit : String,

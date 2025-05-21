@@ -31,13 +31,13 @@ fun HabitCard(habit: HabitEntity, onCheck: () -> Unit) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // 👆 العنوان الرئيسي
+
             Text(
-                text = habit.name,
-                fontSize = 14.sp,
-                color = colorScheme.primary,
-                fontWeight = FontWeight.SemiBold
+                text = habit.type,
+                fontSize = 12.sp,
+                color = colorScheme.onSurfaceVariant
             )
+
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -47,9 +47,9 @@ fun HabitCard(habit: HabitEntity, onCheck: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column {
-                    // 👇 الرقم (مثلاً عدد التكرارات)
+
                     Text(
-                        text = habit.duration.toString(),
+                        text = habit.name,
                         fontSize = 20.sp,
                         color = colorScheme.onSurface
                     )

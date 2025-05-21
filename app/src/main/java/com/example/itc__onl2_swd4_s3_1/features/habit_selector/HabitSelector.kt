@@ -100,7 +100,7 @@ fun HabitsScreen(onClick: (String) -> Unit) {
 @Composable
 fun HabitGrid(modifier: Modifier = Modifier, onClick: (String) -> Unit) {
     val habits = listOf(
-        Habit(stringResource(R.string.salah_tracker), R.drawable.salah),
+        Habit(stringResource(R.string.salah), R.drawable.salah),
         Habit(stringResource(R.string.quran), R.drawable.quraan),
         Habit(stringResource(R.string.dhikr), R.drawable.dhikr),
         Habit(stringResource(R.string.sadaqah), R.drawable.sadaqah),

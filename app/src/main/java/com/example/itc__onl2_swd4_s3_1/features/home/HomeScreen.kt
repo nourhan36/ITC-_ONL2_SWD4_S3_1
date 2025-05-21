@@ -152,6 +152,7 @@ fun Content(viewModel: HabitViewModel, modifier: Modifier = Modifier) {
                             putExtra("duration", habitToEdit.duration)
                             putExtra("reminderTime", habitToEdit.reminderTime)
                             putExtra("startDate", habitToEdit.startDate)
+                            putExtra("type", habitToEdit.type)
                         }
                         context.startActivity(intent)
                     },
