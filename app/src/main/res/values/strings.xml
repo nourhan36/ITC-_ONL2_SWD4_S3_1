@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ITC-_ONL2_SWD4_S3_1</string>
+    <string name="app_name">Firdaus</string>
     <string name="title_activity_dhikr">DhikrActivity</string>
     <string name="title_activity_dhirk_counter">DhirkCounterActivity</string>
     <string name="title_activity_dhikr_list">DhikrListActivity</string>
@@ -80,6 +80,8 @@
     <string name="dhul_hijah">Dhul Hijah</string>
     <string name="fasting">Fasting</string>
     <string name="prayers">Prayers</string>
+    <string name="duaa">Duaa</string>
+    <string name="sadaqah">Sadaqah</string>
     <string name="no_data_available">No data available</string>
     <string name="fajr_in">Fajr in %1$dh %2$dm</string>
     <string name="prayer_in">in %1$dh %2$dm</string>

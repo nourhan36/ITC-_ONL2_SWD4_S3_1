@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">تطبيق ITC-_ONL2_SWD4_S3_1</string>
+    <string name="app_name">فردوس</string>
     <string name="title_activity_dhikr">نشاط الذكر</string>
     <string name="title_activity_dhirk_counter">عداد الذكر</string>
     <string name="title_activity_dhikr_list">قائمة الأذكار</string>
@@ -129,7 +129,8 @@
     <string name="dhikr_translation_alhamdulillah">Alhamdulillah</string>
     <string name="dhikr_translation_allahuakbar">Allahu Akbar</string>
     <string name="dhikr_translation_astaghfirullah">Astaghfir Allah</string>
-
+    <string name="duaa">دعاء</string>
+    <string name="sadaqah">صدقة</string>
 
 
     <plurals name="streak_days">
